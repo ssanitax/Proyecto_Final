@@ -268,3 +268,65 @@ ON ediciones_pendientes(juego_pendiente_id);
 CREATE USER 'ana_sanchez'@'localhost' IDENTIFIED BY '3dleSLF$gl1FM';
 
 GRANT ALL PRIVILEGES ON proyectofinal.* TO 'ana_sanchez'@'localhost';
+
+
+/* =====================================================
+   DATOS DE JUEGOS
+===================================================== */
+
+USE proyectofinal;
+
+/* 1. INSERTAR PLATAFORMAS */
+INSERT INTO plataformas (nombre) VALUES 
+('Nintendo Switch'), 
+('PlayStation 2'), 
+('PlayStation 4'), 
+('PC'),
+('GameCube');
+
+/* 2. INSERTAR JUEGOS (MAESTROS) */
+INSERT INTO juegos (titulo, desarrollador, fecha_lanzamiento, descripcion) VALUES 
+('The Legend of Zelda: Breath of the Wild', 'Nintendo', '2017-03-03', 'Aventura de mundo abierto en el reino de Hyrule.'),
+('Metal Gear Solid 2: Sons of Liberty', 'Konami', '2001-11-13', 'Acción y sigilo táctico en una plataforma marina.'),
+('Elden Ring', 'FromSoftware', '2022-02-25', 'RPG de acción épico en las Tierras Intermedias.'),
+('Final Fantasy VII', 'Square Enix', '1997-01-31', 'Clásico RPG que definió una generación.'),
+('Silent Hill 2', 'Konami', '2001-09-24', 'Terror psicológico en la niebla de Silent Hill.'),
+('The Last of Us Part II', 'Naughty Dog', '2020-06-19', 'Intensa historia de supervivencia y venganza.'),
+('Super Mario Odyssey', 'Nintendo', '2017-10-27', 'Plataformas 3D recorriendo diversos reinos.'),
+('God of War', 'Santa Monica Studio', '2018-04-20', 'Kratos regresa en una ambientación nórdica.'),
+('Grand Theft Auto: San Andreas', 'Rockstar Games', '2004-10-26', 'Crimen y libertad en el estado de San Andreas.'),
+('Shadow of the Colossus', 'Team Ico', '2005-10-18', 'Una gesta heroica para derrotar a gigantes colosos.'),
+('Resident Evil 4', 'Capcom', '2005-01-11', 'Leon S. Kennedy rescata a la hija del presidente.'),
+('The Witcher 3: Wild Hunt', 'CD Projekt Red', '2015-05-19', 'Geralt de Rivia busca a su protegida Ciri.'),
+('Hollow Knight', 'Team Cherry', '2017-02-24', 'Metroidvania en un reino de insectos en ruinas.'),
+('Red Dead Redemption 2', 'Rockstar Games', '2018-10-26', 'El fin de la era de los forajidos en el salvaje oeste.'),
+('Metroid Prime', 'Retro Studios', '2002-11-18', 'Exploración en primera persona en el planeta Tallon IV.'),
+('Kingdom Hearts II', 'Square Enix', '2005-12-22', 'Crossover de Disney y Square Enix.'),
+('Dark Souls', 'FromSoftware', '2011-09-22', 'Difícil RPG de fantasía oscura y hogueras.'),
+('Persona 5 Royal', 'Atlus', '2019-10-31', 'Vida escolar y combates por turnos en Tokio.'),
+('Cyberpunk 2077', 'CD Projekt Red', '2020-12-10', 'Futuro distópico en la peligrosa Night City.'),
+('Bloodborne', 'FromSoftware', '2015-03-24', 'Terror gótico y acción rápida en Yharnam.');
+
+/* 3. INSERTAR EDICIONES (ESPECÍFICAS) */
+-- Nota: Los IDs de juegos van del 1 al 20 según el orden anterior.
+INSERT INTO ediciones (juego_id, plataforma_id, region, anio, edicion_nombre, imagen_portada) VALUES 
+(1, 1, 'PAL', 2017, 'Standard Edition', 'zelda_botw.jpg'),
+(2, 2, 'PAL', 2001, 'Original Black Label', 'mgs2_ps2.jpg'),
+(3, 3, 'PAL', 2022, 'Launch Edition', 'elden_ring_ps4.jpg'),
+(4, 4, 'Global', 2020, 'Steam Version', 'ff7_pc.jpg'),
+(5, 2, 'NTSC-U', 2001, 'Standard PS2', 'sh2_ps2.jpg'),
+(6, 3, 'PAL', 2020, 'Steelbook Edition', 'tlou2_ps4.jpg'),
+(7, 1, 'PAL', 2017, 'Standard Edition', 'mario_odyssey.jpg'),
+(8, 3, 'PAL', 2018, 'PlayStation Hits', 'gow_ps4.jpg'),
+(9, 2, 'PAL', 2004, 'Platinum Edition', 'gta_sa_ps2.jpg'),
+(10, 2, 'NTSC-J', 2005, 'First Print', 'sotc_ps2.jpg'),
+(11, 5, 'PAL', 2005, 'GameCube Original', 're4_gc.jpg'),
+(12, 4, 'Global', 2015, 'Game of the Year Edition', 'witcher3_pc.jpg'),
+(13, 1, 'PAL', 2019, 'Physical Edition', 'hollow_knight_switch.jpg'),
+(14, 3, 'PAL', 2018, 'Special Edition', 'rdr2_ps4.jpg'),
+(15, 5, 'PAL', 2002, 'Original GameCube', 'metroid_prime_gc.jpg'),
+(16, 2, 'PAL', 2005, 'Standard PS2', 'kh2_ps2.jpg'),
+(17, 3, 'PAL', 2018, 'Remastered', 'darksouls_ps4.jpg'),
+(18, 3, 'PAL', 2020, 'Royal Steelbook', 'p5r_ps4.jpg'),
+(19, 4, 'Global', 2020, 'Digital Code', 'cyberpunk_pc.jpg'),
+(20, 3, 'PAL', 2015, 'Standard Edition', 'bloodborne_ps4.jpg');

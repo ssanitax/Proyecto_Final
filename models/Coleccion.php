@@ -20,17 +20,27 @@ class Coleccion {
 
     // Obtener la colección completa de un usuario (para el "Shelf View") [cite: 152]
     public function obtenerColeccionUsuario($usuario_id) {
-        $sql = "SELECT cu.*, e.edicion_nombre, e.imagen_portada, j.titulo, p.nombre as plataforma 
-                FROM coleccion_usuario cu
-                JOIN ediciones e ON cu.edicion_id = e.id
-                JOIN juegos j ON e.juego_id = j.id
-                JOIN plataformas p ON e.plataforma_id = p.id
-                WHERE cu.usuario_id = :usuario_id
-                ORDER BY cu.fecha_adicion DESC";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([':usuario_id' => $usuario_id]);
-        return $stmt->fetchAll();
-    }
+		  // Hemos añadido e.region y e.imagen_portada para que la vista tenga todo
+		  $sql = "SELECT 
+		              cu.*, 
+		              j.titulo, 
+		              e.edicion_nombre, 
+		              e.region, 
+		              e.imagen_portada,
+		              p.nombre as plataforma 
+		          FROM coleccion_usuario cu
+		          JOIN ediciones e ON cu.edicion_id = e.id
+		          JOIN juegos j ON e.juego_id = j.id
+		          JOIN plataformas p ON e.plataforma_id = p.id
+		          WHERE cu.usuario_id = :usuario_id
+		          ORDER BY cu.fecha_adicion DESC";
+		  
+		  $stmt = $this->db->prepare($sql);
+		  $stmt->execute([':usuario_id' => $usuario_id]);
+		  
+		  // Retorna todos los juegos del usuario con sus datos técnicos
+		  return $stmt->fetchAll();
+	}
 
     // Actualizar estado (Pendiente, Jugando, Completado) [cite: 14, 151]
     public function actualizarEstado($id, $nuevo_estado) {
