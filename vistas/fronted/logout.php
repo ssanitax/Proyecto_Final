@@ -18,6 +18,6 @@ if (ini_get("session.use_cookies")) {
 session_destroy();
 
 // Redirigimos al login o a la página de inicio
-header("Location: vistas/fronted/login.php");
+header("Location: login.php");
 exit();
 ?>

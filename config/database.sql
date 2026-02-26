@@ -330,3 +330,7 @@ INSERT INTO ediciones (juego_id, plataforma_id, region, anio, edicion_nombre, im
 (18, 3, 'PAL', 2020, 'Royal Steelbook', 'p5r_ps4.jpg'),
 (19, 4, 'Global', 2020, 'Digital Code', 'cyberpunk_pc.jpg'),
 (20, 3, 'PAL', 2015, 'Standard Edition', 'bloodborne_ps4.jpg');
+
+-- Suponiendo que PC es plataforma_id 4 y Zelda es juego_id 1
+INSERT INTO ediciones (juego_id, plataforma_id, region, anio, edicion_nombre) 
+VALUES (1, 4, 'Global', 2024, 'PC Digital Port');
