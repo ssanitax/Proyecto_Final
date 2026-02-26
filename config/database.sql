@@ -259,3 +259,12 @@ CREATE TABLE ediciones_pendientes (
 
 CREATE INDEX idx_ediciones_pendientes_juego 
 ON ediciones_pendientes(juego_pendiente_id);
+
+
+/* =====================================================
+   USUARIO
+===================================================== */
+
+CREATE USER 'ana_sanchez'@'localhost' IDENTIFIED BY '3dleSLF$gl1FM';
+
+GRANT ALL PRIVILEGES ON proyectofinal.* TO 'ana_sanchez'@'localhost';

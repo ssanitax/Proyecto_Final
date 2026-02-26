@@ -2,8 +2,8 @@
 // Configuración de la base de datos
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'proyectofinal'); // El nombre que pusiste en tu SQL [cite: 4]
-define('DB_USER', 'root');          // Usuario por defecto en local
-define('DB_PASS', '');              // Contraseña (vacía en XAMPP por defecto)
+define('DB_USER', 'ana_sanchez');          // Usuario por defecto en local
+define('DB_PASS', '3dleSLF$gl1FM');              // Contraseña
 
 try {
     // Creamos la conexión con PDO
