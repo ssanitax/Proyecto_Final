@@ -6,10 +6,15 @@ require_once '../../models/Juego.php';
 
 $juegoModel = new Juego($pdo);
 $resultados = [];
+$busquedaRealizada = false;
 
+// Lógica de búsqueda
 if (isset($_GET['q']) && !empty(trim($_GET['q']))) {
-    $resultados = $juegoModel->buscarPorTitulo(htmlspecialchars($_GET['q']));
+    $termino = htmlspecialchars($_GET['q']);
+    $resultados = $juegoModel->buscarPorTitulo($termino);
+    $busquedaRealizada = true;
 } else {
+    // Si no hay búsqueda activa, mostramos todo el catálogo
     $resultados = $juegoModel->obtenerTodos();
 }
 
@@ -53,12 +58,6 @@ include '../../includes/header.php';
         overflow: hidden;
     }
 
-    .game-cover img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
     .game-overlay {
         position: absolute;
         top: 10px;
@@ -88,6 +87,7 @@ include '../../includes/header.php';
         font-weight: 800;
         color: var(--graphite);
         line-height: 1.3;
+        text-align: left;
     }
 
     .btn-add {
@@ -124,12 +124,22 @@ include '../../includes/header.php';
         font-size: 1rem;
         transition: 0.3s;
         box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+        font-family: inherit;
     }
 
     .search-input:focus {
         outline: none;
         border-color: var(--graphite);
         box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+
+    .proposal-box {
+        margin-top: 50px;
+        padding: 40px;
+        border: 2px dashed #ddd;
+        border-radius: 20px;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.5);
     }
 </style>
 
@@ -145,31 +155,43 @@ include '../../includes/header.php';
         </form>
     </div>
 
-    <div class="shelf-grid">
-        <?php foreach ($resultados as $juego): ?>
-            <div class="game-card">
-                <div class="game-cover">
-                    <div class="game-overlay">
-                        <span class="dev-badge"><?php echo htmlspecialchars($juego->desarrollador); ?></span>
+    <?php if ($busquedaRealizada && empty($resultados)): ?>
+        <div class="proposal-box">
+            <span style="font-size: 3rem;">🔍</span>
+            <h3 style="margin-top: 15px; text-align:center;">No hemos encontrado "<?php echo htmlspecialchars($_GET['q']); ?>"</h3>
+            <p style="color: #666; margin-bottom: 25px;">Parece que este juego no está registrado en el catálogo maestro todavía.</p>
+            <a href="registrar_nuevo.php" class="btn-add" style="display: inline-block; width: auto; padding: 12px 30px;">
+                + Proponer nuevo juego
+            </a>
+        </div>
+    <?php else: ?>
+        <div class="shelf-grid">
+            <?php foreach ($resultados as $juego): ?>
+                <div class="game-card">
+                    <div class="game-cover">
+                        <div class="game-overlay">
+                            <span class="dev-badge"><?php echo htmlspecialchars($juego->desarrollador); ?></span>
+                        </div>
+                        <span style="font-size: 4rem;">🎮</span>
                     </div>
-                    <span style="font-size: 4rem;">🎮</span>
-                </div>
-                
-                <div class="game-content">
-                    <h3><?php echo htmlspecialchars($juego->titulo); ?></h3>
                     
-                    <a href="juego_detalle.php?id=<?php echo $juego->id; ?>" class="btn-add">
-                        + Añadir Juego
-                    </a>
+                    <div class="game-content">
+                        <h3><?php echo htmlspecialchars($juego->titulo); ?></h3>
+                        
+                        <a href="juego_detalle.php?id=<?php echo $juego->id; ?>" class="btn-add">
+                            + Añadir Juego
+                        </a>
+                    </div>
                 </div>
-            </div>
-        <?php endforeach; ?>
-    </div>
+            <?php endforeach; ?>
+        </div>
 
-    <?php if (empty($resultados)): ?>
-        <div style="text-align:center; padding: 100px 0;">
-            <p style="color:#999;">No hemos encontrado resultados.</p>
-            <a href="registrar_nuevo.php" style="color:var(--graphite); font-weight:600;">¿Quieres proponer este juego?</a>
+        <div class="proposal-box" style="margin-top: 80px; border-style: solid; border-width: 1px; border-color: #eee;">
+            <h3 style="text-align:center; font-size: 1.2rem;">¿Falta algún título o versión?</h3>
+            <p style="color: #777; font-size: 0.9rem;">Ayúdanos a completar la base de datos técnica de Bengala.</p>
+            <div style="margin-top: 20px;">
+                <a href="registrar_nuevo.php" style="color: var(--graphite); font-weight: 800; text-decoration: none; font-size: 0.9rem; margin: 0 15px;">+ Nuevo Juego</a>
+            </div>
         </div>
     <?php endif; ?>
 </div>

@@ -12,15 +12,14 @@ class JuegoController {
     }
 
     /**
-     * Procesa la propuesta de un nuevo juego enviada por un usuario.
-     * Los datos se guardan en las tablas de 'pendientes' para revisión del admin.
+     * ACCIÓN 1: Proponer un juego totalmente nuevo (Maestro + Primera Edición)
      */
     public function proponer() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            session_start();
+            if (!isset($_SESSION)) { session_start(); }
             $usuario_id = $_SESSION['usuario_id'];
 
-            // Datos del Maestro (Juego)
+            // Datos del Maestro
             $titulo = htmlspecialchars($_POST['titulo']);
             $desarrollador = htmlspecialchars($_POST['desarrollador']);
             
@@ -44,8 +43,8 @@ class JuegoController {
                 $juego_pendiente_id = $this->pdo->lastInsertId();
 
                 // 2. Insertar la edición asociada en ediciones_pendientes
-                $sqlEdicion = "INSERT INTO ediciones_pendientes (juego_pendiente_id, plataforma_id, region) 
-                               VALUES (:juego_id, :plat_id, :region)";
+                $sqlEdicion = "INSERT INTO ediciones_pendientes (juego_pendiente_id, plataforma_id, region, edicion_nombre) 
+                               VALUES (:juego_id, :plat_id, :region, 'Edición Estándar')";
                 $stmtEdicion = $this->pdo->prepare($sqlEdicion);
                 $stmtEdicion->execute([
                     ':juego_id' => $juego_pendiente_id,
@@ -54,13 +53,47 @@ class JuegoController {
                 ]);
 
                 $this->pdo->commit();
-                
-                // Redirigir con éxito
                 header('Location: ../vistas/fronted/buscar.php?propuesta=enviada');
+                exit();
 
             } catch (Exception $e) {
                 $this->pdo->rollBack();
-                die("Error al procesar la propuesta: " . $e->getMessage());
+                die("Error al procesar la propuesta de nuevo juego: " . $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * ACCIÓN 2: Proponer una nueva edición/plataforma para un juego que YA existe
+     */
+    public function proponerEdicionExistente() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if (!isset($_SESSION)) { session_start(); }
+            
+            $juego_id = $_POST['juego_id']; // ID del juego maestro real
+            $plataforma_id = $_POST['plataforma_id'];
+            $edicion_nombre = htmlspecialchars($_POST['edicion_nombre']);
+            $region = $_POST['region'];
+
+            try {
+                // Insertamos directamente en ediciones_pendientes. 
+                // Nota: Usamos juego_id (maestro) en lugar de juego_pendiente_id.
+                // Tu SQL puede requerir un pequeño ajuste o podemos usar una lógica de revisión.
+                $sql = "INSERT INTO ediciones_pendientes (juego_id_maestro, plataforma_id, region, edicion_nombre) 
+                        VALUES (:j_id, :p_id, :reg, :nom)";
+                
+                $stmt = $this->pdo->prepare($sql);
+                $stmt->execute([
+                    ':j_id' => $juego_id,
+                    ':p_id' => $plataforma_id,
+                    ':reg'  => $region,
+                    ':nom'  => $edicion_nombre
+                ]);
+
+                header('Location: ../vistas/fronted/juego_detalle.php?id=' . $juego_id . '&propuesta=enviada');
+                exit();
+            } catch (Exception $e) {
+                die("Error al proponer edición: " . $e->getMessage());
             }
         }
     }
@@ -73,10 +106,15 @@ class JuegoController {
     }
 }
 
-// Lógica para capturar la acción desde la URL (router básico)
+// --- ROUTER DE ACCIONES ---
 if (isset($_GET['action'])) {
     $controller = new JuegoController($pdo);
+    
     if ($_GET['action'] == 'proponer') {
         $controller->proponer();
+    }
+    
+    if ($_GET['action'] == 'proponer_edicion_existente') {
+        $controller->proponerEdicionExistente();
     }
 }
