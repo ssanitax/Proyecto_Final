@@ -1,6 +1,6 @@
 <?php
 require_once '../../includes/auth.php';
-redirigirSiNoLogueado(); // [cite: 273]
+redirigirSiNoLogueado(); // Redirige a login.php si no hay sesión activa
 require_once '../../config/config.php';
 include '../../includes/header.php'; 
 ?>
