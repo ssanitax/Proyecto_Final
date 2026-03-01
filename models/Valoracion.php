@@ -1,0 +1,1 @@
+Aquí irán las valoraciones globales de los usuarios.

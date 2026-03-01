@@ -38,7 +38,7 @@ include '../../includes/header.php';
             <div class="form-group" style="margin-bottom: 25px; text-align: left;">
                 <label style="font-weight: 800; font-size: 0.8rem; display: block; margin-bottom: 10px;">ESTADO ACTUAL</label>
                 <select name="estado" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit;">
-                    <option value="pendiente" <?php echo $item->estado == 'pendiente' ? 'selected' : ''; ?>>Pendiente (En estantería)</option>
+                    <option value="pendiente" <?php echo $item->estado == 'pendiente' ? 'selected' : ''; ?>>Pendiente (En bibioteca)</option>
                     <option value="jugando" <?php echo $item->estado == 'jugando' ? 'selected' : ''; ?>>Jugando ahora</option>
                     <option value="completado" <?php echo $item->estado == 'completado' ? 'selected' : ''; ?>>Completado / Terminado</option>
                 </select>
@@ -63,6 +63,31 @@ include '../../includes/header.php';
                     Eliminar
                 </a>
             </div>
+        </form>
+    </div>
+</div>
+
+<div class="fade-up visible" style="max-width: 600px; margin: 30px auto;">
+    <div class="about-box" style="border-top: 4px solid var(--graphite);">
+        <h3 style="font-size: 1.1rem; margin-bottom: 20px; text-align: left;">🤝 Prestar este juego</h3>
+        <form action="../../controllers/PrestamoController.php?action=registrar" method="POST">
+            <input type="hidden" name="coleccion_id" value="<?php echo $item->id; ?>">
+            
+            <div class="form-group" style="margin-bottom: 15px; text-align: left;">
+                <label style="font-weight: 800; font-size: 0.75rem; display: block; margin-bottom: 8px;">¿A QUIÉN SE LO PRESTAS?</label>
+                <input type="text" name="nombre_persona" placeholder="Nombre de tu amigo" required 
+                       style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px; text-align: left;">
+                <label style="font-weight: 800; font-size: 0.75rem; display: block; margin-bottom: 8px;">FECHA DEL PRÉSTAMO</label>
+                <input type="date" name="fecha_prestamo" value="<?php echo date('Y-m-d'); ?>" required 
+                       style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd;">
+            </div>
+
+            <button type="submit" class="btn-dash" style="width: 100%; background: #ebf5ff; color: #007bff; border: 1px solid #007bff;">
+                Registrar Préstamo
+            </button>
         </form>
     </div>
 </div>

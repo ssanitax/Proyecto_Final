@@ -1,8 +1,8 @@
 <?php
 // Configuración de la base de datos
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'proyectofinal'); // El nombre que pusiste en tu SQL [cite: 4]
-define('DB_USER', 'ana_sanchez');          // Usuario por defecto en local
+define('DB_NAME', 'proyectofinal'); // Nombre de la base de datos
+define('DB_USER', 'ana_sanchez');          // Nombre del usuario
 define('DB_PASS', '3dleSLF$gl1FM');              // Contraseña
 
 try {
@@ -12,7 +12,7 @@ try {
     // Configuramos para que lance excepciones en caso de error
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
-    // Configuramos para que el fetch por defecto sea objeto (más limpio para tus modelos)
+    // Configuramos para que el fetch por defecto sea objeto
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
 
 } catch (PDOException $e) {

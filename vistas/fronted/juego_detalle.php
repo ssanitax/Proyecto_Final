@@ -37,7 +37,7 @@ include '../../includes/header.php';
             <div style="background: #1c1f26; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center; font-size: 6rem; border-radius: 15px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
                 🎮
             </div>
-            <p style="margin-top: 20px; color: #888; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Base de datos maestra #<?php echo $juego->id; ?></p>
+            <p style="margin-top: 20px; color: #888; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Base de datos #<?php echo $juego->id; ?></p>
         </div>
 
         <div style="flex: 1.5; min-width: 320px; text-align: left;">
@@ -65,7 +65,7 @@ include '../../includes/header.php';
                                 </label>
                             <?php endforeach; ?>
                             
-                            <button type="submit" class="btn-confirm">Añadir a mi Estantería</button>
+                            <button type="submit" class="btn-confirm">Añadir a mi Biblioteca</button>
                         <?php endif; ?>
                     </div>
                 </form>

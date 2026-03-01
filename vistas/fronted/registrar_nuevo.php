@@ -13,7 +13,7 @@ include '../../includes/header.php';
 <div class="fade-up visible" style="max-width: 700px; margin: 0 auto;">
     <h2>Proponer Nuevo Juego</h2>
     <p style="text-align:center; color:#666; margin-bottom:30px;">
-        [cite_start]Tu propuesta será revisada por un administrador antes de ser pública. [cite: 4]
+        Tu propuesta será revisada por un administrador antes de ser pública.
     </p>
 
     <form action="../../controllers/JuegoController.php?action=proponer" method="POST" class="about-box">

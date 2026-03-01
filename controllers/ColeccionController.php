@@ -11,7 +11,7 @@ class ColeccionController {
         $this->coleccionModel = new Coleccion($pdo);
     }
 
-    // 1. AGREGAR JUEGO (Ya lo tenías)
+    // 1. AGREGAR JUEGO (El juego ya está registrado en la base de datos, solo se añade a biblioteca)
     public function agregar() {
 		  if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		      session_start();
@@ -39,7 +39,7 @@ class ColeccionController {
 		  }
 	}
 
-    // 2. ACTUALIZAR JUEGO (La parte que te falta)
+    // 2. ACTUALIZAR JUEGO
     public function actualizar() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             session_start();

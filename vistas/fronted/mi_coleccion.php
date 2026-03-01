@@ -113,7 +113,7 @@ include '../../includes/header.php';
 
 <div class="fade-up visible">
     <header style="margin-bottom: 40px; text-align: center;">
-        <h2>Mi Estantería</h2>
+        <h2>Mi Bibioteca</h2>
         <p style="color: #666;">Gestiona tu colección personal y tus progresos.</p>
     </header>
 
@@ -151,7 +151,7 @@ include '../../includes/header.php';
             <?php endforeach; ?>
         <?php else: ?>
             <div style="grid-column: 1 / -1; text-align: center; padding: 100px 0;">
-                <p style="color:#999; margin-bottom: 20px;">Tu estantería está vacía.</p>
+                <p style="color:#999; margin-bottom: 20px;">Tu biblioteca está vacía.</p>
                 <a href="buscar.php" class="btn-dash" style="display: inline-block; text-decoration: none; background: var(--graphite); color: white; padding: 12px 30px; border-radius: 50px; font-weight: 600;">
                     Empezar a añadir juegos
                 </a>

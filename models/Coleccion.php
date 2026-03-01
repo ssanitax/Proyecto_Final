@@ -6,7 +6,7 @@ class Coleccion {
         $this->db = $pdo;
     }
 
-    // Añadir un juego a la estantería del usuario [cite: 83]
+    // Añadir un juego a la estantería del usuario
     public function agregarEdicion($usuario_id, $edicion_id, $estado_conservacion) {
         $sql = "INSERT INTO coleccion_usuario (usuario_id, edicion_id, estado_conservacion) 
                 VALUES (:usuario_id, :edicion_id, :estado_conservacion)";
@@ -18,38 +18,40 @@ class Coleccion {
         ]);
     }
 
-    // Obtener la colección completa de un usuario (para el "Shelf View") [cite: 152]
+    // Obtener la colección completa de un usuario (para el "Shelf View")
     public function obtenerColeccionUsuario($usuario_id) {
-		  // Hemos añadido e.region y e.imagen_portada para que la vista tenga todo
-		  $sql = "SELECT 
-		              cu.*, 
-		              j.titulo, 
-		              e.edicion_nombre, 
-		              e.region, 
-		              e.imagen_portada,
-		              p.nombre as plataforma 
-		          FROM coleccion_usuario cu
-		          JOIN ediciones e ON cu.edicion_id = e.id
-		          JOIN juegos j ON e.juego_id = j.id
-		          JOIN plataformas p ON e.plataforma_id = p.id
-		          WHERE cu.usuario_id = :usuario_id
-		          ORDER BY cu.fecha_adicion DESC";
-		  
-		  $stmt = $this->db->prepare($sql);
-		  $stmt->execute([':usuario_id' => $usuario_id]);
-		  
-		  // Retorna todos los juegos del usuario con sus datos técnicos
-		  return $stmt->fetchAll();
-	}
+        // Esta consulta solo trae los juegos que NO están prestados actualmente
+        $sql = "SELECT 
+                    cu.*, 
+                    j.titulo, 
+                    e.edicion_nombre, 
+                    e.region, 
+                    e.imagen_portada,
+                    p.nombre as plataforma 
+                FROM coleccion_usuario cu
+                JOIN ediciones e ON cu.edicion_id = e.id
+                JOIN juegos j ON e.juego_id = j.id
+                JOIN plataformas p ON e.plataforma_id = p.id
+                -- Buscamos si tiene un préstamo activo (no devuelto)
+                LEFT JOIN prestamos pr ON pr.coleccion_id = cu.id AND pr.devuelto = FALSE
+                WHERE cu.usuario_id = :usuario_id 
+                AND pr.id IS NULL -- Esto filtra y quita los que están prestados
+                ORDER BY cu.fecha_adicion DESC";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':usuario_id' => $usuario_id]);
+        
+        return $stmt->fetchAll();
+    }
 
-    // Actualizar estado (Pendiente, Jugando, Completado) [cite: 14, 151]
+    // Actualizar estado (Pendiente, Jugando, Completado)
     public function actualizarEstado($id, $nuevo_estado) {
         $sql = "UPDATE coleccion_usuario SET estado = :estado WHERE id = :id";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([':estado' => $nuevo_estado, ':id' => $id]);
     }
 
-    // Registrar valoración personal (1-10) y notas [cite: 155]
+    // Registrar valoración personal (1-10) y notas
     public function valorarCopia($id, $nota, $comentario) {
         $sql = "UPDATE coleccion_usuario 
                 SET valoracion_personal = :nota, notas = :notas 

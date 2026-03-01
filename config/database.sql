@@ -1,18 +1,14 @@
-/* =====================================================
-   CREACIÓN DE BASE DE DATOS
-===================================================== */
+/* CREACIÓN DE BASE DE DATOS */
 
 CREATE DATABASE proyectofinal;
 
 USE proyectofinal;
 
 
-/* =====================================================
-   TABLA: USUARIOS
+/* TABLA: USUARIOS
    - Gestiona usuarios normales y administradores
-   - Email único (no se permiten duplicados)
-   - Login único para front y back
-===================================================== */
+   - Email que no permite duplicados
+   - Login único que luego separa en front y back */
 
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -37,10 +33,8 @@ CREATE TABLE usuarios (
 CREATE INDEX idx_usuario_rol ON usuarios(rol);
 
 
-/* =====================================================
-   TABLA: PLATAFORMAS
-   - Consolas o sistemas (PS2, Switch, etc.)
-===================================================== */
+/* TABLA: PLATAFORMAS
+   - Consolas o sistemas (PS2, Switch, etc.), que más adelante se podrán meter más */
 
 CREATE TABLE plataformas (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -48,10 +42,8 @@ CREATE TABLE plataformas (
 );
 
 
-/* =====================================================
-   TABLA: JUEGOS (MAESTRO)
-   - Juego como concepto general
-===================================================== */
+/* TABLA: JUEGOS 
+   - Juego como concepto general */
 
 CREATE TABLE juegos (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -70,11 +62,9 @@ CREATE TABLE juegos (
 CREATE INDEX idx_juego_titulo ON juegos(titulo);
 
 
-/* =====================================================
-   TABLA: EDICIONES
+/* TABLA: EDICIONES
    - Versiones físicas concretas del juego
-   - Diferencia región, año, edición especial, etc.
-===================================================== */
+   - Diferencia región, año, edición especial, etc.  */
 
 CREATE TABLE ediciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -101,11 +91,9 @@ CREATE INDEX idx_edicion_juego ON ediciones(juego_id);
 CREATE INDEX idx_edicion_plataforma ON ediciones(plataforma_id);
 
 
-/* =====================================================
-   TABLA: COLECCION_USUARIO
+/* TABLA: COLECCION_USUARIO
    - Juegos que un usuario tiene en su estantería
-   - No puede repetir la misma edición
-===================================================== */
+   - No dejamos que se creen duplicados (arreglar esto, alguien puede tenerlo repetido) */
 
 CREATE TABLE coleccion_usuario (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -138,11 +126,9 @@ CREATE TABLE coleccion_usuario (
 CREATE INDEX idx_coleccion_usuario ON coleccion_usuario(usuario_id);
 
 
-/* =====================================================
-   TABLA: VALORACIONES
+/* TABLA: VALORACIONES
    - Valoraciones globales de juegos
-   - Un usuario solo puede valorar una vez cada juego
-===================================================== */
+   - Un usuario solo puede valorar una vez cada juego */
 
 CREATE TABLE valoraciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -169,11 +155,9 @@ CREATE TABLE valoraciones (
 CREATE INDEX idx_valoraciones_juego ON valoraciones(juego_id);
 
 
-/* =====================================================
-   TABLA: PRESTAMOS
+/* TABLA: PRESTAMOS
    - Registro de préstamos de juegos
-   - Se vincula a la copia concreta del usuario
-===================================================== */
+   - Se vincula a la copia concreta del usuario  */
 
 CREATE TABLE prestamos (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -200,11 +184,9 @@ CREATE INDEX idx_prestamos_coleccion ON prestamos(coleccion_id);
 ===================================================== */
 
 
-/* -----------------------------------------------------
-   TABLA: JUEGOS_PENDIENTES
+/* TABLA: JUEGOS_PENDIENTES
    - Juegos propuestos por usuarios
-   - Deben ser aprobados o rechazados por admin
------------------------------------------------------ */
+   - Deben ser aprobados, corregidos o rechazados por admin */
 
 CREATE TABLE juegos_pendientes (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -234,10 +216,8 @@ CREATE TABLE juegos_pendientes (
 CREATE INDEX idx_juegos_pendientes_estado ON juegos_pendientes(estado);
 
 
-/* -----------------------------------------------------
-   TABLA: EDICIONES_PENDIENTES
-   - Versiones físicas asociadas a juegos pendientes
------------------------------------------------------ */
+/* TABLA: EDICIONES_PENDIENTES
+   - Versiones físicas asociadas a juegos pendientes */
 
 CREATE TABLE ediciones_pendientes (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -274,8 +254,6 @@ GRANT ALL PRIVILEGES ON proyectofinal.* TO 'ana_sanchez'@'localhost';
    DATOS DE JUEGOS
 ===================================================== */
 
-USE proyectofinal;
-
 /* 1. INSERTAR PLATAFORMAS */
 INSERT INTO plataformas (nombre) VALUES 
 ('Nintendo Switch'), 
@@ -308,7 +286,6 @@ INSERT INTO juegos (titulo, desarrollador, fecha_lanzamiento, descripcion) VALUE
 ('Bloodborne', 'FromSoftware', '2015-03-24', 'Terror gótico y acción rápida en Yharnam.');
 
 /* 3. INSERTAR EDICIONES (ESPECÍFICAS) */
--- Nota: Los IDs de juegos van del 1 al 20 según el orden anterior.
 INSERT INTO ediciones (juego_id, plataforma_id, region, anio, edicion_nombre, imagen_portada) VALUES 
 (1, 1, 'PAL', 2017, 'Standard Edition', 'zelda_botw.jpg'),
 (2, 2, 'PAL', 2001, 'Original Black Label', 'mgs2_ps2.jpg'),
@@ -331,6 +308,6 @@ INSERT INTO ediciones (juego_id, plataforma_id, region, anio, edicion_nombre, im
 (19, 4, 'Global', 2020, 'Digital Code', 'cyberpunk_pc.jpg'),
 (20, 3, 'PAL', 2015, 'Standard Edition', 'bloodborne_ps4.jpg');
 
--- Suponiendo que PC es plataforma_id 4 y Zelda es juego_id 1
+-- Prueba de juego con dos plataformas
 INSERT INTO ediciones (juego_id, plataforma_id, region, anio, edicion_nombre) 
 VALUES (1, 4, 'Global', 2024, 'PC Digital Port');

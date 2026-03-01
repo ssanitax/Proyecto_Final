@@ -146,7 +146,7 @@ include '../../includes/header.php';
 <div class="fade-up visible">
     <div class="search-container">
         <h2 style="margin-bottom: 15px;">Explorar Catálogo</h2>
-        <p style="color: #777; margin-bottom: 30px;">Busca por título o desarrolladora para añadir a tu estantería.</p>
+        <p style="color: #777; margin-bottom: 30px;">Busca por título o desarrolladora para añadir a tu biblioteca.</p>
         
         <form action="buscar.php" method="GET">
             <input type="text" name="q" class="search-input" 
@@ -159,7 +159,7 @@ include '../../includes/header.php';
         <div class="proposal-box">
             <span style="font-size: 3rem;">🔍</span>
             <h3 style="margin-top: 15px; text-align:center;">No hemos encontrado "<?php echo htmlspecialchars($_GET['q']); ?>"</h3>
-            <p style="color: #666; margin-bottom: 25px;">Parece que este juego no está registrado en el catálogo maestro todavía.</p>
+            <p style="color: #666; margin-bottom: 25px;">Parece que este juego no está registrado en el catálogo todavía.</p>
             <a href="registrar_nuevo.php" class="btn-add" style="display: inline-block; width: auto; padding: 12px 30px;">
                 + Proponer nuevo juego
             </a>
@@ -188,7 +188,7 @@ include '../../includes/header.php';
 
         <div class="proposal-box" style="margin-top: 80px; border-style: solid; border-width: 1px; border-color: #eee;">
             <h3 style="text-align:center; font-size: 1.2rem;">¿Falta algún título o versión?</h3>
-            <p style="color: #777; font-size: 0.9rem;">Ayúdanos a completar la base de datos técnica de Bengala.</p>
+            <p style="color: #777; font-size: 0.9rem;">Ayúdanos a hacer más grande la base de datos de Bengala.</p>
             <div style="margin-top: 20px;">
                 <a href="registrar_nuevo.php" style="color: var(--graphite); font-weight: 800; text-decoration: none; font-size: 0.9rem; margin: 0 15px;">+ Nuevo Juego</a>
             </div>

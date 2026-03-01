@@ -12,14 +12,14 @@ class JuegoController {
     }
 
     /**
-     * ACCIÓN 1: Proponer un juego totalmente nuevo (Maestro + Primera Edición)
+     * ACCIÓN 1: Proponer un juego totalmente nuevo
      */
     public function proponer() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!isset($_SESSION)) { session_start(); }
             $usuario_id = $_SESSION['usuario_id'];
 
-            // Datos del Maestro
+            // Datos del Juego
             $titulo = htmlspecialchars($_POST['titulo']);
             $desarrollador = htmlspecialchars($_POST['desarrollador']);
             
