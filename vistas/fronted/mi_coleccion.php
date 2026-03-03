@@ -11,7 +11,7 @@ include '../../includes/header.php';
 ?>
 
 <style>
-    /* Mantenemos el mismo diseño de cuadrícula que en Buscar */
+    /* Mismo diseño de cuadrícula que en Buscar */
     .shelf-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));

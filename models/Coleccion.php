@@ -18,7 +18,7 @@ class Coleccion {
         ]);
     }
 
-    // Obtener la colección completa de un usuario (para el "Shelf View")
+    // Obtener la colección completa de un usuario
     public function obtenerColeccionUsuario($usuario_id) {
         // Esta consulta solo trae los juegos que NO están prestados actualmente
         $sql = "SELECT 

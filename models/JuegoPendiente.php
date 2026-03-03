@@ -1,0 +1,1 @@
+Aquí estarán los juegos que tiene que validar el admin, para añadirlos a la base de datos.
