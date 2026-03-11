@@ -19,21 +19,21 @@ class AuthController {
             $password = $_POST['password'];
             $password_confirm = $_POST['password_confirm'];
 
-            // 1. VALIDACIÓN LÓGICA: Las contraseñas tienen que coincidir
+            // VALIDACIÓN LÓGICA: Las contraseñas tienen que coincidir
             if ($password !== $password_confirm) {
                 $error = "Las contraseñas no coinciden. Por favor, inténtalo de nuevo.";
                 include __DIR__ . '/../vistas/fronted/registro.php';
                 return; // Cortamos la ejecución para que no guarde nada
             }
 
-            // 2. VALIDACIÓN DE SEGURIDAD: Longitud mínima 6 caracteres
+            // VALIDACIÓN DE SEGURIDAD: Longitud mínima 6 caracteres
             if (strlen($password) < 6) {
                 $error = "La contraseña debe tener al menos 6 caracteres.";
                 include __DIR__ . '/../vistas/fronted/registro.php';
                 return;
             }
 
-            // 3. INTENTO DE REGISTRO
+            // INTENTO DE REGISTRO
             if ($this->usuarioModel->registrar($nombre, $email, $password)) {
                 header('Location: login.php?registro=exito');
                 exit();

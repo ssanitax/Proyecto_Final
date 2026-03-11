@@ -1,0 +1,5 @@
+En arcivos como `ColecciónControler.php` o `PrestamoController.php`, no uso rutas complejas de servidor, si no una estructura `if` al final del los archivos que actúa como enrudator manual. Esto es útil ya que permite que un solo archivo de controlador maneje múltiples acciones simplemente evaluando una variable.
+
+En `JuegoController.php`, el método `proponer()`, asegura que si la inserción del Juego falla, no se intente insertar la edicion y viceversa, o se guarda todo o no se guarda nada, esta definición se llama atomicidad.
+
+En el modelo `Coleccion.php`, la consulta `obtenerColeccionUsuario.php` tiene una lógica de control a nivel de base de datos muy ingeniosa para gestionar los préstamos. En lugar de hacer una comprobación PHP juego por juego, la consulta utiliza `LEFT JOIN`  con la tabla de préstamos y una condición `WHERE pr.id IS NULL`. El resultado es que solo se muestran los juegos que están físicamente en tu biblioteca, excluyendo aquellos que han sido prestados y no devueltos.
