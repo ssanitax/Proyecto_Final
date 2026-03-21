@@ -100,6 +100,7 @@
         <a href="mi_coleccion.php">Mi Biblioteca</a>
         <a href="buscar.php">Añadir Juego</a>
         <a href="mis_prestamos.php">Préstamos</a>
+        <a href="mis_propuestas.php">Propuestas</a>
         <a href="logout.php" style="color: #991b1b; font-weight: 600;">Salir</a>
     </div>
 </nav>

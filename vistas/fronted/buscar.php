@@ -22,7 +22,7 @@ include '../../includes/header.php';
 ?>
 
 <style>
-    /* Estilos mejorados para las tarjetas tipo Portafolio */
+    /* Estilos para las tarjetas */
     .shelf-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -56,21 +56,6 @@ include '../../includes/header.php';
         justify-content: center;
         position: relative;
         overflow: hidden;
-    }
-
-    .game-overlay {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-    }
-
-    .dev-badge {
-        background: rgba(28, 31, 38, 0.8);
-        color: white;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 0.7rem;
-        backdrop-filter: blur(4px);
     }
 
     .game-content {
@@ -129,14 +114,14 @@ include '../../includes/header.php';
 
     .search-input:focus {
         outline: none;
-        border-color: var(--graphite);
-        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        border-color: var(--graphite); 
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05); 
     }
 
     .proposal-box {
-        margin-top: 50px;
-        padding: 40px;
-        border: 2px dashed #ddd;
+        margin-top: 50px; 
+        padding: 40px; 
+        border: 2px dashed #ddd; 
         border-radius: 20px;
         text-align: center;
         background: rgba(255, 255, 255, 0.5);
@@ -146,7 +131,7 @@ include '../../includes/header.php';
 <div class="fade-up visible">
     <div class="search-container">
         <h2 style="margin-bottom: 15px;">Explorar Catálogo</h2>
-        <p style="color: #777; margin-bottom: 30px;">Busca por título o desarrolladora para añadir a tu biblioteca.</p>
+        <p style="color: #777; margin-bottom: 30px;">Busca por título para añadir a tu biblioteca.</p>
         
         <form action="buscar.php" method="GET">
             <input type="text" name="q" class="search-input" 
@@ -169,9 +154,6 @@ include '../../includes/header.php';
             <?php foreach ($resultados as $juego): ?>
                 <div class="game-card">
                     <div class="game-cover">
-                        <div class="game-overlay">
-                            <span class="dev-badge"><?php echo htmlspecialchars($juego->desarrollador); ?></span>
-                        </div>
                         <span style="font-size: 4rem;">🎮</span>
                     </div>
                     
