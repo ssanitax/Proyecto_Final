@@ -1,22 +1,176 @@
 <?php
 require_once 'includes/auth.php';
+require_once 'config/config.php';
 
-// 1. Verificamos si el usuario ya tiene una sesión activa
+// 1. Si el usuario ya entró antes, lo mandamos directo a su estantería [cite: 6-8]
 if (estaLogueado()) {
-    
-    // 2. Si es administrador, lo mandamos a la carpeta de admin
     if (esAdmin()) {
         header('Location: vistas/admin/dashboard.php');
-        exit();
-    } 
-    // 3. Si es un usuario normal, lo mandamos a su colección
-    else {
+    } else {
         header('Location: vistas/fronted/mi_coleccion.php');
-        exit();
     }
-
-} else {
-    // 4. Si no está logueado, lo mandamos al login para que se identifique
-    header('Location: vistas/fronted/login.php');
     exit();
 }
+
+// 2. Traemos los números reales de la base de datos para animar al usuario [cite: 212-213]
+try {
+    $totalJuegos = $pdo->query("SELECT COUNT(*) FROM juegos")->fetchColumn();
+    $totalSistemas = $pdo->query("SELECT COUNT(*) FROM plataformas")->fetchColumn();
+} catch (Exception $e) {
+    $totalJuegos = "20+";
+    $totalSistemas = "5+";
+}
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bengala | Organiza tu Colección</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --graphite: #1C1F26; 
+            --bg: #f4f5f7; 
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg); 
+            color: var(--graphite);
+        }
+
+        /* --- SECCIÓN PRINCIPAL --- */
+        .hero {
+            padding: 100px 10% 60px 10%;
+            background: white;
+            text-align: left;
+        }
+
+        .hero h1 { 
+            font-size: 4rem; 
+            font-weight: 800; 
+            letter-spacing: -2px; 
+            margin-bottom: 20px;
+        }
+
+        .hero p { 
+            font-size: 1.2rem; 
+            color: #555; 
+            max-width: 600px; 
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        /* --- BOTONES --- */
+        .cta-group { display: flex; gap: 15px; }
+
+        .btn {
+            padding: 18px 35px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+
+        .btn-dark { background: var(--graphite); color: white; }
+        .btn-dark:hover { background: #333; transform: translateY(-2px); }
+
+        .btn-outline { border: 2px solid var(--graphite); color: var(--graphite); }
+        .btn-outline:hover { background: var(--graphite); color: white; }
+
+        /* --- BARRA DE DATOS --- */
+        .data-strip {
+            display: flex;
+            padding: 50px 10%;
+            gap: 80px;
+            background: #fafafa;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-point h3 { font-size: 2.5rem; font-weight: 800; }
+        .data-point p { font-size: 0.8rem; color: #888; font-weight: 600; text-transform: uppercase; }
+
+        /* --- CARACTERÍSTICAS --- */
+        .features {
+            padding: 80px 10%;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+
+        .card h3 { margin-bottom: 15px; font-weight: 800; }
+        .card p { color: #666; font-size: 0.95rem; line-height: 1.5; }
+
+        footer {
+            padding: 40px 10%;
+            text-align: center;
+            color: #999;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <h1>BENGALA.</h1>
+        <p>Tu estantería de videojuegos, ahora en tu bolsillo. Registra tus juegos, controla tus préstamos y mantén tu colección siempre organizada.</p>
+        
+        <div class="cta-group">
+            <a href="vistas/fronted/registro.php" class="btn btn-dark">Empezar ahora</a>
+            <a href="vistas/fronted/login.php" class="btn btn-outline">Entrar</a>
+        </div>
+    </section>
+
+    <div class="data-strip">
+        <div class="data-point">
+            <h3><?php echo $totalJuegos; ?></h3>
+            <p>Juegos en catálogo</p>
+        </div>
+        <div class="data-point">
+            <h3><?php echo $totalSistemas; ?></h3>
+            <p>Consolas disponibles</p>
+        </div>
+        <div class="data-point">
+            <h3>Gratis</h3>
+            <p>Para coleccionistas</p>
+        </div>
+    </div>
+
+    <section class="features">
+        <div class="card">
+            <h3>Tu Biblioteca</h3>
+            <p>Añade juegos de cualquier consola y región (PAL, USA, Japón) de forma sencilla.</p>
+        </div>
+        <div class="card">
+            <h3>¿Quién tiene mi juego?</h3>
+            <p>Si le prestas un juego a un amigo, anótalo aquí para no olvidarte de recuperarlo.</p>
+        </div>
+        <div class="card">
+            <h3>Valoración Personal</h3>
+            <p>Puntúa tus juegos del 1 al 10 y escribe notas sobre tu progreso.</p>
+        </div>
+        <div class="card">
+            <h3>Datos Reales</h3>
+            <p>Cada juego es revisado para que la información de las ediciones sea siempre correcta.</p>
+        </div>
+    </section>
+
+    <footer>
+        BENGALA &copy; 2026 — Creado por Ana Sánchez Suárez
+    </footer>
+
+</body>
+</html>
