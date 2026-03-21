@@ -311,3 +311,13 @@ INSERT INTO ediciones (juego_id, plataforma_id, region, anio, edicion_nombre, im
 -- Prueba de juego con dos plataformas
 INSERT INTO ediciones (juego_id, plataforma_id, region, anio, edicion_nombre) 
 VALUES (1, 4, 'Global', 2024, 'PC Digital Port');
+
+
+-- Arreglo para permitir que ediciones pendientes puedan no tener un juego pendiente asociado (en caso de que el usuario proponga una edición de un juego ya existente) y para vincular la edición pendiente con el juego real una vez aprobado.
+
+ALTER TABLE ediciones_pendientes 
+MODIFY juego_pendiente_id INT NULL;
+
+ALTER TABLE ediciones_pendientes 
+ADD COLUMN juego_id_real INT NULL AFTER juego_pendiente_id,
+ADD FOREIGN KEY (juego_id_real) REFERENCES juegos(id) ON DELETE CASCADE;

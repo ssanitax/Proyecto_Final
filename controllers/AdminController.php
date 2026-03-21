@@ -6,7 +6,7 @@ class AdminController {
     private $pdo;
 
     public function __construct($pdo) {
-        // Solo permitimos que entre si es admin [cite: 106]
+        // Protección: solo los administradores de Bengala pueden ejecutar estas acciones 
         if (!esAdmin()) {
             header('Location: ../vistas/fronted/dashboard.php');
             exit();
@@ -14,56 +14,92 @@ class AdminController {
         $this->pdo = $pdo;
     }
 
-    public function aprobarJuego() {
-        $id_pendiente = $_GET['id'];
+    /**
+     * Procesa la aprobación de una propuesta (Juego Nuevo o Edición Nueva)
+     */
+    public function aprobarPropuesta() {
+        $id_pendiente = $_GET['id'] ?? null;
+        if (!$id_pendiente) {
+            header('Location: ../vistas/admin/validar_juegos.php?error=no_id');
+            exit();
+        }
 
         try {
             $this->pdo->beginTransaction();
 
-            // 1. Obtener los datos del juego pendiente [cite: 25]
-            $stmt = $this->pdo->prepare("SELECT * FROM juegos_pendientes WHERE id = ?");
+            // 1. Obtener la propuesta de juego y su edición asociada [cite: 25, 27, 796, 798]
+            $stmt = $this->pdo->prepare("
+                SELECT jp.*, ep.id as edicion_pend_id, ep.plataforma_id, ep.region, ep.edicion_nombre, ep.juego_id_real
+                FROM juegos_pendientes jp
+                LEFT JOIN ediciones_pendientes ep ON ep.juego_pendiente_id = jp.id
+                WHERE jp.id = ?
+            ");
             $stmt->execute([$id_pendiente]);
             $propuesta = $stmt->fetch();
 
-            if ($propuesta) {
-                // 2. Insertar en la tabla oficial de JUEGOS 
+            if (!$propuesta) throw new Exception("Propuesta no encontrada.");
+
+            $juego_id_final = null;
+
+            // 2. LÓGICA DE APROBACIÓN [cite: 16, 17, 786, 788]
+            if ($propuesta->juego_id_real) {
+                // CASO A: Es una edición nueva para un juego que YA existe
+                $juego_id_final = $propuesta->juego_id_real;
+            } else {
+                // CASO B: Es un JUEGO NUEVO. Insertamos en la tabla maestra 'juegos'
                 $sqlJuego = "INSERT INTO juegos (titulo, desarrollador, descripcion) VALUES (?, ?, ?)";
                 $stmtJuego = $this->pdo->prepare($sqlJuego);
                 $stmtJuego->execute([$propuesta->titulo, $propuesta->desarrollador, $propuesta->descripcion]);
-                $nuevo_juego_id = $this->pdo->lastInsertId();
-
-                // 3. Mover la EDICIÓN asociada de pendientes a oficiales [cite: 27, 17]
-                $stmtEdic = $this->pdo->prepare("SELECT * FROM ediciones_pendientes WHERE juego_pendiente_id = ?");
-                $stmtEdic->execute([$id_pendiente]);
-                $edic_pend = $stmtEdic->fetch();
-
-                if ($edic_pend) {
-                    $sqlEdicOficial = "INSERT INTO ediciones (juego_id, plataforma_id, region, edicion_nombre) VALUES (?, ?, ?, ?)";
-                    $this->pdo->prepare($sqlEdicOficial)->execute([
-                        $nuevo_juego_id, 
-                        $edic_pend->plataforma_id, 
-                        $edic_pend->region, 
-                        $edic_pend->edicion_nombre
-                    ]);
-                }
-
-                // 4. Marcar como aprobado y actualizar quién lo revisó [cite: 25]
-                $stmtUpdate = $this->pdo->prepare("UPDATE juegos_pendientes SET estado = 'aprobado', revisado_por = ?, fecha_revision = NOW() WHERE id = ?");
-                $stmtUpdate->execute([$_SESSION['usuario_id'], $id_pendiente]);
+                $juego_id_final = $this->pdo->lastInsertId();
             }
+
+            // 3. Insertar la EDICIÓN en la tabla oficial 'ediciones' [cite: 17, 788]
+            if ($juego_id_final && $propuesta->plataforma_id) {
+                $sqlEdicion = "INSERT INTO ediciones (juego_id, plataforma_id, region, edicion_nombre) VALUES (?, ?, ?, ?)";
+                $stmtEdic = $this->pdo->prepare($sqlEdicion);
+                $stmtEdic->execute([
+                    $juego_id_final,
+                    $propuesta->plataforma_id,
+                    $propuesta->region,
+                    $propuesta->edicion_nombre ?? 'Edición Estándar'
+                ]);
+            }
+
+            // 4. Actualizar estado de la propuesta y registrar quién la revisó [cite: 25, 796]
+            $stmtUpdate = $this->pdo->prepare("
+                UPDATE juegos_pendientes 
+                SET estado = 'aprobado', revisado_por = ?, fecha_revision = NOW() 
+                WHERE id = ?
+            ");
+            $stmtUpdate->execute([$_SESSION['usuario_id'], $id_pendiente]);
 
             $this->pdo->commit();
             header('Location: ../vistas/admin/validar_juegos.php?status=aprobado');
+            exit();
+
         } catch (Exception $e) {
             $this->pdo->rollBack();
-            die("Error en la validación: " . $e->getMessage());
+            die("Error crítico en Bengala Admin: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Rechaza una propuesta sin añadirla al catálogo
+     */
+    public function rechazarPropuesta() {
+        $id_pendiente = $_GET['id'] ?? null;
+        if ($id_pendiente) {
+            $stmt = $this->pdo->prepare("UPDATE juegos_pendientes SET estado = 'rechazado', revisado_por = ?, fecha_revision = NOW() WHERE id = ?");
+            $stmt->execute([$_SESSION['usuario_id'], $id_pendiente]);
+        }
+        header('Location: ../vistas/admin/validar_juegos.php?status=rechazado');
+        exit();
     }
 }
 
-// Router para el admin
-if (isset($_GET['action']) && $_GET['action'] == 'aprobar') {
+// ROUTER DE ACCIONES ADMIN
+if (isset($_GET['action'])) {
     $admin = new AdminController($pdo);
-    $admin->aprobarJuego();
+    if ($_GET['action'] == 'aprobar') $admin->aprobarPropuesta();
+    if ($_GET['action'] == 'rechazar') $admin->rechazarPropuesta();
 }
-?>

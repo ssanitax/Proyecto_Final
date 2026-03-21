@@ -63,31 +63,28 @@ class JuegoController {
         }
     }
 
-    /**
-     * ACCIÓN 2: Proponer una nueva edición/plataforma para un juego que YA existe
+    /* ACCIÓN 2: Proponer una nueva edición para un juego que YA existe oficialmente
      */
     public function proponerEdicionExistente() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!isset($_SESSION)) { session_start(); }
             
-            $juego_id = $_POST['juego_id']; // ID del juego maestro real
+            $juego_id = $_POST['juego_id']; // ID del juego maestro real [cite: 854]
             $plataforma_id = $_POST['plataforma_id'];
             $edicion_nombre = htmlspecialchars($_POST['edicion_nombre']);
             $region = $_POST['region'];
 
             try {
-                // Insertamos directamente en ediciones_pendientes. 
-                // Nota: Usamos juego_id (maestro) en lugar de juego_pendiente_id.
-                // Tu SQL puede requerir un pequeño ajuste o podemos usar una lógica de revisión.
-                $sql = "INSERT INTO ediciones_pendientes (juego_id_maestro, plataforma_id, region, edicion_nombre) 
-                        VALUES (:j_id, :p_id, :reg, :nom)";
+                // Insertamos en ediciones_pendientes vinculando al juego_id_real
+                $sql = "INSERT INTO ediciones_pendientes (juego_pendiente_id, juego_id_real, plataforma_id, region, edicion_nombre) 
+                        VALUES (NULL, :j_id_real, :p_id, :reg, :nom)";
                 
                 $stmt = $this->pdo->prepare($sql);
                 $stmt->execute([
-                    ':j_id' => $juego_id,
-                    ':p_id' => $plataforma_id,
-                    ':reg'  => $region,
-                    ':nom'  => $edicion_nombre
+                    ':j_id_real' => $juego_id,
+                    ':p_id'      => $plataforma_id,
+                    ':reg'       => $region,
+                    ':nom'       => $edicion_nombre
                 ]);
 
                 header('Location: ../vistas/fronted/juego_detalle.php?id=' . $juego_id . '&propuesta=enviada');
