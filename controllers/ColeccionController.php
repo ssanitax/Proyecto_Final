@@ -12,32 +12,28 @@ class ColeccionController {
     }
 
     // 1. AGREGAR JUEGO (El juego ya está registrado en la base de datos, solo se añade a biblioteca)
+    // Busca este bloque en ColeccionController.php
     public function agregar() {
-		  if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-		      session_start();
-		      $usuario_id = $_SESSION['usuario_id'];
-		      
-		      // Ahora recibimos un array de IDs
-		      $ediciones_seleccionadas = $_POST['ediciones_ids'] ?? [];
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if (!isset($_SESSION)) { session_start(); } // Asegúrate de que la sesión esté lista
+            $usuario_id = $_SESSION['usuario_id'];
+            
+            // CORRECCIÓN: Captura el ID singular que viene del radio button
+            $edicion_id = $_POST['edicion_id'] ?? null;
 
-		      if (empty($ediciones_seleccionadas)) {
-		          header('Location: ../vistas/fronted/buscar.php?error=no_selection');
-		          exit();
-		      }
+            if (!$edicion_id) {
+                header('Location: ../vistas/fronted/buscar.php?error=no_selection');
+                exit();
+            }
 
-		      $errores = 0;
-		      foreach ($ediciones_seleccionadas as $edicion_id) {
-		          // Intentamos agregar cada una
-		          $exito = $this->coleccionModel->agregarEdicion($usuario_id, $edicion_id, 'bueno');
-		          if (!$exito) $errores++;
-		      }
+            // Intentamos agregar la edición (por defecto estado 'bueno')
+            $exito = $this->coleccionModel->agregarEdicion($usuario_id, $edicion_id, 'bueno');
 
-		      // Si hubo errores (porque ya tenía alguna de esas ediciones), avisamos
-		      $status = ($errores == 0) ? 'success' : 'partial';
-		      header("Location: ../vistas/fronted/mi_coleccion.php?status=$status");
-		      exit();
-		  }
-	}
+            $status = $exito ? 'success' : 'error';
+            header("Location: ../vistas/fronted/mi_coleccion.php?status=$status");
+            exit();
+        }
+    }
 
     // 2. ACTUALIZAR JUEGO
     public function actualizar() {
