@@ -168,7 +168,7 @@ $auth->registrar();
             <input type="password" name="password_confirm" id="pass2" placeholder="••••••••" oninput="validarPasswords(this)" required>
         </div>
 
-        <button type="submit" class="btn-register">Crear mi estantería</button>
+        <button type="submit" class="btn-register">Crear mi biblioteca</button>
     </form>
 
     <div class="footer-links">

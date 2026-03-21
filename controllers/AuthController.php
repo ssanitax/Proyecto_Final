@@ -19,27 +19,34 @@ class AuthController {
             $password = $_POST['password'];
             $password_confirm = $_POST['password_confirm'];
 
-            // VALIDACIÓN LÓGICA: Las contraseñas tienen que coincidir
             if ($password !== $password_confirm) {
-                $error = "Las contraseñas no coinciden. Por favor, inténtalo de nuevo.";
+                $error = "Las contraseñas no coinciden.";
                 include __DIR__ . '/../vistas/fronted/registro.php';
-                return; // Cortamos la ejecución para que no guarde nada
+                return;
             }
 
-            // VALIDACIÓN DE SEGURIDAD: Longitud mínima 6 caracteres
             if (strlen($password) < 6) {
                 $error = "La contraseña debe tener al menos 6 caracteres.";
                 include __DIR__ . '/../vistas/fronted/registro.php';
                 return;
             }
 
-            // INTENTO DE REGISTRO
-            if ($this->usuarioModel->registrar($nombre, $email, $password)) {
-                header('Location: login.php?registro=exito');
+            // El modelo ahora devuelve el ID del nuevo usuario 
+            $nuevo_id = $this->usuarioModel->registrar($nombre, $email, $password);
+
+            if ($nuevo_id) {
+                // LOGIN AUTOMÁTICO: Iniciamos la sesión aquí mismo 
+                if (!isset($_SESSION)) { session_start(); }
+                
+                $_SESSION['usuario_id'] = $nuevo_id;
+                $_SESSION['usuario_nombre'] = $nombre;
+                $_SESSION['usuario_rol'] = 'usuario';
+
+                // Redirigimos directamente al dashboard de usuario 
+                header('Location: dashboard.php');
                 exit();
             } else {
-                // Si el modelo devuelve false, suele ser por el UNIQUE del email
-                $error = "El email ya está registrado o el nombre no es válido.";
+                $error = "El email ya está registrado.";
                 include __DIR__ . '/../vistas/fronted/registro.php';
             }
         }

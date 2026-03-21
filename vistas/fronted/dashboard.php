@@ -2,13 +2,22 @@
 require_once '../../includes/auth.php';
 redirigirSiNoUsuario();
 require_once '../../config/config.php';
+
+// Traemos una estadística rápida para personalizar el dashboard
+$usuario_id = $_SESSION['usuario_id'];
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM coleccion_usuario WHERE usuario_id = ?");
+$stmt->execute([$usuario_id]);
+$totalJuegos = $stmt->fetchColumn();
+
 include '../../includes/header.php'; 
 ?>
 
 <div class="fade-up visible">
     <header style="text-align: center; margin-bottom: 50px;">
-        <h2 style="margin-bottom: 10px;">Hola, <?php echo $_SESSION['usuario_nombre']; ?> 👋</h2>
-        <p style="color: #666; font-size: 1.1rem;">Tu biblioteca de juegos físicos, organizada.</p>
+        <h2 style="margin-bottom: 10px;">Hola, <?php echo htmlspecialchars($_SESSION['usuario_nombre']); ?> 👋</h2>
+        <p style="color: #666; font-size: 1.1rem;">
+            Tienes <strong><?php echo $totalJuegos; ?></strong> juegos en tu estantería virtual.
+        </p>
     </header>
 
     <div class="dashboard-grid">
@@ -38,15 +47,25 @@ include '../../includes/header.php';
                 <span class="btn-dash">Ver Préstamos</span>
             </div>
         </a>
+
+        <a href="mis_propuestas.php" class="dash-card">
+            <div class="dash-icon">📩</div>
+            <div class="dash-content">
+                <h3>Propuestas</h3>
+                <p>Revisa si los juegos que sugeriste han sido aprobados por el administrador.</p>
+                <span class="btn-dash">Ver Estado</span>
+            </div>
+        </a>
     </div>
 </div>
 
 <style>
+    /* Mantenemos tus estilos que están perfectos */
     .dashboard-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Ajustado para 4 tarjetas */
         gap: 30px;
-        max-width: 1100px;
+        max-width: 1200px;
         margin: 0 auto;
     }
 
@@ -80,8 +99,8 @@ include '../../includes/header.php';
     .card-highlight .btn-dash { background: white; color: var(--graphite); }
 
     .dash-icon { font-size: 3.5rem; margin-bottom: 20px; }
-    .dash-content h3 { font-size: 1.4rem; margin-bottom: 15px; font-weight: 800; }
-    .dash-content p { font-size: 0.95rem; line-height: 1.6; margin-bottom: 25px; min-height: 60px; }
+    .dash-content h3 { font-size: 1.3rem; margin-bottom: 15px; font-weight: 800; }
+    .dash-content p { font-size: 0.9rem; line-height: 1.6; margin-bottom: 25px; min-height: 60px; }
 
     .btn-dash {
         padding: 10px 25px;
@@ -89,7 +108,7 @@ include '../../includes/header.php';
         background: var(--graphite);
         color: white;
         font-weight: 700;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         text-transform: uppercase;
     }
 </style>

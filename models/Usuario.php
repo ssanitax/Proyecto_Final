@@ -13,16 +13,17 @@ class Usuario {
             $sql = "INSERT INTO usuarios (nombre, email, password, rol) VALUES (:nombre, :email, :password, 'usuario')";
             $stmt = $this->db->prepare($sql);
             
-            // Importante: Cifrar siempre la contraseña
             $passwordHash = password_hash($password, PASSWORD_BCRYPT);
-            
-            return $stmt->execute([
+            $exito = $stmt->execute([
                 ':nombre'   => $nombre,
                 ':email'    => $email,
                 ':password' => $passwordHash
             ]);
+
+            // Si se insertó correctamente, devolvemos el ID generado
+            return $exito ? $this->db->lastInsertId() : false;
+
         } catch (PDOException $e) {
-            // Si el email ya existe, saltará el error de UNIQUE que pusiste en el SQL
             return false;
         }
     }

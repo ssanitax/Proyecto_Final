@@ -1,9 +1,11 @@
 <?php
 require_once '../../includes/auth.php';
-require_once '../../config/config.php';
+require_once '../../config/config.php'; // Aquí se define $pdo [cite: 1091]
 require_once '../../controllers/AuthController.php';
 
-// 1. SI YA ESTÁ LOGUEADO, redirigir según su rol inmediatamente
+// Aseguramos que la variable sea accesible
+global $pdo;
+
 if (estaLogueado()) {
     if (esAdmin()) {
         header('Location: ../admin/dashboard.php');
@@ -13,8 +15,12 @@ if (estaLogueado()) {
     exit();
 }
 
-// 2. PROCESAR EL LOGIN si se ha enviado el formulario
-$auth = new AuthController($pdo);
+// Verificamos manualmente antes de fallar
+if (!isset($pdo)) {
+    die("Error técnico: La conexión a la base de datos no está disponible. Revisa config.php");
+}
+
+$auth = new AuthController($pdo); 
 $auth->login();
 ?>
 
