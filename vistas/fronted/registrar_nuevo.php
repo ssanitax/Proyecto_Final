@@ -1,6 +1,6 @@
 <?php
 require_once '../../includes/auth.php';
-redirigirSiNoLogueado();
+redirigirSiNoUsuario();
 require_once '../../config/config.php';
 
 // Necesitamos las plataformas para el select

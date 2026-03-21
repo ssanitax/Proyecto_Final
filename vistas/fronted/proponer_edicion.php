@@ -1,6 +1,6 @@
 <?php
 require_once '../../includes/auth.php';
-redirigirSiNoLogueado();
+redirigirSiNoUsuario();
 require_once '../../config/config.php';
 
 $juego_id = $_GET['juego_id'] ?? null;

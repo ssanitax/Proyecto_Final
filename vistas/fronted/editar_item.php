@@ -1,6 +1,6 @@
 <?php
 require_once '../../includes/auth.php';
-redirigirSiNoLogueado();
+redirigirSiNoUsuario();
 require_once '../../config/config.php';
 
 // Capturamos el ID del registro en la colección
