@@ -112,9 +112,9 @@ include '../../includes/header.php';
                     
                     <div class="dash-content">
                         <h3><?php echo htmlspecialchars($item->titulo); ?></h3>
-                        <p><?php echo htmlspecialchars($item->plataforma_nombre); ?> - <?php echo htmlspecialchars($item->region); ?></p>
+                        <p><?php echo htmlspecialchars($item->plataforma); ?> - <?php echo htmlspecialchars($item->region); ?></p>
                         
-                        <a href="juego_detalle.php?id=<?php echo $item->juego_id; ?>" class="btn-dash">
+                        <a href="juego_detalle.php?id=<?php echo $item->juego_id; ?>" class="btn-details">
                             Ver Detalles
                         </a>
                     </div>
