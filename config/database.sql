@@ -321,3 +321,11 @@ MODIFY juego_pendiente_id INT NULL;
 ALTER TABLE ediciones_pendientes 
 ADD COLUMN juego_id_real INT NULL AFTER juego_pendiente_id,
 ADD FOREIGN KEY (juego_id_real) REFERENCES juegos(id) ON DELETE CASCADE;
+
+-- Permitir nuevas ediciones
+ALTER TABLE ediciones_pendientes
+ADD COLUMN plataforma_nombre_nueva VARCHAR(100);
+
+-- Permitir NULL en plataforma_id
+ALTER TABLE ediciones_pendientes
+MODIFY plataforma_id INT NULL;
