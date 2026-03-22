@@ -2,67 +2,118 @@
 require_once '../../includes/auth.php';
 redirigirSiNoUsuario();
 require_once '../../config/config.php';
-require_once '../../models/Coleccion.php';
 
-$coleccionModel = new Coleccion($pdo);
-// Obtenemos la colección del usuario
-$miColeccion = $coleccionModel->obtenerColeccionUsuario($_SESSION['usuario_id']);
+$usuario_id = $_SESSION['usuario_id'];
+
+// 1. Obtener parámetros de búsqueda y filtro
+$busqueda = $_GET['search'] ?? '';
+$plataforma_filtro = $_GET['plataforma'] ?? '';
+
+// 2. Obtener plataformas que el usuario tiene en su colección para el select
+$stmtPlats = $pdo->prepare("
+    SELECT DISTINCT p.id, p.nombre 
+    FROM plataformas p
+    JOIN ediciones e ON p.id = e.plataforma_id
+    JOIN coleccion_usuario cu ON e.id = cu.edicion_id
+    WHERE cu.usuario_id = ?
+    ORDER BY p.nombre ASC
+");
+$stmtPlats->execute([$usuario_id]);
+$plataformas_usuario = $stmtPlats->fetchAll();
+
+// 3. Construir la consulta con las columnas correctas de tu DB
+// Se cambió 'e.imagen_url' por 'e.imagen_portada' y se eliminó 'p.color_hex'
+$sql = "SELECT cu.*, j.titulo, e.region, e.edicion_nombre, p.nombre as plataforma_nombre, 
+               e.imagen_portada
+        FROM coleccion_usuario cu
+        JOIN ediciones e ON cu.edicion_id = e.id
+        JOIN juegos j ON e.juego_id = j.id
+        JOIN plataformas p ON e.plataforma_id = p.id
+        WHERE cu.usuario_id = ?";
+
+$params = [$usuario_id];
+
+if (!empty($busqueda)) {
+    $sql .= " AND j.titulo LIKE ?";
+    $params[] = "%$busqueda%";
+}
+
+if (!empty($plataforma_filtro)) {
+    $sql .= " AND p.id = ?";
+    $params[] = $plataforma_filtro;
+}
+
+$sql .= " ORDER BY cu.fecha_adicion DESC";
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$items = $stmt->fetchAll();
 
 include '../../includes/header.php';
 ?>
 
 <div class="fade-up visible">
-    <header style="text-align: center; margin-bottom: 50px;">
-        <h2 style="margin-bottom: 15px;">Mi Colección Personal</h2>
-        <p style="color: #777; font-size: 1.1rem;">Tu estantería virtual de juegos físicos.</p>
+    <header style="text-align: center; margin-bottom: 40px;">
+        <h2 style="margin-bottom: 10px;">Mi Colección Personal</h2>
+        <p style="color: #777;">Busca y filtra en tu estantería virtual</p>
     </header>
 
-    <?php if (isset($_GET['status'])): ?>
-        <div style="max-width: 800px; margin: 0 auto 30px auto;">
-            <?php if ($_GET['status'] == 'success'): ?>
-                <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #c3e6cb; font-weight: 600;">
-                    ✅ ¡Genial! El juego se ha añadido a tu estantería.
-                </div>
-            <?php elseif ($_GET['status'] == 'exists'): ?>
-                <div style="background: #fff3cd; color: #856404; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #ffeeba; font-weight: 600;">
-                    Aviso: Este juego ya estaba en tu biblioteca. 💿
-                </div>
-            <?php endif; ?>
-        </div>
-    <?php endif; ?>
+    <section style="background: white; padding: 25px; border-radius: 20px; margin-bottom: 40px; border: 1px solid #eee; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+        <form method="GET" action="" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+            <div style="flex: 1; min-width: 250px;">
+                <input type="text" name="search" placeholder="Buscar por título..." 
+                       value="<?php echo htmlspecialchars($busqueda); ?>"
+                       style="width: 100%; padding: 12px 20px; border-radius: 12px; border: 1px solid #eee; outline: none; font-family: inherit;">
+            </div>
+            
+            <div style="min-width: 200px;">
+                <select name="plataforma" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #eee; outline: none; font-family: inherit; background: white;">
+                    <option value="">Todas las Consolas</option>
+                    <?php foreach($plataformas_usuario as $plat): ?>
+                        <option value="<?php echo $plat->id; ?>" <?php echo ($plataforma_filtro == $plat->id) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($plat->nombre); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
 
-    <?php if (empty($miColeccion)): ?>
-        <div style="text-align: center; padding: 100px 0;">
-            <span style="font-size: 4rem; display: block; margin-bottom: 20px;">🏠</span>
-            <p style="color:#999; margin-bottom: 20px;">Tu biblioteca está vacía.</p>
-            <a href="buscar.php" style="display: inline-block; text-decoration: none; background: var(--graphite); color: white; padding: 12px 30px; border-radius: 50px; font-weight: 600; text-transform: uppercase; font-size: 0.8rem;">
-                + Empezar a añadir juegos
-            </a>
-        </div>
-    <?php else: ?>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 30px; padding: 20px 0;">
-            <?php foreach ($miColeccion as $item): ?>
-                <div class="game-card" style="background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee; display: flex; flex-direction: column; transition: 0.3s;" 
-                     onmouseover="this.style.transform='translateY(-10px)'; this.style.borderColor='var(--graphite)';" 
-                     onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='#eee';">
+            <button type="submit" style="padding: 12px 30px; border-radius: 50px; border: none; background: var(--graphite); color: white; cursor: pointer; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; transition: 0.3s;">
+                Filtrar
+            </button>
+            
+            <?php if(!empty($busqueda) || !empty($plataforma_filtro)): ?>
+                <a href="mi_coleccion.php" style="color: #e74c3c; text-decoration: none; font-size: 0.85rem; font-weight: 700;">Limpiar filtros</a>
+            <?php endif; ?>
+        </form>
+    </section>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 30px;">
+        <?php if (empty($items)): ?>
+            <div style="grid-column: 1/-1; text-align: center; padding: 80px 0;">
+                <span style="font-size: 3rem; display: block; margin-bottom: 20px;">🔍</span>
+                <p style="color: #999; font-style: italic;">No se han encontrado juegos con esos criterios.</p>
+            </div>
+        <?php else: ?>
+            <?php foreach($items as $item): ?>
+                <div class="game-card" style="background: white; border-radius: 15px; overflow: hidden; border: 1px solid #eee; transition: 0.3s; display: flex; flex-direction: column;">
                     
                     <div style="width: 100%; aspect-ratio: 3/4; background: #f8f9fa; display: flex; align-items: center; justify-content: center; position: relative;">
-                        <div style="position: absolute; top: 12px; right: 12px; background: rgba(28, 31, 38, 0.9); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
-                            <?php echo htmlspecialchars($item->plataforma); ?>
+                        <div style="position: absolute; top: 12px; right: 12px; background: var(--graphite); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase;">
+                            <?php echo htmlspecialchars($item->plataforma_nombre); ?>
                         </div>
                         
-                        <span style="font-size: 4rem;">
-                            <?php 
-                            if ($item->estado == 'completado') echo '⭐';
-                            elseif ($item->estado == 'jugando') echo '🕹️';
-                            else echo '💿';
-                            ?>
-                        </span>
+                        <?php if(!empty($item->imagen_portada)): ?>
+                            <img src="../../img/portadas/<?php echo htmlspecialchars($item->imagen_portada); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                        <?php else: ?>
+                            <span style="font-size: 4rem;">
+                                <?php echo ($item->estado == 'completado') ? '⭐' : (($item->estado == 'jugando') ? '🕹️' : '💿'); ?>
+                            </span>
+                        <?php endif; ?>
                     </div>
 
                     <div style="padding: 20px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
                         <div style="text-align: left; margin-bottom: 15px;">
-                            <span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: <?php echo $item->estado == 'jugando' ? '#2ecc71' : '#aaa'; ?>;">
+                            <span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: <?php echo ($item->estado == 'jugando') ? '#2ecc71' : '#aaa'; ?>;">
                                 ● <?php echo htmlspecialchars($item->estado); ?>
                             </span>
                             <h3 style="font-size: 1.1rem; margin: 8px 0 4px 0; font-weight: 800; color: var(--graphite); line-height: 1.2;">
@@ -74,17 +125,14 @@ include '../../includes/header.php';
                         </div>
 
                         <a href="editar_item.php?id=<?php echo $item->id; ?>" 
-                           style="display: block; width: 100%; padding: 12px; border-radius: 50px; background: var(--graphite); color: white; text-decoration: none; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; text-align: center; transition: 0.3s;"
-                           onmouseover="this.style.background='#333';"
-                           onmouseout="this.style.background='var(--graphite)';"
-                        >
+                           style="display: block; width: 100%; padding: 12px; border-radius: 50px; background: var(--graphite); color: white; text-decoration: none; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; text-align: center; transition: 0.3s;">
                             Gestionar Copia
                         </a>
                     </div>
                 </div>
             <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
+        <?php endif; ?>
+    </div>
 </div>
 
 <?php include '../../includes/footer.php'; ?>
