@@ -329,3 +329,6 @@ ADD COLUMN plataforma_nombre_nueva VARCHAR(100);
 -- Permitir NULL en plataforma_id
 ALTER TABLE ediciones_pendientes
 MODIFY plataforma_id INT NULL;
+
+-- Primero buscamos el nombre del índice/restricción y lo eliminamos
+ALTER TABLE coleccion_usuario DROP INDEX unique_usuario_edicion;

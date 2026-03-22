@@ -23,7 +23,7 @@ class Coleccion {
         $sql = "SELECT 
                     cu.*, 
                     j.titulo, 
-                    e.juego_id, -- AÑADE ESTA LÍNEA
+                    e.juego_id,
                     e.edicion_nombre, 
                     e.region, 
                     e.imagen_portada,
@@ -34,11 +34,27 @@ class Coleccion {
                 JOIN plataformas p ON e.plataforma_id = p.id
                 LEFT JOIN prestamos pr ON pr.coleccion_id = cu.id AND pr.devuelto = FALSE
                 WHERE cu.usuario_id = :usuario_id 
-                AND pr.id IS NULL 
                 ORDER BY cu.fecha_adicion DESC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':usuario_id' => $usuario_id]);
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Obtener estadísticas de la colección:
+     * - total_copias: Cantidad total de entradas (incluyendo repetidos)
+     * - juegos_distintos: Cantidad de títulos únicos (basado en juego_id)
+     */
+    public function obtenerEstadisticas($usuario_id) {
+        $sql = "SELECT 
+                    COUNT(*) as total_copias,
+                    COUNT(DISTINCT e.juego_id) as juegos_distintos
+                FROM coleccion_usuario cu
+                JOIN ediciones e ON cu.edicion_id = e.id
+                WHERE cu.usuario_id = :usuario_id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':usuario_id' => $usuario_id]);
+        return $stmt->fetch();
     }
 
     // Actualizar estado (Pendiente, Jugando, Completado)
