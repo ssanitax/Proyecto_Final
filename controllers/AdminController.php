@@ -193,19 +193,24 @@ class AdminController {
             try {
                 $this->pdo->beginTransaction();
                 
-                // 1. Borrar ediciones oficiales (Sintaxis corregida con ->)
+                // 1. Borrar ediciones oficiales de esa región (Limpieza de catálogo)
+                // Esto dispara el CASCADE hacia coleccion_usuario y prestamos [cite: 779, 782, 785]
                 $stmt1 = $this->pdo->prepare("DELETE FROM ediciones WHERE region = ?");
                 $stmt1->execute([$region]);
 
-                // 2. Borrar propuestas pendientes (Sintaxis corregida con ->)
+                // 2. Borrar propuestas de ediciones de usuarios que tengan esa región
                 $stmt2 = $this->pdo->prepare("DELETE FROM ediciones_pendientes WHERE region = ?");
                 $stmt2->execute([$region]);
+
+                // 3. OPCIONAL: Si quieres borrar también la mención en el título de la propuesta maestra
+                $stmt3 = $this->pdo->prepare("DELETE FROM juegos_pendientes WHERE titulo = ?");
+                $stmt3->execute(["Región: " . $region]);
                 
                 $this->pdo->commit();
                 header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
             } catch (Exception $e) {
                 if ($this->pdo->inTransaction()) $this->pdo->rollBack();
-                die("Error al eliminar la región: " . $e->getMessage());
+                die("Error al eliminar rastro de la región: " . $e->getMessage());
             }
         }
         exit();

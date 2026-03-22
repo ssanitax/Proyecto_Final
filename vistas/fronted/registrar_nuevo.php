@@ -3,9 +3,13 @@ require_once '../../includes/auth.php';
 redirigirSiNoUsuario();
 require_once '../../config/config.php';
 
-// Necesitamos las plataformas para el select
-$stmt = $pdo->query("SELECT * FROM plataformas ORDER BY nombre ASC");
-$plataformas = $stmt->fetchAll();
+// 1. Obtener plataformas para el select
+$stmtPlat = $pdo->query("SELECT * FROM plataformas ORDER BY nombre ASC");
+$plataformas = $stmtPlat->fetchAll();
+
+// 2. Obtener regiones dinámicas del sistema para evitar valores "borrados"
+$stmtReg = $pdo->query("SELECT DISTINCT region FROM ediciones WHERE region IS NOT NULL AND region != '' ORDER BY region ASC");
+$regionesExistentes = $stmtReg->fetchAll();
 
 include '../../includes/header.php';
 ?>
@@ -13,39 +17,38 @@ include '../../includes/header.php';
 <div class="fade-up visible" style="max-width: 700px; margin: 0 auto;">
     <h2>Proponer Nuevo Juego</h2>
     <p style="text-align:center; color:#666; margin-bottom:30px;">
-        Tu propuesta será revisada por un administrador antes de ser pública.
-    </p>
+        Tu propuesta será revisada por un administrador antes de ser pública. </p>
 
-    <form action="../../controllers/JuegoController.php?action=proponer" method="POST" class="about-box">
-        <h3 style="text-align:left; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px;">Datos del Maestro</h3>
-        
-        <div class="form-group" style="margin-bottom:15px; text-align:left;">
+    <form action="../../controllers/JuegoController.php?action=proponer" method="POST" class="about-box" style="padding: 40px; background: white; border-radius: 20px; border: 1px solid #eee;">
+        <h3 style="text-align:left; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px;">Datos del Maestro</h3> <div class="form-group" style="margin-bottom:15px; text-align:left;">
             <label style="font-weight:600; font-size:0.8rem;">TÍTULO DEL JUEGO</label>
-            <input type="text" name="titulo" placeholder="Ej: Silent Hill 2" required style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
-        </div>
+            <input type="text" name="titulo" placeholder="Ej: Silent Hill 2" required style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;"> </div>
 
         <div class="form-group" style="margin-bottom:15px; text-align:left;">
             <label style="font-weight:600; font-size:0.8rem;">DESARROLLADOR</label>
-            <input type="text" name="desarrollador" placeholder="Ej: Konami" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
-        </div>
+            <input type="text" name="desarrollador" placeholder="Ej: Konami" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;"> </div>
 
-        <h3 style="text-align:left; margin:30px 0 20px 0; border-bottom:1px solid #eee; padding-bottom:10px;">Datos de la Primera Edición</h3>
-        
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+        <h3 style="text-align:left; margin:30px 0 20px 0; border-bottom:1px solid #eee; padding-bottom:10px;">Datos de la Primera Edición</h3> <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
             <div class="form-group" style="text-align:left;">
                 <label style="font-weight:600; font-size:0.8rem;">PLATAFORMA</label>
-                <select name="plataforma_id" required style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
+                <select name="plataforma_id" required style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; font-family: inherit;">
                     <?php foreach($plataformas as $p): ?>
-                        <option value="<?php echo $p->id; ?>"><?php echo $p->nombre; ?></option>
-                    <?php endforeach; ?>
+                        <option value="<?php echo $p->id; ?>"><?php echo htmlspecialchars($p->nombre); ?></option> <?php endforeach; ?>
                 </select>
             </div>
+            
             <div class="form-group" style="text-align:left;">
                 <label style="font-weight:600; font-size:0.8rem;">REGIÓN</label>
-                <select name="region" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
-                    <option value="PAL">PAL (Europa)</option>
-                    <option value="NTSC-U">NTSC-U (USA)</option>
-                    <option value="NTSC-J">NTSC-J (Japón)</option>
+                <select name="region" required style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; font-family: inherit;">
+                    <?php if (empty($regionesExistentes)): ?>
+                        <option value="">No hay regiones disponibles</option>
+                    <?php else: ?>
+                        <?php foreach($regionesExistentes as $r): ?>
+                            <option value="<?php echo htmlspecialchars($r->region); ?>">
+                                <?php echo htmlspecialchars($r->region); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </select>
             </div>
         </div>
@@ -58,8 +61,7 @@ include '../../includes/header.php';
             onmouseover="this.style.background='#333'; this.style.transform='translateY(-2px)';"
             onmouseout="this.style.background='var(--graphite)'; this.style.transform='translateY(0)';"
     >
-        Enviar propuesta
-    </button>
+        Enviar propuesta </button>
     </form>
 </div>
 

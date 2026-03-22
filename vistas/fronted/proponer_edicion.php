@@ -10,13 +10,17 @@ if (!$juego_id) {
     exit();
 }
 
-// Obtener nombre del juego maestro
+// 1. Obtener nombre del juego maestro
 $stmt = $pdo->prepare("SELECT titulo FROM juegos WHERE id = ?");
 $stmt->execute([$juego_id]);
 $titulo_juego = $stmt->fetchColumn();
 
-// Obtener plataformas para el select
+// 2. Obtener plataformas para el select
 $plataformas = $pdo->query("SELECT * FROM plataformas ORDER BY nombre ASC")->fetchAll();
+
+// 3. Obtener regiones dinámicas del sistema (para que refleje los borrados del admin) 
+$stmtReg = $pdo->query("SELECT DISTINCT region FROM ediciones WHERE region IS NOT NULL AND region != '' ORDER BY region ASC");
+$regionesExistentes = $stmtReg->fetchAll();
 
 include '../../includes/header.php';
 ?>
@@ -27,13 +31,13 @@ include '../../includes/header.php';
         <p style="color: #666;">Añade una versión física para <strong><?php echo htmlspecialchars($titulo_juego); ?></strong></p>
     </header>
 
-    <div class="about-box">
+    <div class="about-box" style="padding: 40px; background: white; border-radius: 20px; border: 1px solid #eee;">
         <form action="../../controllers/JuegoController.php?action=proponer_edicion_existente" method="POST">
             <input type="hidden" name="juego_id" value="<?php echo $juego_id; ?>">
 
             <div class="form-group" style="margin-bottom: 20px; text-align: left;">
                 <label style="font-weight: 800; font-size: 0.8rem; display: block; margin-bottom: 10px;">PLATAFORMA</label>
-                <select name="plataforma_id" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd;">
+                <select name="plataforma_id" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit;">
                     <?php foreach($plataformas as $p): ?>
                         <option value="<?php echo $p->id; ?>"><?php echo htmlspecialchars($p->nombre); ?></option>
                     <?php endforeach; ?>
@@ -43,16 +47,21 @@ include '../../includes/header.php';
             <div class="form-group" style="margin-bottom: 20px; text-align: left;">
                 <label style="font-weight: 800; font-size: 0.8rem; display: block; margin-bottom: 10px;">NOMBRE DE LA EDICIÓN</label>
                 <input type="text" name="edicion_nombre" placeholder="Ej: Black Label, Platinum, Collector's Edition..." required 
-                       style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd;">
+                       style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit;">
             </div>
 
             <div class="form-group" style="margin-bottom: 25px; text-align: left;">
                 <label style="font-weight: 800; font-size: 0.8rem; display: block; margin-bottom: 10px;">REGIÓN</label>
-                <select name="region" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd;">
-                    <option value="PAL">PAL (Europa)</option>
-                    <option value="NTSC-U">NTSC-U (USA)</option>
-                    <option value="NTSC-J">NTSC-J (Japón)</option>
-                    <option value="Global">Global / Digital</option>
+                <select name="region" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit;">
+                    <?php if (empty($regionesExistentes)): ?>
+                        <option value="">No hay regiones disponibles</option>
+                    <?php else: ?>
+                        <?php foreach($regionesExistentes as $r): ?>
+                            <option value="<?php echo htmlspecialchars($r->region); ?>">
+                                <?php echo htmlspecialchars($r->region); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </select>
             </div>
 
@@ -63,9 +72,9 @@ include '../../includes/header.php';
                     transition: 0.3s;"
                 onmouseover="this.style.background='#333'; this.style.transform='translateY(-2px)';"
                 onmouseout="this.style.background='var(--graphite)'; this.style.transform='translateY(0)';"
-        >
-            Enviar para validación
-        </button>
+            >
+                Enviar para validación
+            </button>
         </form>
     </div>
 </div>

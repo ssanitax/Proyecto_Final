@@ -72,10 +72,11 @@ class AuthController {
                 }
                 exit();
             } else {
-                $error = "Credenciales incorrectas o cuenta inactiva.";
-                include __DIR__ . '/../vistas/fronted/login.php';
+                // RETORNAMOS el texto para que la vista lo pinte
+                return "El correo no está registrado o la contraseña es incorrecta.";
             }
         }
+        return null;
     }
 
     public function logout() {

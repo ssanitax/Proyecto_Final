@@ -1,11 +1,9 @@
 <?php
 require_once '../../includes/auth.php';
-require_once '../../config/config.php'; // Aquí se define $pdo [cite: 1091]
+require_once '../../config/config.php'; // Define la variable $pdo
 require_once '../../controllers/AuthController.php';
 
-// Aseguramos que la variable sea accesible
-global $pdo;
-
+// 1. Redirección si el usuario ya tiene una sesión activa
 if (estaLogueado()) {
     if (esAdmin()) {
         header('Location: ../admin/dashboard.php');
@@ -15,28 +13,127 @@ if (estaLogueado()) {
     exit();
 }
 
-// Verificamos manualmente antes de fallar
-if (!isset($pdo)) {
-    die("Error técnico: La conexión a la base de datos no está disponible. Revisa config.php");
-}
+$error = null;
 
-$auth = new AuthController($pdo); 
-$auth->login();
+// 2. Procesar el intento de inicio de sesión cuando se envía el formulario
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Verificamos que la conexión PDO esté lista
+    if (isset($pdo)) {
+        $auth = new AuthController($pdo);
+        
+        /**
+         * Importante: El método login() en AuthController debe estar 
+         * configurado para retornar un string con el error en caso de fallo.
+         */
+        $error = $auth->login(); 
+    } else {
+        $error = "Error crítico: No se pudo establecer conexión con la base de datos.";
+    }
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bengala | Iniciar Sesión</title>
-    <link rel="stylesheet" href="../../css/style.css"> <style>
-        /* Estilo rápido para mantener la estética de Bengala */
-        body { font-family: 'Inter', sans-serif; background: #f4f5f7; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-box { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 100%; max-width: 400px; text-align: center; }
-        h2 { margin-bottom: 20px; font-weight: 800; color: #1C1F26; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #eee; border-radius: 10px; outline: none; }
-        .btn-login { width: 100%; padding: 12px; border: none; border-radius: 10px; background: #1C1F26; color: white; font-weight: 700; cursor: pointer; margin-top: 10px; }
-        .error { color: #e74c3c; font-size: 0.8rem; margin-bottom: 10px; }
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --graphite: #1C1F26;
+            --bg: #f4f5f7;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0;
+        }
+
+        .login-box { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
+            width: 100%; 
+            max-width: 400px; 
+            text-align: center;
+        }
+
+        h2 { 
+            margin-bottom: 25px; 
+            font-weight: 800; 
+            color: var(--graphite); 
+        }
+
+        /* Estilo para la alerta de error (Usuario no registrado) */
+        .error-alert { 
+            background: #fee2e2; 
+            color: #991b1b; 
+            padding: 12px; 
+            border-radius: 10px; 
+            font-size: 0.85rem; 
+            margin-bottom: 20px;
+            border: 1px solid #fecaca;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 14px; 
+            margin: 10px 0; 
+            border: 1px solid #eee; 
+            border-radius: 12px; 
+            outline: none; 
+            font-family: inherit;
+            background: #fafafa;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--graphite);
+            background: white;
+        }
+
+        .btn-login { 
+            width: 100%; 
+            padding: 14px; 
+            border: none; 
+            border-radius: 50px; 
+            background: var(--graphite); 
+            color: white; 
+            font-weight: 700; 
+            cursor: pointer; 
+            margin-top: 15px; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        .btn-login:hover {
+            background: #333;
+            transform: translateY(-2px);
+        }
+
+        .register-link {
+            margin-top: 25px; 
+            font-size: 0.85rem; 
+            color: #666;
+        }
+
+        .register-link a { 
+            color: var(--graphite); 
+            font-weight: 700; 
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
@@ -44,8 +141,10 @@ $auth->login();
 <div class="login-box">
     <h2>BENGALA</h2>
     
-    <?php if (isset($error)): ?>
-        <p class="error"><?php echo $error; ?></p>
+    <?php if ($error): ?>
+        <div class="error-alert">
+            ⚠️ <?php echo htmlspecialchars($error); ?>
+        </div>
     <?php endif; ?>
 
     <form method="POST" action="">
@@ -54,9 +153,9 @@ $auth->login();
         <button type="submit" class="btn-login">ENTRAR</button>
     </form>
 
-    <p style="margin-top: 20px; font-size: 0.85rem; color: #666;">
-        ¿No tienes cuenta? <a href="registro.php" style="color: #1C1F26; font-weight: 700;">Regístrate</a>
-    </p>
+    <div class="register-link">
+        ¿No tienes cuenta? <a href="registro.php">Regístrate ahora</a>
+    </div>
 </div>
 
 </body>
