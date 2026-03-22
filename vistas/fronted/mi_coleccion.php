@@ -2,117 +2,89 @@
 require_once '../../includes/auth.php';
 redirigirSiNoUsuario();
 require_once '../../config/config.php';
+require_once '../../models/Coleccion.php';
 
-$id_coleccion = $_GET['id'] ?? null;
-
-// 1. Obtener los datos actuales del juego en la estantería del usuario [cite: 2114-2115]
-$stmt = $pdo->prepare("
-    SELECT cu.*, j.titulo, j.desarrollador, e.edicion_nombre, p.nombre as plataforma
-    FROM coleccion_usuario cu
-    JOIN ediciones e ON cu.edicion_id = e.id
-    JOIN juegos j ON e.juego_id = j.id
-    JOIN plataformas p ON e.plataforma_id = p.id
-    WHERE cu.id = ? AND cu.usuario_id = ?
-");
-$stmt->execute([$id_coleccion, $_SESSION['usuario_id']]);
-$item = $stmt->fetch();
-
-if (!$item) {
-    die("Juego no encontrado en tu colección.");
-}
+$coleccionModel = new Coleccion($pdo);
+// Obtenemos la colección del usuario
+$miColeccion = $coleccionModel->obtenerColeccionUsuario($_SESSION['usuario_id']);
 
 include '../../includes/header.php';
 ?>
 
 <div class="fade-up visible">
-    <div style="max-width: 800px; margin: 0 auto;">
-        <header style="text-align: center; margin-bottom: 50px;">
-            <h2 style="margin-bottom: 15px;">Gestionar Juego</h2>
-            <p style="color: #777;">Estás editando la ficha de <strong><?php echo htmlspecialchars($item->titulo); ?></strong></p>
-        </header>
+    <header style="text-align: center; margin-bottom: 50px;">
+        <h2 style="margin-bottom: 15px;">Mi Colección Personal</h2>
+        <p style="color: #777; font-size: 1.1rem;">Tu estantería virtual de juegos físicos.</p>
+    </header>
 
-        <div style="background: white; border-radius: 20px; border: 1px solid #eee; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 40px;">
-            
-            <div style="display: flex; align-items: center; padding: 40px; background: #fafafa; border-bottom: 1px solid #eee; gap: 30px;">
-                <div style="font-size: 5rem; background: white; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.02);">
-                    🎮
+    <?php if (isset($_GET['status'])): ?>
+        <div style="max-width: 800px; margin: 0 auto 30px auto;">
+            <?php if ($_GET['status'] == 'success'): ?>
+                <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #c3e6cb; font-weight: 600;">
+                    ✅ ¡Genial! El juego se ha añadido a tu estantería.
                 </div>
-                <div style="text-align: left;">
-                    <span style="background: var(--graphite); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">
-                        <?php echo htmlspecialchars($item->plataforma); ?>
-                    </span>
-                    <h3 style="font-size: 1.8rem; margin: 10px 0 5px 0; font-weight: 800; color: var(--graphite);"><?php echo htmlspecialchars($item->titulo); ?></h3>
-                    <p style="color: #888; font-size: 0.9rem;"><?php echo htmlspecialchars($item->edicion_nombre); ?></p>
+            <?php elseif ($_GET['status'] == 'exists'): ?>
+                <div style="background: #fff3cd; color: #856404; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #ffeeba; font-weight: 600;">
+                    Aviso: Este juego ya estaba en tu biblioteca. 💿
                 </div>
-            </div>
-
-            <form action="../../controllers/ColeccionController.php?action=actualizar" method="POST" style="padding: 40px;">
-                <input type="hidden" name="id" value="<?php echo $item->id; ?>">
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
-                    <div class="form-group" style="text-align: left;">
-                        <label style="font-weight: 800; font-size: 0.75rem; color: #aaa; text-transform: uppercase; display: block; margin-bottom: 10px;">Estado de progreso</label>
-                        <select name="estado" style="width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #eee; font-family: inherit; font-size: 1rem;">
-                            <option value="pendiente" <?php echo $item->estado == 'pendiente' ? 'selected' : ''; ?>>Pendiente</option>
-                            <option value="jugando" <?php echo $item->estado == 'jugando' ? 'selected' : ''; ?>>Jugando ahora</option>
-                            <option value="completado" <?php echo $item->estado == 'completado' ? 'selected' : ''; ?>>Completado</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group" style="text-align: left;">
-                        <label style="font-weight: 800; font-size: 0.75rem; color: #aaa; text-transform: uppercase; display: block; margin-bottom: 10px;">Tu puntuación</label>
-                        <input type="number" name="valoracion" min="1" max="10" value="<?php echo $item->valoracion_personal; ?>" 
-                               style="width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #eee; font-size: 1rem;">
-                    </div>
-                </div>
-
-                <div class="form-group" style="text-align: left; margin-bottom: 40px;">
-                    <label style="font-weight: 800; font-size: 0.75rem; color: #aaa; text-transform: uppercase; display: block; margin-bottom: 10px;">Notas y recuerdos</label>
-                    <textarea name="notas" rows="4" placeholder="Escribe algo sobre este juego..." 
-                              style="width: 100%; padding: 20px; border-radius: 12px; border: 2px solid #eee; font-family: inherit; font-size: 1rem; resize: none;"><?php echo htmlspecialchars($item->notas); ?></textarea>
-                </div>
-
-                <div style="display: flex; gap: 20px; align-items: center;">
-                    <button type="submit" style="flex: 2; padding: 18px; border-radius: 50px; background: var(--graphite); color: white; border: none; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; transition: 0.3s;"
-                            onmouseover="this.style.background='#333'; this.style.transform='translateY(-2px)';"
-                            onmouseout="this.style.background='var(--graphite)'; this.style.transform='translateY(0)';"
-                    >
-                        Guardar cambios
-                    </button>
-                    <a href="../../controllers/ColeccionController.php?action=eliminar&id=<?php echo $item->id; ?>" 
-                       style="flex: 1; text-align: center; color: #bbb; font-weight: 700; text-decoration: none; font-size: 0.8rem; text-transform: uppercase;"
-                       onclick="return confirm('¿Seguro que quieres eliminarlo?')">
-                        Eliminar de biblioteca
-                    </a>
-                </div>
-            </form>
+            <?php endif; ?>
         </div>
+    <?php endif; ?>
 
-        <div style="background: rgba(255,255,255,0.5); border: 2px dashed #eee; border-radius: 20px; padding: 40px;">
-            <h3 style="font-size: 1.1rem; margin-bottom: 10px; font-weight: 800; color: var(--graphite);">🤝 ¿Vas a prestar este juego?</h3>
-            <p style="color: #888; font-size: 0.9rem; margin-bottom: 30px;">Anótalo aquí para recordar siempre quién lo tiene.</p>
-            
-            <form action="../../controllers/PrestamoController.php?action=registrar" method="POST">
-                <input type="hidden" name="coleccion_id" value="<?php echo $item->id; ?>">
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
-                    <input type="text" name="nombre_persona" placeholder="Nombre de tu amigo" required 
-                           style="width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #eee; background: white;">
+    <?php if (empty($miColeccion)): ?>
+        <div style="text-align: center; padding: 100px 0;">
+            <span style="font-size: 4rem; display: block; margin-bottom: 20px;">🏠</span>
+            <p style="color:#999; margin-bottom: 20px;">Tu biblioteca está vacía.</p>
+            <a href="buscar.php" style="display: inline-block; text-decoration: none; background: var(--graphite); color: white; padding: 12px 30px; border-radius: 50px; font-weight: 600; text-transform: uppercase; font-size: 0.8rem;">
+                + Empezar a añadir juegos
+            </a>
+        </div>
+    <?php else: ?>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 30px; padding: 20px 0;">
+            <?php foreach ($miColeccion as $item): ?>
+                <div class="game-card" style="background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee; display: flex; flex-direction: column; transition: 0.3s;" 
+                     onmouseover="this.style.transform='translateY(-10px)'; this.style.borderColor='var(--graphite)';" 
+                     onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='#eee';">
                     
-                    <input type="date" name="fecha_prestamo" value="<?php echo date('Y-m-d'); ?>" required 
-                           style="width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #eee; background: white;">
-                </div>
+                    <div style="width: 100%; aspect-ratio: 3/4; background: #f8f9fa; display: flex; align-items: center; justify-content: center; position: relative;">
+                        <div style="position: absolute; top: 12px; right: 12px; background: rgba(28, 31, 38, 0.9); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <?php echo htmlspecialchars($item->plataforma); ?>
+                        </div>
+                        
+                        <span style="font-size: 4rem;">
+                            <?php 
+                            if ($item->estado == 'completado') echo '⭐';
+                            elseif ($item->estado == 'jugando') echo '🕹️';
+                            else echo '💿';
+                            ?>
+                        </span>
+                    </div>
 
-                <button type="submit" 
-                        style="width: 100%; padding: 15px; border-radius: 50px; background: transparent; color: var(--graphite); border: 2px solid var(--graphite); font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; transition: 0.3s;"
-                        onmouseover="this.style.background='var(--graphite)'; this.style.color='white';"
-                        onmouseout="this.style.background='transparent'; this.style.color='var(--graphite)';"
-                >
-                    Registrar Préstamo
-                </button>
-            </form>
+                    <div style="padding: 20px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div style="text-align: left; margin-bottom: 15px;">
+                            <span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: <?php echo $item->estado == 'jugando' ? '#2ecc71' : '#aaa'; ?>;">
+                                ● <?php echo htmlspecialchars($item->estado); ?>
+                            </span>
+                            <h3 style="font-size: 1.1rem; margin: 8px 0 4px 0; font-weight: 800; color: var(--graphite); line-height: 1.2;">
+                                <?php echo htmlspecialchars($item->titulo); ?>
+                            </h3>
+                            <p style="font-size: 0.8rem; color: #888;">
+                                <?php echo htmlspecialchars($item->edicion_nombre); ?> • <?php echo htmlspecialchars($item->region); ?>
+                            </p>
+                        </div>
+
+                        <a href="editar_item.php?id=<?php echo $item->id; ?>" 
+                           style="display: block; width: 100%; padding: 12px; border-radius: 50px; background: var(--graphite); color: white; text-decoration: none; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; text-align: center; transition: 0.3s;"
+                           onmouseover="this.style.background='#333';"
+                           onmouseout="this.style.background='var(--graphite)';"
+                        >
+                            Gestionar Copia
+                        </a>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
-    </div>
+    <?php endif; ?>
 </div>
 
 <?php include '../../includes/footer.php'; ?>

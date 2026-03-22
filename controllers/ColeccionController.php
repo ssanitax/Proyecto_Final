@@ -14,27 +14,34 @@ class ColeccionController {
     // 1. AGREGAR JUEGO (El juego ya está registrado en la base de datos, solo se añade a biblioteca)
     // Busca este bloque en ColeccionController.php
     public function agregar() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            if (!isset($_SESSION)) { session_start(); } // Asegúrate de que la sesión esté lista
-            $usuario_id = $_SESSION['usuario_id'];
-            
-            // CORRECCIÓN: Captura el ID singular que viene del radio button
-            $edicion_id = $_POST['edicion_id'] ?? null;
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if (!isset($_SESSION)) { session_start(); }
+        
+        $usuario_id = $_SESSION['usuario_id'];
+        $edicion_id = $_POST['edicion_id'] ?? null;
 
-            if (!$edicion_id) {
-                header('Location: ../vistas/fronted/buscar.php?error=no_selection');
-                exit();
-            }
-
-            // Intentamos agregar la edición (por defecto estado 'bueno')
-            $exito = $this->coleccionModel->agregarEdicion($usuario_id, $edicion_id, 'bueno');
-
-            $status = $exito ? 'success' : 'error';
-            header("Location: ../vistas/fronted/mi_coleccion.php?status=$status");
+        if (!$edicion_id) {
+            header('Location: ../vistas/fronted/buscar.php?error=no_selection');
             exit();
         }
-    }
 
+        try {
+            // Intentamos añadir la edición
+            $this->coleccionModel->agregarEdicion($usuario_id, $edicion_id, 'bueno');
+            header("Location: ../vistas/fronted/mi_coleccion.php?status=success");
+            exit();
+        } catch (PDOException $e) {
+            // IMPORTANTE: En PHP usamos == para comparar, nunca ":"
+            // El código 23000 es un string en PDO para violaciones de integridad
+            if ($e->getCode() == '23000') {
+                header("Location: ../vistas/fronted/mi_coleccion.php?status=exists");
+                exit();
+            } else {
+                die("Error en la base de datos: " . $e->getMessage());
+            }
+        }
+    }
+}
     // 2. ACTUALIZAR JUEGO
     public function actualizar() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
