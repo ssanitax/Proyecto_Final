@@ -97,11 +97,14 @@
 <nav>
     <a href="dashboard.php" class="logo">BENGALA</a>
     <div>
-        <a href="mi_coleccion.php">Mi Biblioteca</a>
-        <a href="buscar.php">Añadir Juego</a>
-        <a href="mis_prestamos.php">Préstamos</a>
-        <a href="mis_propuestas.php">Propuestas</a>
-        <a href="logout.php" style="color: #991b1b; font-weight: 600;">Salir</a>
+        <a href="mi_coleccion.php"><?php echo __('biblioteca'); ?></a>
+        <a href="buscar.php"><?php echo __('buscar'); ?></a>
+        <a href="mis_prestamos.php"><?php echo __('prestamos'); ?></a>
+        
+        <a href="?lang=es" style="margin-left: 10px; font-size: 0.8rem;">ES</a>
+        <a href="?lang=en" style="margin-left: 5px; font-size: 0.8rem;">EN</a>
+        
+        <a href="logout.php" style="color: #991b1b;"><?php echo __('salir'); ?></a>
     </div>
 </nav>
 <div class="container">
