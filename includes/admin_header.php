@@ -88,8 +88,9 @@
     <div class="nav-links">
         <a href="dashboard.php">Inicio</a>
         <a href="validar_juegos.php">Validaciones</a>
-        <a href="gestionar_plataformas.php">Plataformas</a>
+        <a href="registrar_directo.php">Alta de Contenido</a>
         <a href="gestionar_usuarios.php">Usuarios</a>
+        <a href="inventario_maestro.php">Inventario Maestro</a>
         <a href="../fronted/logout.php" class="btn-logout">Cerrar Sesión</a>
     </div>
 </nav>

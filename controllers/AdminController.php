@@ -193,14 +193,13 @@ class AdminController {
             try {
                 $this->pdo->beginTransaction();
                 
-                // 1. Borrar ediciones oficiales de esa región
-                // Esto activará el CASCADE hacia coleccion_usuario y prestamos
+                // 1. Borrar ediciones oficiales (Sintaxis corregida con ->)
                 $stmt1 = $this->pdo->prepare("DELETE FROM ediciones WHERE region = ?");
-                $stmt1.execute([$region]);
+                $stmt1->execute([$region]);
 
-                // 2. Borrar propuestas pendientes de esa región
+                // 2. Borrar propuestas pendientes (Sintaxis corregida con ->)
                 $stmt2 = $this->pdo->prepare("DELETE FROM ediciones_pendientes WHERE region = ?");
-                $stmt2.execute([$region]);
+                $stmt2->execute([$region]);
                 
                 $this->pdo->commit();
                 header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');

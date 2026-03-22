@@ -342,3 +342,13 @@ ADD CONSTRAINT fk_ediciones_pendientes_plataforma
 FOREIGN KEY (plataforma_id) 
 REFERENCES plataformas(id) 
 ON DELETE CASCADE;
+
+-- Eliminar la restricción actual
+ALTER TABLE ediciones_pendientes DROP FOREIGN KEY fk_ediciones_pendientes_plataforma;
+
+-- Crearla de nuevo con CASCADE
+ALTER TABLE ediciones_pendientes
+ADD CONSTRAINT fk_ediciones_pendientes_plataforma
+FOREIGN KEY (plataforma_id)
+REFERENCES plataformas(id)
+ON DELETE CASCADE;

@@ -77,26 +77,40 @@ include '../../includes/admin_header.php';
     <!-- SECCIÓN 2: REGIONES -->
     <div class="admin-section">
         <div class="section-header">
-            <h3>Regiones Activas en el Sistema</h3>
+            <h3>Regiones Activas en el Sistema <span class="badge-count"><?php echo count($regiones); ?></span></h3>
         </div>
-        <div style="padding: 25px; display: flex; flex-wrap: wrap; gap: 15px;">
-            <?php if(empty($regiones)): ?>
-                <p style="color: #999; font-style: italic;">No hay regiones registradas.</p>
-            <?php else: ?>
-                <?php foreach($regiones as $reg): ?>
-                    <div style="display: flex; align-items: center; background: #f0f0f0; padding: 5px 5px 5px 15px; border-radius: 50px; gap: 10px;">
-                        <span style="font-size: 0.8rem; font-weight: 700; color: #666;">
-                            🌍 <?php echo htmlspecialchars($reg->region); ?>
-                        </span>
-                        <a href="../../controllers/AdminController.php?action=eliminar_region&nombre=<?php echo urlencode($reg->region); ?>" 
-                        style="background: #fee2e2; color: #e74c3c; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 12px; font-weight: bold; transition: 0.3s;"
-                        onclick="return confirm('¿Eliminar todos los juegos de la región <?php echo $reg->region; ?>?')">
-                        ×
-                        </a>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre de la Región</th>
+                    <th style="text-align: right;">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if(empty($regiones)): ?>
+                    <tr>
+                        <td colspan="2" style="text-align: center; color: #999; padding: 40px;">
+                            No hay regiones registradas en el sistema.
+                        </td>
+                    </tr>
+                <?php else: ?>
+                    <?php foreach($regiones as $reg): ?>
+                        <tr>
+                            <td>
+                                <strong>🌍 <?php echo htmlspecialchars($reg->region); ?></strong>
+                            </td>
+                            <td style="text-align: right;">
+                                <a href="../../controllers/AdminController.php?action=eliminar_region&nombre=<?php echo urlencode($reg->region); ?>" 
+                                   class="btn-delete" 
+                                   onclick="return confirm('¿Seguro que quieres eliminar la región <?php echo htmlspecialchars($reg->region); ?>? Esto borrará todos los juegos asociados.')">
+                                   Eliminar
+                                </a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
     </div>
 
     <!-- SECCIÓN 3: EDICIONES (Vínculo Juego-Consola) -->
