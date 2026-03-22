@@ -38,8 +38,8 @@ include '../../includes/admin_header.php';
 
 <div class="fade-up visible">
     <header style="margin-bottom: 40px;">
-        <h2>Inventario Maestro del Sistema</h2>
-        <p style="color: #666;">Gestiona y limpia los datos oficiales de la base de datos.</p>
+        <h2><?php echo $lang['admin_inventory_title']; ?></h2>
+        <p style="color: #666;"><?php echo $lang['admin_inventory_desc']; ?></p>
     </header>
 
     <?php if(isset($_GET['status']) && $_GET['status'] == 'deleted'): ?>
@@ -51,13 +51,13 @@ include '../../includes/admin_header.php';
     <!-- SECCIÓN 1: PLATAFORMAS -->
     <div class="admin-section">
         <div class="section-header">
-            <h3>Consolas y Plataformas <span class="badge-count"><?php echo count($plataformas); ?></span></h3>
+            <h3><?php echo $lang['admin_section_platforms']; ?> <span class="badge-count"><?php echo count($plataformas); ?></span></h3>
         </div>
         <table>
             <thead>
                 <tr>
-                    <th>Nombre del Sistema</th>
-                    <th style="text-align: right;">Acción</th>
+                    <th><?php echo $lang['admin_table_name']; ?></th>
+                    <th style="text-align: right;"><?php echo $lang['admin_table_action']; ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -66,7 +66,7 @@ include '../../includes/admin_header.php';
                         <td><strong><?php echo htmlspecialchars($plat->nombre); ?></strong></td>
                         <td style="text-align: right;">
                             <a href="../../controllers/AdminController.php?action=eliminar_plataforma&id=<?php echo $plat->id; ?>" 
-                               class="btn-delete" onclick="return confirm('ATENCIÓN: Borrar una plataforma eliminará todos los juegos asociados a ella. ¿Continuar?')">Eliminar</a>
+                               class="btn-delete" onclick="return confirm('<?php echo $lang['admin_confirm_delete_platform']; ?>')"><?php echo $lang['admin_user_delete']; ?></a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -77,13 +77,13 @@ include '../../includes/admin_header.php';
     <!-- SECCIÓN 2: REGIONES -->
     <div class="admin-section">
         <div class="section-header">
-            <h3>Regiones Activas en el Sistema <span class="badge-count"><?php echo count($regiones); ?></span></h3>
+            <h3><?php echo $lang['admin_section_regions']; ?> <span class="badge-count"><?php echo count($regiones); ?></span></h3>
         </div>
         <table>
             <thead>
                 <tr>
-                    <th>Nombre de la Región</th>
-                    <th style="text-align: right;">Acción</th>
+                    <th><?php echo $lang['admin_table_region']; ?></th>
+                    <th style="text-align: right;"><?php echo $lang['admin_table_action']; ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -102,8 +102,8 @@ include '../../includes/admin_header.php';
                             <td style="text-align: right;">
                                 <a href="../../controllers/AdminController.php?action=eliminar_region&nombre=<?php echo urlencode($reg->region); ?>" 
                                    class="btn-delete" 
-                                   onclick="return confirm('¿Seguro que quieres eliminar la región <?php echo htmlspecialchars($reg->region); ?>? Esto borrará todos los juegos asociados.')">
-                                   Eliminar
+                                   onclick="return confirm('<?php echo sprintf($lang['admin_confirm_delete_region'], htmlspecialchars($reg->region)); ?>')">
+                                   <?php echo $lang['admin_user_delete']; ?>
                                 </a>
                             </td>
                         </tr>
@@ -116,7 +116,7 @@ include '../../includes/admin_header.php';
     <!-- SECCIÓN 3: EDICIONES (Vínculo Juego-Consola) -->
     <div class="admin-section">
         <div class="section-header">
-            <h3>Catálogo de Ediciones <span class="badge-count"><?php echo count($ediciones); ?></span></h3>
+            <h3><?php echo $lang['admin_section_editions']; ?> <span class="badge-count"><?php echo count($ediciones); ?></span></h3>
         </div>
         <table>
             <thead>
@@ -137,7 +137,7 @@ include '../../includes/admin_header.php';
                         <td style="color: #777; font-size: 0.8rem;"><?php echo htmlspecialchars($e->edicion_nombre); ?></td>
                         <td style="text-align: right;">
                             <a href="../../controllers/AdminController.php?action=eliminar_edicion&id=<?php echo $e->id; ?>" 
-                               class="btn-delete" onclick="return confirm('¡ADVERTENCIA CRÍTICA! Borrar esta plataforma eliminará PERMANENTEMENTE todos los juegos (ediciones) asociados a ella en el catálogo y en las bibliotecas de los usuarios. ¿Estás seguro?')">Borrar</a>
+                               class="btn-delete" onclick="return confirm('<?php echo $lang['admin_confirm_delete_edition']; ?>')"><?php echo $lang['admin_user_delete']; ?></a>
                         </td>
                     </tr>
                 <?php endforeach; ?>

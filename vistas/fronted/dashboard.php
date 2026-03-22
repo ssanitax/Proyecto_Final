@@ -14,9 +14,9 @@ include '../../includes/header.php';
 
 <div class="fade-up visible">
     <header style="text-align: center; margin-bottom: 50px;">
-        <h2 style="margin-bottom: 10px;">Hola, <?php echo htmlspecialchars($_SESSION['usuario_nombre']); ?> 👋</h2>
+        <h2 style="margin-bottom: 10px;"><?php echo sprintf($lang['frontend_dashboard_greeting'], htmlspecialchars($_SESSION['usuario_nombre'])); ?></h2>
         <p style="color: #666; font-size: 1.1rem;">
-            Tienes <strong><?php echo $totalJuegos; ?></strong> juegos en tu estantería virtual.
+            <?php echo sprintf($lang['frontend_dashboard_total_games'], $totalJuegos); ?>
         </p>
     </header>
 
@@ -24,36 +24,36 @@ include '../../includes/header.php';
         <a href="mi_coleccion.php" class="dash-card">
             <div class="dash-icon">📚</div>
             <div class="dash-content">
-                <h3>Mi Biblioteca</h3>
-                <p>Gestiona tus juegos, cambia estados y añade tus valoraciones personales.</p>
-                <span class="btn-dash">Entrar</span>
+                <h3><?php echo $lang['frontend_dashboard_library']; ?></h3>
+                <p><?php echo $lang['frontend_dashboard_library_desc']; ?></p>
+                <span class="btn-dash"><?php echo $lang['frontend_dashboard_library_btn']; ?></span>
             </div>
         </a>
 
         <a href="buscar.php" class="dash-card card-highlight">
             <div class="dash-icon">🔍</div>
             <div class="dash-content">
-                <h3>Añadir Nuevo</h3>
-                <p>Explora el catálogo y añade nuevas piezas a tu colección.</p>
-                <span class="btn-dash">Buscar Juegos</span>
+                <h3><?php echo $lang['frontend_dashboard_add']; ?></h3>
+                <p><?php echo $lang['frontend_dashboard_add_desc']; ?></p>
+                <span class="btn-dash"><?php echo $lang['frontend_dashboard_add_btn']; ?></span>
             </div>
         </a>
 
         <a href="mis_prestamos.php" class="dash-card">
             <div class="dash-icon">🤝</div>
             <div class="dash-content">
-                <h3>Préstamos</h3>
-                <p>Lleva el control de qué juegos has prestado y a quién.</p>
-                <span class="btn-dash">Ver Préstamos</span>
+                <h3><?php echo $lang['frontend_dashboard_loans']; ?></h3>
+                <p><?php echo $lang['frontend_dashboard_loans_desc']; ?></p>
+                <span class="btn-dash"><?php echo $lang['frontend_dashboard_loans_btn']; ?></span>
             </div>
         </a>
 
         <a href="mis_propuestas.php" class="dash-card">
             <div class="dash-icon">📩</div>
             <div class="dash-content">
-                <h3>Propuestas</h3>
-                <p>Revisa si los juegos que sugeriste han sido aprobados por el administrador.</p>
-                <span class="btn-dash">Ver Estado</span>
+                <h3><?php echo $lang['frontend_dashboard_proposals']; ?></h3>
+                <p><?php echo $lang['frontend_dashboard_proposals_desc']; ?></p>
+                <span class="btn-dash"><?php echo $lang['frontend_dashboard_proposals_btn']; ?></span>
             </div>
         </a>
     </div>

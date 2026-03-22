@@ -59,8 +59,8 @@ include '../../includes/admin_header.php';
 
 <div class="fade-up visible">
     <header style="text-align: center; margin-bottom: 50px;">
-        <h2>Gestión Maestra de Contenido 🏗️</h2>
-        <p style="color: #666;">Añade elementos oficiales al sistema de forma inmediata.</p>
+        <h2><?php echo $lang['admin_direct_management_title']; ?></h2>
+        <p style="color: #666;"><?php echo $lang['admin_direct_management_desc']; ?></p>
     </header>
 
     <?php if (isset($_GET['status']) && $_GET['status'] == 'success'): ?>
@@ -72,27 +72,27 @@ include '../../includes/admin_header.php';
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; max-width: 1100px; margin: 0 auto;">
         
         <div class="dash-card">
-            <h3 style="margin-bottom: 20px; font-weight: 800;">🎮 Nueva Plataforma</h3>
+            <h3 style="margin-bottom: 20px; font-weight: 800;"><?php echo $lang['admin_direct_new_platform']; ?></h3>
             <form action="../../controllers/AdminController.php?action=registrar_plataforma" method="POST">
-                <input type="text" name="nombre" placeholder="Ej: PlayStation 5, Xbox..." required>
-                <button type="submit" class="btn-dash">Guardar Sistema</button>
+                <input type="text" name="nombre" placeholder="<?php echo $lang['admin_direct_platform_placeholder']; ?>" required>
+                <button type="submit" class="btn-dash"><?php echo $lang['admin_direct_save_platform']; ?></button>
             </form>
         </div>
 
         <div class="dash-card">
-            <h3 style="margin-bottom: 20px; font-weight: 800;">🌍 Nueva Región</h3>
+            <h3 style="margin-bottom: 20px; font-weight: 800;"><?php echo $lang['admin_direct_new_region']; ?></h3>
             <form action="../../controllers/AdminController.php?action=registrar_region" method="POST">
-                <input type="text" name="nombre" placeholder="Ej: NTSC-J, PAL-ESP..." required>
-                <button type="submit" class="btn-dash">Guardar Región</button>
+                <input type="text" name="nombre" placeholder="<?php echo $lang['admin_direct_region_placeholder']; ?>" required>
+                <button type="submit" class="btn-dash"><?php echo $lang['admin_direct_save_region']; ?></button>
             </form>
         </div>
 
         <div class="dash-card">
-            <h3 style="margin-bottom: 20px; font-weight: 800;">📦 Nuevo Título Maestro</h3>
+            <h3 style="margin-bottom: 20px; font-weight: 800;"><?php echo $lang['admin_direct_new_game']; ?></h3>
             <form action="../../controllers/AdminController.php?action=registrar_juego" method="POST">
-                <input type="text" name="titulo" placeholder="Título del juego" required>
-                <input type="text" name="desarrollador" placeholder="Empresa / Desarrollador">
-                <button type="submit" class="btn-dash">Guardar Título</button>
+                <input type="text" name="titulo" placeholder="<?php echo $lang['admin_direct_game_title_placeholder']; ?>" required>
+                <input type="text" name="desarrollador" placeholder="<?php echo $lang['admin_direct_game_dev_placeholder']; ?>">
+                <button type="submit" class="btn-dash"><?php echo $lang['admin_direct_save_game']; ?></button>
             </form>
         </div>
     </div>

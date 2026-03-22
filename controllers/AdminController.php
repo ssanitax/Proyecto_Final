@@ -215,7 +215,38 @@ class AdminController {
         }
         exit();
     }
+
+    public function eliminarUsuario() {
+        $id = $_GET['id'] ?? null;
+
+        if (!$id) {
+            header('Location: ../vistas/admin/gestionar_usuarios.php');
+            exit();
+        }
+
+        // Impedir eliminar admin o a sí mismo
+        $stmt = $this->pdo->prepare("SELECT id, rol FROM usuarios WHERE id = ?");
+        $stmt->execute([$id]);
+        $usuario = $stmt->fetch();
+
+        if (!$usuario || $usuario->rol === 'admin') {
+            header('Location: ../vistas/admin/gestionar_usuarios.php?error=cannot_delete');
+            exit();
+        }
+
+        if (isset($_SESSION['usuario_id']) && (int)$_SESSION['usuario_id'] === (int)$id) {
+            header('Location: ../vistas/admin/gestionar_usuarios.php?error=cannot_delete_self');
+            exit();
+        }
+
+        $stmtDel = $this->pdo->prepare("DELETE FROM usuarios WHERE id = ?");
+        $stmtDel->execute([$id]);
+
+        header('Location: ../vistas/admin/gestionar_usuarios.php?status=deleted');
+        exit();
+    }
 }
+
 
 // Router
 if (isset($_GET['action'])) {
@@ -230,4 +261,5 @@ if (isset($_GET['action'])) {
     if ($_GET['action'] == 'eliminar_plataforma') $admin->eliminarPlataforma();
     if ($_GET['action'] == 'eliminar_edicion') $admin->eliminarEdicion();
     if ($_GET['action'] == 'eliminar_juego') $admin->eliminarJuegoMaestro();
+    if ($_GET['action'] == 'eliminar_usuario') $admin->eliminarUsuario();
 }
