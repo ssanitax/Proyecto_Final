@@ -50,7 +50,16 @@ include '../../includes/header.php';
             </div>
         </div>
 
-        <button type="submit" class="btn-primary" style="margin-top:30px; width:100%; padding:15px; border-radius:50px; cursor:pointer;">Enviar propuesta</button>
+        <button type="submit" 
+            style="margin-top: 30px; width: 100%; padding: 15px; border-radius: 50px; 
+                background: var(--graphite); color: white; font-weight: 700; 
+                text-transform: uppercase; border: none; cursor: pointer; 
+                transition: 0.3s;"
+            onmouseover="this.style.background='#333'; this.style.transform='translateY(-2px)';"
+            onmouseout="this.style.background='var(--graphite)'; this.style.transform='translateY(0)';"
+    >
+        Enviar propuesta
+    </button>
     </form>
 </div>
 

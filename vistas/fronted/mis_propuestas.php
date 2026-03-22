@@ -4,7 +4,7 @@ redirigirSiNoUsuario();
 require_once '../../config/config.php';
 require_once '../../models/JuegoPendiente.php';
 
-// Iniciamos el modelo y traemos las propuestas del usuario actual [cite: 568, 610]
+// Iniciamos el modelo y traemos las propuestas del usuario actual
 $modeloPendiente = new JuegoPendiente($pdo);
 $misPropuestas = $modeloPendiente->obtenerPropuestasPorUsuario($_SESSION['usuario_id']);
 
@@ -12,17 +12,19 @@ include '../../includes/header.php';
 ?>
 
 <div class="fade-up visible">
-    <header style="margin-bottom: 40px; text-align: left;">
-        <h2 style="text-align: left; margin-bottom: 10px;">Mis Propuestas al Catálogo</h2>
-        <p style="color: #666;">Consulta el estado de los juegos y ediciones que has sugerido para la comunidad.</p>
+    <header style="margin-bottom: 40px; text-align: center;">
+        <h2 style="margin-bottom: 10px;">Mis Propuestas al Catálogo</h2>
+        <p style="color: #666; font-size: 1.1rem;">Consulta el estado de los juegos que has sugerido para la comunidad.</p>
     </header>
 
     <div class="about-box" style="padding: 0; overflow: hidden; background: white; border-radius: 20px; border: 1px solid #eee; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
         <?php if (empty($misPropuestas)): ?>
-            <div style="padding: 80px; text-align: center;">
-                <span style="font-size: 3rem; display: block; margin-bottom: 20px;">✉️</span>
-                <p style="color: #999; font-style: italic; margin-bottom: 20px;">No has enviado ninguna propuesta todavía.</p>
-                <a href="registrar_nuevo.php" class="btn-details" style="display: inline-block; width: auto; padding: 10px 25px;">+ Sugerir un juego</a>
+            <div style="text-align: center; padding: 100px 0;">
+                <span style="font-size: 4rem; display: block; margin-bottom: 20px;">📩</span>
+                <p style="color: #999; margin-bottom: 20px; font-style: italic;">No has enviado ninguna propuesta todavía.</p>
+                <a href="registrar_nuevo.php" class="btn-dash" style="display: inline-block; text-decoration: none; background: var(--graphite); color: white; padding: 12px 30px; border-radius: 50px; font-weight: 600;">
+                    + Sugerir un juego
+                </a>
             </div>
         <?php else: ?>
             <table style="width: 100%; border-collapse: collapse; text-align: left;">
@@ -63,7 +65,7 @@ include '../../includes/header.php';
                                 <?php endif; ?>
                             </td>
                             <td style="padding: 20px; font-size: 0.9rem; color: #666;">
-                                <?php echo date('d/m/Y', strtotime($p->created_at)); ?>
+                                <?php echo date('d/m/Y', strtotime($p->created_at));?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

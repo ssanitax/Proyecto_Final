@@ -5,10 +5,10 @@ require_once '../../config/config.php';
 require_once '../../models/Prestamo.php';
 
 $prestamoModel = new Prestamo($pdo);
-// Obtenemos todos los préstamos del usuario
+// Obtenemos todos los préstamos del usuario [cite: 2589]
 $todosLosPrestamos = $prestamoModel->obtenerPrestamosUsuario($_SESSION['usuario_id']);
 
-// Filtramos solo los que NO han sido devueltos para la vista principal
+// Filtramos solo los que NO han sido devueltos para la vista principal [cite: 2589]
 $prestamosActivos = array_filter($todosLosPrestamos, function($p) {
     return !$p->devuelto;
 });
@@ -46,12 +46,13 @@ include '../../includes/header.php';
     .borrower-info { background: #f8f9fa; padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 0.85rem; }
     
     .btn-return {
-        display: block; width: 100%; padding: 10px; background: #2ecc71; color: white;
+        display: block;
+        width: 100%; padding: 10px; background: #2ecc71; color: white;
         text-align: center; text-decoration: none; border-radius: 50px; font-weight: 700;
-        font-size: 0.8rem; margin-top: 10px; text-transform: uppercase;
+        font-size: 0.8rem; margin-top: 10px;
+        text-transform: uppercase;
     }
 
-    /* Estilo para el botón de historial */
     .history-section {
         margin-top: 50px;
         padding-top: 30px;
@@ -79,10 +80,12 @@ include '../../includes/header.php';
     </header>
 
     <?php if (empty($prestamosActivos)): ?>
-        <div style="text-align: center; padding: 60px 0; background: #f9f9f9; border-radius: 20px;">
-            <span style="font-size: 3rem;">🏠</span>
-            <p style="color:#999; margin-top: 15px;">¡Todos tus juegos están en la biblioteca!</p>
-            <a href="mi_coleccion.php" style="color: var(--graphite); font-weight: 700;">Prestar un juego ahora</a>
+        <div style="text-align: center; padding: 100px 0;">
+            <span style="font-size: 4rem; display: block; margin-bottom: 20px;">🏠</span>
+            <p style="color:#999; margin-bottom: 20px;">¡Todos tus juegos están en la biblioteca!</p>
+            <a href="mi_coleccion.php" class="btn-dash" style="display: inline-block; text-decoration: none; background: var(--graphite); color: white; padding: 12px 30px; border-radius: 50px; font-weight: 600;">
+                Prestar un juego ahora
+            </a>
         </div>
     <?php else: ?>
         <div class="shelf-grid">

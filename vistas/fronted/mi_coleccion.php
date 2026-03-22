@@ -5,159 +5,123 @@ require_once '../../config/config.php';
 require_once '../../models/Coleccion.php';
 
 $coleccionModel = new Coleccion($pdo);
-$miEstanteria = $coleccionModel->obtenerColeccionUsuario($_SESSION['usuario_id']);
+$miColeccion = $coleccionModel->obtenerColeccionUsuario($_SESSION['usuario_id']);
 
 include '../../includes/header.php';
 ?>
 
 <style>
-    /* Mismo diseño de cuadrícula que en Buscar */
-    .shelf-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 30px;
-        padding: 20px 0;
+    /* Estilos globales para la estantería */
+    .fade-up.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .fade-up {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.6s ease-out, transform 0.6s ease-out;
     }
 
-    .game-card {
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    .dash-card {
         background: white;
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        padding: 40px 30px;
+        border-radius: 20px;
+        text-decoration: none;
+        color: inherit;
         display: flex;
         flex-direction: column;
+        align-items: center;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        transition: 0.3s ease;
         border: 1px solid #eee;
     }
 
-    .game-card:hover {
+    .dash-card:hover {
         transform: translateY(-10px);
-        box-shadow: 0 15px 30px rgba(0,0,0,0.12);
         border-color: var(--graphite);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
     }
 
-    .game-cover {
-        width: 100%;
-        aspect-ratio: 3 / 4;
-        background: #f0f0f0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        overflow: hidden;
+    .dash-icon {
+        font-size: 3.5rem;
+        margin-bottom: 20px;
     }
 
-    /* Badge para la plataforma (arriba derecha) */
-    .platform-badge {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: rgba(28, 31, 38, 0.85);
-        color: white;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        backdrop-filter: blur(4px);
-    }
-
-    .game-content {
-        padding: 20px;
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .game-content h3 {
-        font-size: 1.1rem;
-        margin-bottom: 8px;
+    .dash-content h3 {
+        font-size: 1.4rem;
+        margin-bottom: 15px;
         font-weight: 800;
         color: var(--graphite);
-        line-height: 1.3;
     }
 
-    /* Estilos para los estados (Jugando, Pendiente, etc) */
-    .status-indicator {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        margin-bottom: 15px;
-        display: inline-block;
+    .dash-content p {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 25px;
+        color: #666;
     }
 
-    .status-jugando { color: #2ecc71; }
-    .status-pendiente { color: #f1c40f; }
-    .status-completado { color: #3498db; }
-
-    .btn-details {
-        display: block;
-        width: 100%;
-        padding: 10px;
-        border: 1px solid var(--graphite);
-        color: var(--graphite);
-        text-align: center;
-        text-decoration: none;
+    .btn-dash {
+        padding: 10px 25px;
         border-radius: 50px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        transition: 0.3s;
-    }
-
-    .btn-details:hover {
         background: var(--graphite);
         color: white;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        display: inline-block;
+        text-decoration: none;
     }
 </style>
 
 <div class="fade-up visible">
-    <header style="margin-bottom: 40px; text-align: center;">
-        <h2>Mi Bibioteca</h2>
-        <p style="color: #666;">Gestiona tu colección personal y tus progresos.</p>
+    <header style="text-align: center; margin-bottom: 50px;">
+        <h2 style="margin-bottom: 10px;">Mi Colección Personal</h2>
+        <p style="color: #666; font-size: 1.1rem;">Tu estantería virtual de juegos físicos.</p>
     </header>
 
-    <?php if (isset($_GET['status']) && $_GET['status'] == 'success'): ?>
-        <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 30px; border: 1px solid #c3e6cb;">
-            ¡Juego añadido correctamente a tu colección!
+    <?php if (empty($miColeccion)): ?>
+        <div style="text-align: center; padding: 100px 0;">
+            <span style="font-size: 4rem; display: block; margin-bottom: 20px;">💿</span>
+            <p style="color:#999; margin-bottom: 20px;">Tu biblioteca está vacía.</p>
+            <a href="buscar.php" class="btn-dash" style="display: inline-block; text-decoration: none;">
+                + Empezar a añadir juegos
+            </a>
         </div>
-    <?php endif; ?>
-
-    <div class="shelf-grid">
-        <?php if (!empty($miEstanteria)): ?>
-            <?php foreach ($miEstanteria as $item): ?>
-                <div class="game-card">
-                    <div class="game-cover">
-                        <div class="platform-badge"><?php echo htmlspecialchars($item->plataforma); ?></div>
-                        <span style="font-size: 4rem;">💿</span>
+    <?php else: ?>
+        <div class="dashboard-grid">
+            <?php foreach ($miColeccion as $item): ?>
+                <div class="dash-card">
+                    <div class="dash-icon">
+                        <?php if ($item->estado == 'jugado'): ?> 🎮
+                        <?php elseif ($item->estado == 'jugando'): ?> 🕹️
+                        <?php elseif ($item->estado == 'completado'): ?> ⭐
+                        <?php else: ?> 📀
+                        <?php endif; ?>
                     </div>
                     
-                    <div class="game-content">
-                        <div>
-                            <span class="status-indicator status-<?php echo $item->estado; ?>">
-                                ● <?php echo ucfirst($item->estado); ?>
-                            </span>
-                            <h3><?php echo htmlspecialchars($item->titulo); ?></h3>
-                            <p style="font-size: 0.85rem; color: #777; margin-bottom: 15px;">
-                                Edición: <?php echo htmlspecialchars($item->edicion_nombre); ?> (<?php echo $item->region; ?>)
-                            </p>
-                        </div>
+                    <div class="dash-content">
+                        <h3><?php echo htmlspecialchars($item->titulo); ?></h3>
+                        <p><?php echo htmlspecialchars($item->plataforma_nombre); ?> - <?php echo htmlspecialchars($item->region); ?></p>
                         
-                        <a href="editar_item.php?id=<?php echo $item->id; ?>" class="btn-details">
-                            Gestionar
+                        <a href="juego_detalle.php?id=<?php echo $item->juego_id; ?>" class="btn-dash">
+                            Ver Detalles
                         </a>
                     </div>
                 </div>
             <?php endforeach; ?>
-        <?php else: ?>
-            <div style="grid-column: 1 / -1; text-align: center; padding: 100px 0;">
-                <p style="color:#999; margin-bottom: 20px;">Tu biblioteca está vacía.</p>
-                <a href="buscar.php" class="btn-dash" style="display: inline-block; text-decoration: none; background: var(--graphite); color: white; padding: 12px 30px; border-radius: 50px; font-weight: 600;">
-                    Empezar a añadir juegos
-                </a>
-            </div>
-        <?php endif; ?>
-    </div>
+        </div>
+    <?php endif; ?>
 </div>
 
 <?php include '../../includes/footer.php'; ?>

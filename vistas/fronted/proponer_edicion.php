@@ -56,7 +56,16 @@ include '../../includes/header.php';
                 </select>
             </div>
 
-            <button type="submit" class="btn-dash" style="width: 100%; border: none; cursor: pointer;">Enviar para validación</button>
+            <button type="submit" 
+                style="width: 100%; padding: 15px; border-radius: 50px; 
+                    background: var(--graphite); color: white; font-weight: 700; 
+                    text-transform: uppercase; border: none; cursor: pointer; 
+                    transition: 0.3s;"
+                onmouseover="this.style.background='#333'; this.style.transform='translateY(-2px)';"
+                onmouseout="this.style.background='var(--graphite)'; this.style.transform='translateY(0)';"
+        >
+            Enviar para validación
+        </button>
         </form>
     </div>
 </div>
