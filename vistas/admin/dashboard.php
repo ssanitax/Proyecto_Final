@@ -26,9 +26,18 @@ include '../../includes/admin_header.php';
         <a href="validar_juegos.php" class="dash-card <?php echo $totalPendientes > 0 ? 'card-highlight' : ''; ?>">
             <div class="dash-icon">📑</div>
             <div class="dash-content">
-                <h3>Validar Juegos</h3>
-                <p>Hay <strong><?php echo $totalPendientes; ?></strong> juegos pendientes de aprobación.</p>
+                <h3>Validar Propuestas</h3>
+                <p>Hay <strong><?php echo $totalPendientes; ?></strong> sugerencias esperando revisión.</p>
                 <span class="btn-dash">Revisar</span>
+            </div>
+        </a>
+
+        <a href="registrar_directo.php" class="dash-card">
+            <div class="dash-icon">➕</div>
+            <div class="dash-content">
+                <h3>Alta de Contenido</h3>
+                <p>Añade juegos, sistemas o regiones directamente al catálogo maestro.</p>
+                <span class="btn-dash">Registrar</span>
             </div>
         </a>
 
@@ -38,15 +47,6 @@ include '../../includes/admin_header.php';
                 <h3>Usuarios</h3>
                 <p>Gestionar los <strong><?php echo $totalUsuarios; ?></strong> coleccionistas activos.</p>
                 <span class="btn-dash">Gestionar</span>
-            </div>
-        </a>
-
-        <a href="gestionar_plataformas.php" class="dash-card">
-            <div class="dash-icon">🎮</div>
-            <div class="dash-content">
-                <h3>Plataformas</h3>
-                <p>Configurar el catálogo de consolas y plataformas.</p>
-                <span class="btn-dash">Configurar</span>
             </div>
         </a>
     </div>
