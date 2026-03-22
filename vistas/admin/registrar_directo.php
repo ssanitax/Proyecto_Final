@@ -65,7 +65,7 @@ include '../../includes/admin_header.php';
 
     <?php if (isset($_GET['status']) && $_GET['status'] == 'success'): ?>
         <div style="background: #d1fae5; color: #065f46; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 30px; font-weight: 600; border: 1px solid #a7f3d0;">
-            ¡Registro completado con éxito en la base de datos oficial! ✅
+            <?php echo $lang['registro_exitoso']; ?>
         </div>
     <?php endif; ?>
 

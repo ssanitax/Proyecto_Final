@@ -26,6 +26,18 @@ include '../../includes/admin_header.php';
         <p style="color: #666;">Revisa y edita los datos antes de hacerlos oficiales.</p>
     </header>
 
+    <?php if (isset($_GET['status'])): ?>
+        <?php if ($_GET['status'] == 'aprobado'): ?>
+            <div style="background: #d1fae5; color: #065f46; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 30px; font-weight: 600; border: 1px solid #a7f3d0;">
+                <?php echo $lang['propuesta_aprobada']; ?>
+            </div>
+        <?php elseif ($_GET['status'] == 'rechazado'): ?>
+            <div style="background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 30px; font-weight: 600; border: 1px solid #fecaca;">
+                <?php echo $lang['propuesta_rechazada']; ?>
+            </div>
+        <?php endif; ?>
+    <?php endif; ?>
+
     <div class="about-box" style="padding: 0; overflow: hidden; background: white; border-radius: 20px; border: 1px solid #eee;">
         <?php if (empty($pendientes)): ?>
             <div style="padding: 80px; text-align: center;">

@@ -44,7 +44,7 @@ include '../../includes/admin_header.php';
 
     <?php if(isset($_GET['status']) && $_GET['status'] == 'deleted'): ?>
         <div style="background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: center; font-weight: 600;">
-            Elemento eliminado correctamente del catálogo oficial.
+            <?php echo $lang['elemento_eliminado']; ?>
         </div>
     <?php endif; ?>
 

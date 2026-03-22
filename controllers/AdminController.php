@@ -101,7 +101,7 @@ class AdminController {
 
         } catch (Exception $e) {
             if ($this->pdo->inTransaction()) $this->pdo->rollBack();
-            die("Error en validación: " . $e->getMessage());
+            die($lang['error_validation'] . $e->getMessage());
         }
     }
 
@@ -159,7 +159,7 @@ class AdminController {
                 header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
             } catch (Exception $e) {
                 $this->pdo->rollBack();
-                die("Error al eliminar la plataforma y sus juegos asociados: " . $e->getMessage());
+                die($lang['error_delete_platform'] . $e->getMessage());
             }
         } else {
             header('Location: ../vistas/admin/inventario_maestro.php');
@@ -210,7 +210,7 @@ class AdminController {
                 header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
             } catch (Exception $e) {
                 if ($this->pdo->inTransaction()) $this->pdo->rollBack();
-                die("Error al eliminar rastro de la región: " . $e->getMessage());
+                die($lang['error_delete_region'] . $e->getMessage());
             }
         }
         exit();

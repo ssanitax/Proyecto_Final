@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../models/Usuario.php';
 
 class AuthController {
@@ -20,13 +21,13 @@ class AuthController {
             $password_confirm = $_POST['password_confirm'];
 
             if ($password !== $password_confirm) {
-                $error = "Las contraseñas no coinciden.";
+                $error = $lang['passwords_not_match'];
                 include __DIR__ . '/../vistas/fronted/registro.php';
                 return;
             }
 
             if (strlen($password) < 6) {
-                $error = "La contraseña debe tener al menos 6 caracteres.";
+                $error = $lang['password_too_short'];
                 include __DIR__ . '/../vistas/fronted/registro.php';
                 return;
             }
@@ -46,7 +47,7 @@ class AuthController {
                 header('Location: dashboard.php');
                 exit();
             } else {
-                $error = "El email ya está registrado.";
+                $error = $lang['email_already_registered'];
                 include __DIR__ . '/../vistas/fronted/registro.php';
             }
         }
@@ -73,7 +74,7 @@ class AuthController {
                 exit();
             } else {
                 // RETORNAMOS el texto para que la vista lo pinte
-                return "El correo no está registrado o la contraseña es incorrecta.";
+                return $lang['invalid_credentials'];
             }
         }
         return null;

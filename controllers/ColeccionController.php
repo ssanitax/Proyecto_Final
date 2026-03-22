@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../models/Coleccion.php';
 
 class ColeccionController {
@@ -32,7 +33,7 @@ class ColeccionController {
                 header("Location: ../vistas/fronted/mi_coleccion.php?status=success");
                 exit();
             } catch (PDOException $e) {
-                die("Error en la base de datos: " . $e->getMessage());
+                die($lang['error_database'] . $e->getMessage());
             }
         }
     }
