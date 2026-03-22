@@ -115,6 +115,8 @@ class AdminController {
         exit();
     }
 
+    // --- ACCIONES DE REGISTRO DIRECTO ---
+
     public function registrarPlataformaDirecta() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $nombre = htmlspecialchars(trim($_POST['nombre']));
@@ -139,6 +141,39 @@ class AdminController {
             exit();
         }
     }
+
+    // --- NUEVAS ACCIONES DE BORRADO MAESTRO ---
+
+    public function eliminarPlataforma() {
+        $id = $_GET['id'] ?? null;
+        if ($id) {
+            // Nota: El motor de la base de datos debería gestionar el borrado en cascada si está configurado
+            $stmt = $this->pdo->prepare("DELETE FROM plataformas WHERE id = ?");
+            $stmt->execute([$id]);
+        }
+        header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
+        exit();
+    }
+
+    public function eliminarEdicion() {
+        $id = $_GET['id'] ?? null;
+        if ($id) {
+            $stmt = $this->pdo->prepare("DELETE FROM ediciones WHERE id = ?");
+            $stmt->execute([$id]);
+        }
+        header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
+        exit();
+    }
+
+    public function eliminarJuegoMaestro() {
+        $id = $_GET['id'] ?? null;
+        if ($id) {
+            $stmt = $this->pdo->prepare("DELETE FROM juegos WHERE id = ?");
+            $stmt->execute([$id]);
+        }
+        header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
+        exit();
+    }
 }
 
 // Router
@@ -148,4 +183,9 @@ if (isset($_GET['action'])) {
     if ($_GET['action'] == 'rechazar') $admin->rechazarPropuesta();
     if ($_GET['action'] == 'registrar_plataforma') $admin->registrarPlataformaDirecta();
     if ($_GET['action'] == 'registrar_juego') $admin->registrarJuegoDirecto();
+    
+    // Rutas para el Inventario Maestro
+    if ($_GET['action'] == 'eliminar_plataforma') $admin->eliminarPlataforma();
+    if ($_GET['action'] == 'eliminar_edicion') $admin->eliminarEdicion();
+    if ($_GET['action'] == 'eliminar_juego') $admin->eliminarJuegoMaestro();
 }

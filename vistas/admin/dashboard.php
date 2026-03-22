@@ -6,7 +6,7 @@ redirigirSiNoAdmin();
 
 require_once '../../config/config.php';
 
-// Consultas para estadísticas [cite: 12, 27]
+// Consultas para estadísticas
 $stmtJuegos = $pdo->query("SELECT COUNT(*) FROM juegos_pendientes WHERE estado = 'pendiente'");
 $totalPendientes = $stmtJuegos->fetchColumn();
 
@@ -23,6 +23,7 @@ include '../../includes/admin_header.php';
     </header>
 
     <div class="dashboard-grid">
+        <!-- VALIDACIONES -->
         <a href="validar_juegos.php" class="dash-card <?php echo $totalPendientes > 0 ? 'card-highlight' : ''; ?>">
             <div class="dash-icon">📑</div>
             <div class="dash-content">
@@ -32,6 +33,7 @@ include '../../includes/admin_header.php';
             </div>
         </a>
 
+        <!-- ALTA DIRECTA -->
         <a href="registrar_directo.php" class="dash-card">
             <div class="dash-icon">➕</div>
             <div class="dash-content">
@@ -41,12 +43,23 @@ include '../../includes/admin_header.php';
             </div>
         </a>
 
+        <!-- USUARIOS -->
         <a href="gestionar_usuarios.php" class="dash-card">
             <div class="dash-icon">👥</div>
             <div class="dash-content">
                 <h3>Usuarios</h3>
                 <p>Gestionar los <strong><?php echo $totalUsuarios; ?></strong> coleccionistas activos.</p>
                 <span class="btn-dash">Gestionar</span>
+            </div>
+        </a>
+
+        <!-- INVENTARIO MAESTRO -->
+        <a href="inventario_maestro.php" class="dash-card">
+            <div class="dash-icon">🗄️</div>
+            <div class="dash-content">
+                <h3>Inventario Maestro</h3>
+                <p>Revisa y borra juegos, consolas o ediciones registradas oficialmente.</p>
+                <span class="btn-dash">Ver Todo</span>
             </div>
         </a>
     </div>
@@ -57,7 +70,7 @@ include '../../includes/admin_header.php';
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 30px;
-        max-width: 1100px;
+        max-width: 1200px;
         margin: 0 auto;
     }
 
@@ -95,6 +108,7 @@ include '../../includes/admin_header.php';
     .dash-content p { font-size: 0.95rem; line-height: 1.6; margin-bottom: 25px; min-height: 60px; }
 
     .btn-dash {
+        display: inline-block;
         padding: 10px 25px;
         border-radius: 50px;
         background: var(--graphite);
@@ -102,6 +116,7 @@ include '../../includes/admin_header.php';
         font-weight: 700;
         font-size: 0.85rem;
         text-transform: uppercase;
+        transition: 0.3s;
     }
 </style>
 
