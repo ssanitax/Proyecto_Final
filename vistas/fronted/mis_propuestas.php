@@ -34,35 +34,35 @@ include '../../includes/header.php';
             </span>
         </a>
 
-        <a href="buscar.php" class="dash-card" style="padding: 30px; text-decoration: none;">
+        <a href="proponer_plataforma.php" class="dash-card" style="padding: 30px; text-decoration: none;">
             <div style="font-size: 2.5rem; margin-bottom: 15px;">🎮</div>
             <h4 style="margin-bottom: 8px; color: var(--graphite); font-size: 1.2rem;">Nueva Plataforma</h4>
-            <p style="font-size: 0.85rem; color: #777; min-height: 40px;">Añade una consola distinta (ej: PS2) a un juego existente.</p>
+            <p style="font-size: 0.85rem; color: #777; min-height: 40px;">Propón una consola o Plataforma (ej: PS5, Master System) que no exista en Bengala.</p>
             
             <span style="display: block; width: 100%; padding: 12px; border-radius: 50px; 
-                         background: var(--graphite); color: white; font-weight: 700; 
-                         text-transform: uppercase; font-size: 0.75rem; text-align: center; 
-                         margin-top: 20px; transition: 0.3s;"
-                  onmouseover="this.style.background='#333'; this.style.transform='translateY(-2px)';"
-                  onmouseout="this.style.background='var(--graphite)'; this.style.transform='translateY(0)';"
+                        background: var(--graphite); color: white; font-weight: 700; 
+                        text-transform: uppercase; font-size: 0.75rem; text-align: center; 
+                        margin-top: 20px; transition: 0.3s;"
+                onmouseover="this.style.background='#333'; this.style.transform='translateY(-2px)';"
+                onmouseout="this.style.background='var(--graphite)'; this.style.transform='translateY(0)';"
             >
-                Buscar Juego
+                + Proponer Plataforma
             </span>
         </a>
 
-        <a href="buscar.php" class="dash-card" style="padding: 30px; text-decoration: none;">
+        <a href="proponer_region.php" class="dash-card" style="padding: 30px; text-decoration: none;">
             <div style="font-size: 2.5rem; margin-bottom: 15px;">🌍</div>
             <h4 style="margin-bottom: 8px; color: var(--graphite); font-size: 1.2rem;">Nueva Región</h4>
-            <p style="font-size: 0.85rem; color: #777; min-height: 40px;">Registra una variante de región (PAL, JAP, USA) para una edición.</p>
+            <p style="font-size: 0.85rem; color: #777; min-height: 40px;">¿Falta un código de región (ej: Asia, Brasil)? Sugerirlo aquí.</p>
             
             <span style="display: block; width: 100%; padding: 12px; border-radius: 50px; 
-                         background: var(--graphite); color: white; font-weight: 700; 
-                         text-transform: uppercase; font-size: 0.75rem; text-align: center; 
-                         margin-top: 20px; transition: 0.3s;"
-                  onmouseover="this.style.background='#333'; this.style.transform='translateY(-2px)';"
-                  onmouseout="this.style.background='var(--graphite)'; this.style.transform='translateY(0)';"
+                        background: var(--graphite); color: white; font-weight: 700; 
+                        text-transform: uppercase; font-size: 0.75rem; text-align: center; 
+                        margin-top: 20px; transition: 0.3s;"
+                onmouseover="this.style.background='#333'; this.style.transform='translateY(-2px)';"
+                onmouseout="this.style.background='var(--graphite)'; this.style.transform='translateY(0)';"
             >
-                Ver Ediciones
+                + Proponer Región
             </span>
         </a>
     </div>
@@ -78,7 +78,7 @@ include '../../includes/header.php';
             <table style="width: 100%; border-collapse: collapse; text-align: left;">
                 <thead>
                     <tr style="background: #fafafa; border-bottom: 2px solid #f0f0f0;">
-                        <th style="padding: 20px; font-size: 0.75rem; text-transform: uppercase; color: #888;">Juego y Sistema</th>
+                        <th style="padding: 20px; font-size: 0.75rem; text-transform: uppercase; color: #888;">Juego, Región y Plataforma</th>
                         <th style="padding: 20px; font-size: 0.75rem; text-transform: uppercase; color: #888;">Estado de Revisión</th>
                         <th style="padding: 20px; font-size: 0.75rem; text-transform: uppercase; color: #888;">Fecha Envío</th>
                     </tr>

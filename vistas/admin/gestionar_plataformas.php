@@ -26,8 +26,8 @@ include '../../includes/admin_header.php';
 
 <div class="fade-up visible">
     <header style="text-align: center; margin-bottom: 50px;">
-        <h2 style="margin-bottom: 10px;">Gestión de Sistemas 🎮</h2>
-        <p style="color: #666;">Añade nuevas consolas o sistemas al catálogo oficial de Bengala.</p>
+        <h2 style="margin-bottom: 10px;">Gestión de Plataformas 🎮</h2>
+        <p style="color: #666;">Añade nuevas consolas o plataformas al catálogo oficial de Bengala.</p>
     </header>
 
     <div style="max-width: 600px; margin: 0 auto;">
@@ -49,7 +49,7 @@ include '../../includes/admin_header.php';
         </div>
 
         <div class="dash-card" style="padding: 30px;">
-            <h3 style="margin-bottom: 20px; font-size: 1.1rem;">Sistemas Registrados</h3>
+            <h3 style="margin-bottom: 20px; font-size: 1.1rem;">Plataformas Registradas</h3>
             <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
                 <?php foreach ($plataformas as $plat): ?>
                     <span style="background: #f0f0f0; padding: 8px 15px; border-radius: 50px; font-size: 0.85rem; font-weight: 600; color: var(--graphite);">

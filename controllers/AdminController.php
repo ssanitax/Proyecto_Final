@@ -27,7 +27,7 @@ class AdminController {
         try {
             $this->pdo->beginTransaction();
 
-            // 1. Obtener la propuesta de juego y su edición asociada [cite: 25, 27, 796, 798]
+            // 1. Obtener la propuesta de juego y su edición asociada
             $stmt = $this->pdo->prepare("
                 SELECT jp.*, ep.id as edicion_pend_id, ep.plataforma_id, ep.region, ep.edicion_nombre, ep.juego_id_real
                 FROM juegos_pendientes jp
@@ -41,7 +41,7 @@ class AdminController {
 
             $juego_id_final = null;
 
-            // 2. LÓGICA DE APROBACIÓN [cite: 16, 17, 786, 788]
+            // 2. LÓGICA DE APROBACIÓN
             if ($propuesta->juego_id_real) {
                 // CASO A: Es una edición nueva para un juego que YA existe
                 $juego_id_final = $propuesta->juego_id_real;
@@ -53,7 +53,7 @@ class AdminController {
                 $juego_id_final = $this->pdo->lastInsertId();
             }
 
-            // 3. Insertar la EDICIÓN en la tabla oficial 'ediciones' [cite: 17, 788]
+            // 3. Insertar la EDICIÓN en la tabla oficial 'ediciones'
             if ($juego_id_final && $propuesta->plataforma_id) {
                 $sqlEdicion = "INSERT INTO ediciones (juego_id, plataforma_id, region, edicion_nombre) VALUES (?, ?, ?, ?)";
                 $stmtEdic = $this->pdo->prepare($sqlEdicion);
@@ -65,7 +65,7 @@ class AdminController {
                 ]);
             }
 
-            // 4. Actualizar estado de la propuesta y registrar quién la revisó [cite: 25, 796]
+            // 4. Actualizar estado de la propuesta y registrar quién la revisó
             $stmtUpdate = $this->pdo->prepare("
                 UPDATE juegos_pendientes 
                 SET estado = 'aprobado', revisado_por = ?, fecha_revision = NOW() 

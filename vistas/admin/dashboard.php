@@ -45,7 +45,7 @@ include '../../includes/admin_header.php';
             <div class="dash-icon">🎮</div>
             <div class="dash-content">
                 <h3>Plataformas</h3>
-                <p>Configurar el catálogo de consolas y sistemas.</p>
+                <p>Configurar el catálogo de consolas y plataformas.</p>
                 <span class="btn-dash">Configurar</span>
             </div>
         </a>
