@@ -18,8 +18,8 @@ include '../../includes/admin_header.php';
 
 <div class="fade-up visible">
     <header style="text-align: center; margin-bottom: 50px;">
-        <h2 style="margin-bottom: 10px;">Panel de Administración 🛡️</h2>
-        <p style="color: #666; font-size: 1.1rem;">Gestión interna de la plataforma Bengala</p>
+        <h2 style="margin-bottom: 10px;"><?php echo $lang['admin_panel_title']; ?></h2>
+        <p style="color: #666; font-size: 1.1rem;"><?php echo $lang['admin_panel_desc']; ?></p>
     </header>
 
     <div class="dashboard-grid">
@@ -27,9 +27,9 @@ include '../../includes/admin_header.php';
         <a href="validar_juegos.php" class="dash-card <?php echo $totalPendientes > 0 ? 'card-highlight' : ''; ?>">
             <div class="dash-icon">📑</div>
             <div class="dash-content">
-                <h3>Validar Propuestas</h3>
-                <p>Hay <strong><?php echo $totalPendientes; ?></strong> sugerencias esperando revisión.</p>
-                <span class="btn-dash">Revisar</span>
+                <h3><?php echo $lang['validate_proposals']; ?></h3>
+                <p><?php echo sprintf($lang['pending_suggestions'], $totalPendientes); ?></p>
+                <span class="btn-dash"><?php echo $lang['review']; ?></span>
             </div>
         </a>
 
@@ -37,9 +37,9 @@ include '../../includes/admin_header.php';
         <a href="registrar_directo.php" class="dash-card">
             <div class="dash-icon">➕</div>
             <div class="dash-content">
-                <h3>Alta de Contenido</h3>
-                <p>Añade juegos, sistemas o regiones directamente al catálogo maestro.</p>
-                <span class="btn-dash">Registrar</span>
+                <h3><?php echo $lang['content_creation']; ?></h3>
+                <p><?php echo $lang['content_creation_desc']; ?></p>
+                <span class="btn-dash"><?php echo $lang['register']; ?></span>
             </div>
         </a>
 
@@ -47,9 +47,9 @@ include '../../includes/admin_header.php';
         <a href="gestionar_usuarios.php" class="dash-card">
             <div class="dash-icon">👥</div>
             <div class="dash-content">
-                <h3>Usuarios</h3>
-                <p>Gestionar los <strong><?php echo $totalUsuarios; ?></strong> coleccionistas activos.</p>
-                <span class="btn-dash">Gestionar</span>
+                <h3><?php echo $lang['users']; ?></h3>
+                <p><?php echo sprintf($lang['active_collectors'], $totalUsuarios); ?></p>
+                <span class="btn-dash"><?php echo $lang['manage']; ?></span>
             </div>
         </a>
 
@@ -57,9 +57,9 @@ include '../../includes/admin_header.php';
         <a href="inventario_maestro.php" class="dash-card">
             <div class="dash-icon">🗄️</div>
             <div class="dash-content">
-                <h3>Inventario Maestro</h3>
-                <p>Revisa y borra juegos, consolas o ediciones registradas oficialmente.</p>
-                <span class="btn-dash">Ver Todo</span>
+                <h3><?php echo $lang['master_inventory']; ?></h3>
+                <p><?php echo $lang['master_inventory_desc']; ?></p>
+                <span class="btn-dash"><?php echo $lang['view_all']; ?></span>
             </div>
         </a>
     </div>

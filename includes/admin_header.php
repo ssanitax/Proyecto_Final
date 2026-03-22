@@ -1,9 +1,10 @@
+<?php require_once __DIR__ . '/auth.php'; ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bengala Admin | Gestión</title>
+    <title><?php echo $lang['admin_title']; ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -83,15 +84,17 @@
 </head>
 <body>
 <nav>
-    <a href="dashboard.php" class="logo-admin">BENGALA <span style="font-weight:400; font-size:0.7rem; color:#999;">ADMIN</span></a>
+    <a href="dashboard.php" class="logo-admin"><?php echo $lang['logo_admin']; ?></a>
     
     <div class="nav-links">
-        <a href="dashboard.php">Inicio</a>
-        <a href="validar_juegos.php">Validaciones</a>
-        <a href="registrar_directo.php">Alta de Contenido</a>
-        <a href="gestionar_usuarios.php">Usuarios</a>
-        <a href="inventario_maestro.php">Inventario Maestro</a>
-        <a href="../fronted/logout.php" class="btn-logout">Cerrar Sesión</a>
+        <a href="dashboard.php"><?php echo $lang['nav_inicio']; ?></a>
+        <a href="validar_juegos.php"><?php echo $lang['nav_validaciones']; ?></a>
+        <a href="registrar_directo.php"><?php echo $lang['nav_alta_contenido']; ?></a>
+        <a href="gestionar_usuarios.php"><?php echo $lang['nav_usuarios']; ?></a>
+        <a href="inventario_maestro.php"><?php echo $lang['nav_inventario']; ?></a>
+        <a href="?lang=es" style="margin-left: 10px; font-size: 0.8rem;">ES</a>
+        <a href="?lang=en" style="margin-left: 5px; font-size: 0.8rem;">EN</a>
+        <a href="../fronted/logout.php" class="btn-logout"><?php echo $lang['nav_cerrar_sesion']; ?></a>
     </div>
 </nav>
 <div class="container">

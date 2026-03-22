@@ -1,6 +1,7 @@
+<?php require_once __DIR__ . '/auth.php'; ?>
 </div> <footer>
     <p style="text-align: center; padding: 40px; color: #777; font-size: 0.9rem;">
-        © 2026 Bengala - Ana Sánchez Suárez
+        <?php echo $lang['footer_frontend']; ?>
     </p>
 </footer>
 </body>

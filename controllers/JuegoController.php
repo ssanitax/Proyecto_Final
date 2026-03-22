@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../models/Juego.php';
 
 class JuegoController {
@@ -36,7 +37,7 @@ class JuegoController {
                 exit();
             } catch (Exception $e) {
                 if ($this->pdo->inTransaction()) { $this->pdo->rollBack(); }
-                die("Error: " . $e->getMessage());
+                die($lang['error_general'] . $e->getMessage());
             }
         }
     }
@@ -65,7 +66,7 @@ class JuegoController {
                 exit();
             } catch (Exception $e) {
                 if ($this->pdo->inTransaction()) { $this->pdo->rollBack(); }
-                die("Error: " . $e->getMessage());
+                die($lang['error_general'] . $e->getMessage());
             }
         }
     }
@@ -96,7 +97,7 @@ class JuegoController {
                 exit();
             } catch (Exception $e) {
                 if ($this->pdo->inTransaction()) { $this->pdo->rollBack(); }
-                die("Error crítico: " . $e->getMessage());
+                die($lang['error_critical'] . $e->getMessage());
             }
         }
     }
@@ -129,7 +130,7 @@ class JuegoController {
                 exit();
             } catch (Exception $e) {
                 if ($this->pdo->inTransaction()) { $this->pdo->rollBack(); }
-                die("Error crítico: " . $e->getMessage());
+                die($lang['error_critical'] . $e->getMessage());
             }
         }
     }
