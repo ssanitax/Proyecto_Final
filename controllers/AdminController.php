@@ -147,11 +147,23 @@ class AdminController {
     public function eliminarPlataforma() {
         $id = $_GET['id'] ?? null;
         if ($id) {
-            // Nota: El motor de la base de datos debería gestionar el borrado en cascada si está configurado
-            $stmt = $this->pdo->prepare("DELETE FROM plataformas WHERE id = ?");
-            $stmt->execute([$id]);
+            try {
+                $this->pdo->beginTransaction();
+                
+                // Al ejecutar esto, la base de datos borrará automáticamente 
+                // las ediciones asociadas debido al ON DELETE CASCADE.
+                $stmt = $this->pdo->prepare("DELETE FROM plataformas WHERE id = ?");
+                $stmt->execute([$id]);
+                
+                $this->pdo->commit();
+                header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
+            } catch (Exception $e) {
+                $this->pdo->rollBack();
+                die("Error al eliminar la plataforma y sus juegos asociados: " . $e->getMessage());
+            }
+        } else {
+            header('Location: ../vistas/admin/inventario_maestro.php');
         }
-        header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
         exit();
     }
 
@@ -174,6 +186,31 @@ class AdminController {
         header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
         exit();
     }
+
+    public function eliminarPorRegion() {
+        $region = $_GET['nombre'] ?? null;
+        if ($region) {
+            try {
+                $this->pdo->beginTransaction();
+                
+                // 1. Borrar ediciones oficiales de esa región
+                // Esto activará el CASCADE hacia coleccion_usuario y prestamos
+                $stmt1 = $this->pdo->prepare("DELETE FROM ediciones WHERE region = ?");
+                $stmt1.execute([$region]);
+
+                // 2. Borrar propuestas pendientes de esa región
+                $stmt2 = $this->pdo->prepare("DELETE FROM ediciones_pendientes WHERE region = ?");
+                $stmt2.execute([$region]);
+                
+                $this->pdo->commit();
+                header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
+            } catch (Exception $e) {
+                if ($this->pdo->inTransaction()) $this->pdo->rollBack();
+                die("Error al eliminar la región: " . $e->getMessage());
+            }
+        }
+        exit();
+    }
 }
 
 // Router
@@ -183,6 +220,7 @@ if (isset($_GET['action'])) {
     if ($_GET['action'] == 'rechazar') $admin->rechazarPropuesta();
     if ($_GET['action'] == 'registrar_plataforma') $admin->registrarPlataformaDirecta();
     if ($_GET['action'] == 'registrar_juego') $admin->registrarJuegoDirecto();
+    if ($_GET['action'] == 'eliminar_region') $admin->eliminarPorRegion();  
     
     // Rutas para el Inventario Maestro
     if ($_GET['action'] == 'eliminar_plataforma') $admin->eliminarPlataforma();

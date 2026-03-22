@@ -332,3 +332,13 @@ MODIFY plataforma_id INT NULL;
 
 -- Primero buscamos el nombre del índice/restricción y lo eliminamos
 ALTER TABLE coleccion_usuario DROP INDEX unique_usuario_edicion;
+
+-- 1. Averiguar el nombre exacto de la restricción (suele ser ediciones_pendientes_ibfk_2 según tu error)
+ALTER TABLE ediciones_pendientes DROP FOREIGN KEY ediciones_pendientes_ibfk_2;
+
+-- 2. Volver a crearla con el borrado en cascada habilitado
+ALTER TABLE ediciones_pendientes 
+ADD CONSTRAINT fk_ediciones_pendientes_plataforma 
+FOREIGN KEY (plataforma_id) 
+REFERENCES plataformas(id) 
+ON DELETE CASCADE;

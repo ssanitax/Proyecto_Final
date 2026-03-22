@@ -79,19 +79,23 @@ include '../../includes/admin_header.php';
         <div class="section-header">
             <h3>Regiones Activas en el Sistema</h3>
         </div>
-        <div style="padding: 25px; display: flex; flex-wrap: wrap; gap: 10px;">
+        <div style="padding: 25px; display: flex; flex-wrap: wrap; gap: 15px;">
             <?php if(empty($regiones)): ?>
-                <p style="color: #999; font-style: italic;">No hay regiones registradas en ninguna edición.</p>
+                <p style="color: #999; font-style: italic;">No hay regiones registradas.</p>
             <?php else: ?>
                 <?php foreach($regiones as $reg): ?>
-                    <span style="background: #f0f0f0; padding: 8px 15px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; color: #666;">
-                        🌍 <?php echo htmlspecialchars($reg->region); ?>
-                    </span>
+                    <div style="display: flex; align-items: center; background: #f0f0f0; padding: 5px 5px 5px 15px; border-radius: 50px; gap: 10px;">
+                        <span style="font-size: 0.8rem; font-weight: 700; color: #666;">
+                            🌍 <?php echo htmlspecialchars($reg->region); ?>
+                        </span>
+                        <a href="../../controllers/AdminController.php?action=eliminar_region&nombre=<?php echo urlencode($reg->region); ?>" 
+                        style="background: #fee2e2; color: #e74c3c; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 12px; font-weight: bold; transition: 0.3s;"
+                        onclick="return confirm('¿Eliminar todos los juegos de la región <?php echo $reg->region; ?>?')">
+                        ×
+                        </a>
+                    </div>
                 <?php endforeach; ?>
             <?php endif; ?>
-        </div>
-        <div style="padding: 0 25px 20px 25px; font-size: 0.75rem; color: #999;">
-            * Las regiones se gestionan directamente editando o borrando ediciones específicas abajo.
         </div>
     </div>
 
@@ -119,7 +123,7 @@ include '../../includes/admin_header.php';
                         <td style="color: #777; font-size: 0.8rem;"><?php echo htmlspecialchars($e->edicion_nombre); ?></td>
                         <td style="text-align: right;">
                             <a href="../../controllers/AdminController.php?action=eliminar_edicion&id=<?php echo $e->id; ?>" 
-                               class="btn-delete" onclick="return confirm('¿Eliminar esta edición específica?')">Borrar</a>
+                               class="btn-delete" onclick="return confirm('¡ADVERTENCIA CRÍTICA! Borrar esta plataforma eliminará PERMANENTEMENTE todos los juegos (ediciones) asociados a ella en el catálogo y en las bibliotecas de los usuarios. ¿Estás seguro?')">Borrar</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
