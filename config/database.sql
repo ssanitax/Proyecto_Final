@@ -352,3 +352,16 @@ ADD CONSTRAINT fk_ediciones_pendientes_plataforma
 FOREIGN KEY (plataforma_id)
 REFERENCES plataformas(id)
 ON DELETE CASCADE;
+
+-- arreglar que si hay juegos sin edicion se borren
+DELIMITER //
+CREATE TRIGGER limpiar_juegos_huerfanos
+AFTER DELETE ON ediciones
+FOR EACH ROW
+BEGIN
+    -- Borra el juego si ya no existen ediciones para él
+    DELETE FROM juegos 
+    WHERE id = OLD.juego_id 
+    AND NOT EXISTS (SELECT 1 FROM ediciones WHERE juego_id = OLD.juego_id);
+END; //
+DELIMITER ;
