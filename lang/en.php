@@ -233,4 +233,62 @@ $lang = [
     'frontend_proposals_status_approved' => 'ACCEPTED ✅',
     'frontend_proposals_status_rejected' => 'REJECTED ❌',
     'frontend_proposals_region_label' => 'Region:',
+
+    // Propose Edition
+    'frontend_propose_edition_title' => 'Propose New Edition',
+    'frontend_propose_edition_desc' => 'Add a physical version for',
+    'frontend_propose_edition_label_platform' => 'PLATFORM',
+    'frontend_propose_edition_label_edition_name' => 'EDITION NAME',
+    'frontend_propose_edition_placeholder_edition' => 'E.g: Black Label, Platinum, Collector\'s Edition...',
+    'frontend_propose_edition_label_region' => 'REGION',
+    'frontend_propose_edition_no_regions' => 'No regions available',
+    'frontend_propose_edition_submit' => 'Send for validation',
+
+    // Propose Platform
+    'frontend_propose_platform_title' => 'Suggest New Platform',
+    'frontend_propose_platform_desc' => 'Is any console missing from Bengala? Request it here.',
+    'frontend_propose_platform_label_name' => 'CONSOLE / PLATFORM NAME',
+    'frontend_propose_platform_placeholder' => 'E.g: PlayStation 5, Sega Saturn...',
+    'frontend_propose_platform_submit' => 'Send Suggestion',
+
+    // Propose Region
+    'frontend_propose_region_title' => 'Suggest New Region',
+    'frontend_propose_region_desc' => 'Add geographical variants for physical editions.',
+    'frontend_propose_region_label_name' => 'REGION NAME / CODE',
+    'frontend_propose_region_placeholder' => 'E.g: NTSC-J (Asia), PAL-Australia...',
+    'frontend_propose_region_submit' => 'Send Suggestion',
+
+    // Register New Game
+    'frontend_register_game_title' => 'Propose New Game',
+    'frontend_register_game_desc' => 'Your proposal will be reviewed by an administrator before being made public.',
+    'frontend_register_game_master_data' => 'Master Data',
+    'frontend_register_game_label_title' => 'GAME TITLE',
+    'frontend_register_game_placeholder_title' => 'E.g: Silent Hill 2',
+    'frontend_register_game_label_developer' => 'DEVELOPER',
+    'frontend_register_game_placeholder_developer' => 'E.g: Konami',
+    'frontend_register_game_edition_data' => 'First Edition Data',
+    'frontend_register_game_label_platform' => 'PLATFORM',
+    'frontend_register_game_label_region' => 'REGION',
+    'frontend_register_game_no_regions' => 'No regions available',
+    'frontend_register_game_submit' => 'Send proposal',
+
+    // Homepage
+    'homepage_title' => 'Bengala | Organize Your Collection',
+    'homepage_heading' => 'BENGALA.',
+    'homepage_description' => 'Your video game shelf, now in your pocket. Register your games, track your loans and keep your collection always organized.',
+    'homepage_btn_start' => 'Get Started',
+    'homepage_btn_login' => 'Sign In',
+    'homepage_data_games' => 'Games in catalog',
+    'homepage_data_systems' => 'Available consoles',
+    'homepage_data_free' => 'Free',
+    'homepage_data_collectors' => 'For collectors',
+    'homepage_feature_library_title' => 'Your Library',
+    'homepage_feature_library_desc' => 'Add games from any console and region (PAL, USA, Japan) easily.',
+    'homepage_feature_loans_title' => 'Who has my game?',
+    'homepage_feature_loans_desc' => 'If you loan a game to a friend, note it here so you don\'t forget to get it back.',
+    'homepage_feature_rating_title' => 'Personal Rating',
+    'homepage_feature_rating_desc' => 'Rate your games from 1 to 10 and write notes about your progress.',
+    'homepage_feature_data_title' => 'Real Data',
+    'homepage_feature_data_desc' => 'Every game is reviewed so the information about editions is always correct.',
+    'homepage_footer' => 'BENGALA © 2026 — Created by Ana Sánchez Suárez',
 ];

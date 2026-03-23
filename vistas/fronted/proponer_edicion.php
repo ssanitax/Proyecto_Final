@@ -27,8 +27,8 @@ include '../../includes/header.php';
 
 <div class="fade-up visible" style="max-width: 600px; margin: 0 auto;">
     <header style="text-align: center; margin-bottom: 30px;">
-        <h2>Proponer Nueva Edición</h2>
-        <p style="color: #666;">Añade una versión física para <strong><?php echo htmlspecialchars($titulo_juego); ?></strong></p>
+        <h2><?php echo $lang['frontend_propose_edition_title']; ?></h2>
+        <p style="color: #666;"><?php echo $lang['frontend_propose_edition_desc']; ?> <strong><?php echo htmlspecialchars($titulo_juego); ?></strong></p>
     </header>
 
     <div class="about-box" style="padding: 40px; background: white; border-radius: 20px; border: 1px solid #eee;">
@@ -36,7 +36,7 @@ include '../../includes/header.php';
             <input type="hidden" name="juego_id" value="<?php echo $juego_id; ?>">
 
             <div class="form-group" style="margin-bottom: 20px; text-align: left;">
-                <label style="font-weight: 800; font-size: 0.8rem; display: block; margin-bottom: 10px;">PLATAFORMA</label>
+                <label style="font-weight: 800; font-size: 0.8rem; display: block; margin-bottom: 10px;"><?php echo $lang['frontend_propose_edition_label_platform']; ?></label>
                 <select name="plataforma_id" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit;">
                     <?php foreach($plataformas as $p): ?>
                         <option value="<?php echo $p->id; ?>"><?php echo htmlspecialchars($p->nombre); ?></option>
@@ -45,16 +45,16 @@ include '../../includes/header.php';
             </div>
 
             <div class="form-group" style="margin-bottom: 20px; text-align: left;">
-                <label style="font-weight: 800; font-size: 0.8rem; display: block; margin-bottom: 10px;">NOMBRE DE LA EDICIÓN</label>
-                <input type="text" name="edicion_nombre" placeholder="Ej: Black Label, Platinum, Collector's Edition..." required 
+                <label style="font-weight: 800; font-size: 0.8rem; display: block; margin-bottom: 10px;"><?php echo $lang['frontend_propose_edition_label_edition_name']; ?></label>
+                <input type="text" name="edicion_nombre" placeholder="<?php echo $lang['frontend_propose_edition_placeholder_edition']; ?>" required 
                        style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit;">
             </div>
 
             <div class="form-group" style="margin-bottom: 25px; text-align: left;">
-                <label style="font-weight: 800; font-size: 0.8rem; display: block; margin-bottom: 10px;">REGIÓN</label>
+                <label style="font-weight: 800; font-size: 0.8rem; display: block; margin-bottom: 10px;"><?php echo $lang['frontend_propose_edition_label_region']; ?></label>
                 <select name="region" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit;">
                     <?php if (empty($regionesExistentes)): ?>
-                        <option value="">No hay regiones disponibles</option>
+                        <option value=""><?php echo $lang['frontend_propose_edition_no_regions']; ?></option>
                     <?php else: ?>
                         <?php foreach($regionesExistentes as $r): ?>
                             <option value="<?php echo htmlspecialchars($r->region); ?>">
@@ -73,7 +73,7 @@ include '../../includes/header.php';
                 onmouseover="this.style.background='#333'; this.style.transform='translateY(-2px)';"
                 onmouseout="this.style.background='var(--graphite)'; this.style.transform='translateY(0)';"
             >
-                Enviar para validación
+                <?php echo $lang['frontend_propose_edition_submit']; ?>
             </button>
         </form>
     </div>

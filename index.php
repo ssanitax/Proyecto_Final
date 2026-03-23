@@ -26,7 +26,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bengala | Organiza tu Colección</title>
+    <title><?php echo $lang['homepage_title']; ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -120,56 +120,90 @@ try {
             color: #999;
             font-size: 0.8rem;
         }
+
+        .lang-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .lang-btn {
+            padding: 6px 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #666;
+            background: #f5f5f5;
+            transition: 0.3s;
+        }
+
+        .lang-btn:hover {
+            background: var(--graphite);
+            color: white;
+        }
+
+        .lang-btn.active {
+            background: var(--graphite);
+            color: white;
+        }
     </style>
 </head>
 <body>
 
+    <div class="lang-selector">
+        <a href="?lang=es" class="lang-btn <?php echo ($idiomaActual == 'es') ? 'active' : ''; ?>">ES</a>
+        <a href="?lang=en" class="lang-btn <?php echo ($idiomaActual == 'en') ? 'active' : ''; ?>">EN</a>
+    </div>
+
     <section class="hero">
-        <h1>BENGALA.</h1>
-        <p>Tu estantería de videojuegos, ahora en tu bolsillo. Registra tus juegos, controla tus préstamos y mantén tu colección siempre organizada.</p>
+        <h1><?php echo $lang['homepage_heading']; ?></h1>
+        <p><?php echo $lang['homepage_description']; ?></p>
         
         <div class="cta-group">
-            <a href="vistas/fronted/registro.php" class="btn btn-dark">Empezar ahora</a>
-            <a href="vistas/fronted/login.php" class="btn btn-outline">Entrar</a>
+            <a href="vistas/fronted/registro.php" class="btn btn-dark"><?php echo $lang['homepage_btn_start']; ?></a>
+            <a href="vistas/fronted/login.php" class="btn btn-outline"><?php echo $lang['homepage_btn_login']; ?></a>
         </div>
     </section>
 
     <div class="data-strip">
         <div class="data-point">
             <h3><?php echo $totalJuegos; ?></h3>
-            <p>Juegos en catálogo</p>
+            <p><?php echo $lang['homepage_data_games']; ?></p>
         </div>
         <div class="data-point">
             <h3><?php echo $totalSistemas; ?></h3>
-            <p>Consolas disponibles</p>
+            <p><?php echo $lang['homepage_data_systems']; ?></p>
         </div>
         <div class="data-point">
-            <h3>Gratis</h3>
-            <p>Para coleccionistas</p>
+            <h3><?php echo $lang['homepage_data_free']; ?></h3>
+            <p><?php echo $lang['homepage_data_collectors']; ?></p>
         </div>
     </div>
 
     <section class="features">
         <div class="card">
-            <h3>Tu Biblioteca</h3>
-            <p>Añade juegos de cualquier consola y región (PAL, USA, Japón) de forma sencilla.</p>
+            <h3><?php echo $lang['homepage_feature_library_title']; ?></h3>
+            <p><?php echo $lang['homepage_feature_library_desc']; ?></p>
         </div>
         <div class="card">
-            <h3>¿Quién tiene mi juego?</h3>
-            <p>Si le prestas un juego a un amigo, anótalo aquí para no olvidarte de recuperarlo.</p>
+            <h3><?php echo $lang['homepage_feature_loans_title']; ?></h3>
+            <p><?php echo $lang['homepage_feature_loans_desc']; ?></p>
         </div>
         <div class="card">
-            <h3>Valoración Personal</h3>
-            <p>Puntúa tus juegos del 1 al 10 y escribe notas sobre tu progreso.</p>
+            <h3><?php echo $lang['homepage_feature_rating_title']; ?></h3>
+            <p><?php echo $lang['homepage_feature_rating_desc']; ?></p>
         </div>
         <div class="card">
-            <h3>Datos Reales</h3>
-            <p>Cada juego es revisado para que la información de las ediciones sea siempre correcta.</p>
+            <h3><?php echo $lang['homepage_feature_data_title']; ?></h3>
+            <p><?php echo $lang['homepage_feature_data_desc']; ?></p>
         </div>
     </section>
 
     <footer>
-        BENGALA &copy; 2026 — Creado por Ana Sánchez Suárez
+        <?php echo $lang['homepage_footer']; ?>
     </footer>
 
 </body>
