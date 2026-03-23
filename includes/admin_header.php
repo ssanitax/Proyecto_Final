@@ -65,6 +65,27 @@
             border-radius: 10px;
         }
 
+        .lang-btn {
+            padding: 6px 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #666;
+            background: #f5f5f5;
+            transition: 0.3s;
+        }
+
+        .lang-btn:hover {
+            background: var(--graphite);
+            color: white;
+        }
+
+        .lang-btn.active {
+            background: var(--graphite);
+            color: white;
+        }
+
         .container { 
             padding: 40px 10%; 
             max-width: 1200px;
@@ -92,8 +113,8 @@
         <a href="registrar_directo.php"><?php echo $lang['nav_alta_contenido']; ?></a>
         <a href="gestionar_usuarios.php"><?php echo $lang['nav_usuarios']; ?></a>
         <a href="inventario_maestro.php"><?php echo $lang['nav_inventario']; ?></a>
-        <a href="?lang=es" style="margin-left: 10px; font-size: 0.8rem;">ES</a>
-        <a href="?lang=en" style="margin-left: 5px; font-size: 0.8rem;">EN</a>
+        <a href="?lang=es" class="lang-btn <?php echo ($idiomaActual == 'es') ? 'active' : ''; ?>">ES</a>
+        <a href="?lang=en" class="lang-btn <?php echo ($idiomaActual == 'en') ? 'active' : ''; ?>">EN</a>
         <a href="../fronted/logout.php" class="btn-logout"><?php echo $lang['nav_cerrar_sesion']; ?></a>
     </div>
 </nav>

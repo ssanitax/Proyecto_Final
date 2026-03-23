@@ -92,6 +92,27 @@
 
         .status-jugando { background: #d1fae5; color: #065f46; }
         .status-pendiente { background: #fef3c7; color: #92400e; }
+
+        .lang-btn {
+            padding: 6px 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #666;
+            background: #f5f5f5;
+            transition: 0.3s;
+        }
+
+        .lang-btn:hover {
+            background: var(--graphite);
+            color: white;
+        }
+
+        .lang-btn.active {
+            background: var(--graphite);
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -103,8 +124,8 @@
         <a href="mis_prestamos.php"><?php echo __('prestamos'); ?></a>
         <a href="mis_propuestas.php"><?php echo __('propuestas'); ?></a>
         
-        <a href="?lang=es" style="margin-left: 10px; font-size: 0.8rem;">ES</a>
-        <a href="?lang=en" style="margin-left: 5px; font-size: 0.8rem;">EN</a>
+        <a href="?lang=es" class="lang-btn <?php echo ($idiomaActual == 'es') ? 'active' : ''; ?>">ES</a>
+        <a href="?lang=en" class="lang-btn <?php echo ($idiomaActual == 'en') ? 'active' : ''; ?>">EN</a>
         
         <a href="logout.php" style="color: #991b1b;"><?php echo __('salir'); ?></a>
     </div>
