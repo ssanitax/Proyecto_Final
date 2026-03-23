@@ -101,6 +101,7 @@
         <a href="mi_coleccion.php"><?php echo __('biblioteca'); ?></a>
         <a href="buscar.php"><?php echo __('buscar'); ?></a>
         <a href="mis_prestamos.php"><?php echo __('prestamos'); ?></a>
+        <a href="mis_propuestas.php"><?php echo __('propuestas'); ?></a>
         
         <a href="?lang=es" style="margin-left: 10px; font-size: 0.8rem;">ES</a>
         <a href="?lang=en" style="margin-left: 5px; font-size: 0.8rem;">EN</a>

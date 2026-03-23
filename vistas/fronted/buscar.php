@@ -68,6 +68,13 @@ include '../../includes/header.php';
         overflow: hidden;
     }
 
+    .game-cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
     .game-content {
         padding: 20px;
         flex-grow: 1;
@@ -176,7 +183,11 @@ include '../../includes/header.php';
             <?php foreach ($resultados as $juego): ?>
                 <div class="game-card">
                     <div class="game-cover">
-                        <span style="font-size: 4rem;">🎮</span>
+                        <?php if (!empty($juego->imagen_portada)): ?>
+                            <img src="../../img/portadas/<?php echo htmlspecialchars($juego->imagen_portada); ?>" alt="<?php echo htmlspecialchars($juego->titulo); ?>">
+                        <?php else: ?>
+                            <span style="font-size: 4rem;">🎮</span>
+                        <?php endif; ?>
                     </div>
                     
                     <div class="game-content">

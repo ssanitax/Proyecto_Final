@@ -8,14 +8,37 @@ class Juego {
 
     // Obtener todos los juegos para el catálogo general
     public function obtenerTodos() {
-        $sql = "SELECT * FROM juegos ORDER BY titulo ASC";
+                $sql = "SELECT j.*,
+                                             (
+                                                     SELECT e.imagen_portada
+                                                     FROM ediciones e
+                                                     WHERE e.juego_id = j.id
+                                                         AND e.imagen_portada IS NOT NULL
+                                                         AND e.imagen_portada != ''
+                                                     ORDER BY e.id DESC
+                                                     LIMIT 1
+                                             ) AS imagen_portada
+                                FROM juegos j
+                                ORDER BY j.titulo ASC";
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll();
     }
 
     // Buscar juegos (útil para el buscador del MVP)
     public function buscarPorTitulo($termino) {
-        $sql = "SELECT * FROM juegos WHERE titulo LIKE :termino";
+                $sql = "SELECT j.*,
+                                             (
+                                                     SELECT e.imagen_portada
+                                                     FROM ediciones e
+                                                     WHERE e.juego_id = j.id
+                                                         AND e.imagen_portada IS NOT NULL
+                                                         AND e.imagen_portada != ''
+                                                     ORDER BY e.id DESC
+                                                     LIMIT 1
+                                             ) AS imagen_portada
+                                FROM juegos j
+                                WHERE j.titulo LIKE :termino
+                                ORDER BY j.titulo ASC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':termino' => "%$termino%"]);
         return $stmt->fetchAll();

@@ -142,6 +142,71 @@ class AdminController {
         }
     }
 
+    public function subirPortadaJuego() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ../vistas/admin/registrar_directo.php');
+            exit();
+        }
+
+        $juegoId = isset($_POST['juego_id']) ? (int)$_POST['juego_id'] : 0;
+
+        if ($juegoId <= 0) {
+            header('Location: ../vistas/admin/registrar_directo.php?cover_error=invalid_game');
+            exit();
+        }
+
+        if (!isset($_FILES['portada']) || $_FILES['portada']['error'] !== UPLOAD_ERR_OK) {
+            header('Location: ../vistas/admin/registrar_directo.php?cover_error=upload');
+            exit();
+        }
+
+        $tmpPath = $_FILES['portada']['tmp_name'];
+        $originalName = $_FILES['portada']['name'];
+
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mimeType = $finfo->file($tmpPath);
+
+        $allowedMimes = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp'
+        ];
+
+        if (!isset($allowedMimes[$mimeType])) {
+            header('Location: ../vistas/admin/registrar_directo.php?cover_error=type');
+            exit();
+        }
+
+        $ext = $allowedMimes[$mimeType];
+        $baseName = pathinfo($originalName, PATHINFO_FILENAME);
+        $safeBase = preg_replace('/[^a-zA-Z0-9_-]/', '_', $baseName);
+        $safeBase = trim($safeBase, '_');
+        if ($safeBase === '') {
+            $safeBase = 'cover';
+        }
+
+        $fileName = $safeBase . '_' . time() . '.' . $ext;
+        $uploadDir = __DIR__ . '/../img/portadas';
+
+        if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true)) {
+            header('Location: ../vistas/admin/registrar_directo.php?cover_error=filesystem');
+            exit();
+        }
+
+        $destPath = $uploadDir . '/' . $fileName;
+
+        if (!move_uploaded_file($tmpPath, $destPath)) {
+            header('Location: ../vistas/admin/registrar_directo.php?cover_error=filesystem');
+            exit();
+        }
+
+        $stmt = $this->pdo->prepare("UPDATE ediciones SET imagen_portada = ? WHERE juego_id = ?");
+        $stmt->execute([$fileName, $juegoId]);
+
+        header('Location: ../vistas/admin/registrar_directo.php?cover_status=success');
+        exit();
+    }
+
     // --- NUEVAS ACCIONES DE BORRADO MAESTRO ---
 
     public function eliminarPlataforma() {
@@ -255,6 +320,7 @@ if (isset($_GET['action'])) {
     if ($_GET['action'] == 'rechazar') $admin->rechazarPropuesta();
     if ($_GET['action'] == 'registrar_plataforma') $admin->registrarPlataformaDirecta();
     if ($_GET['action'] == 'registrar_juego') $admin->registrarJuegoDirecto();
+    if ($_GET['action'] == 'subir_portada_juego') $admin->subirPortadaJuego();
     if ($_GET['action'] == 'eliminar_region') $admin->eliminarPorRegion();  
     
     // Rutas para el Inventario Maestro

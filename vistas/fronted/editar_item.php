@@ -7,7 +7,7 @@ $id_coleccion = $_GET['id'] ?? null;
 
 // 1. Obtener los datos actuales del juego en la estantería del usuario
 $stmt = $pdo->prepare("
-    SELECT cu.*, j.titulo, e.edicion_nombre, p.nombre as plataforma
+    SELECT cu.*, j.titulo, e.edicion_nombre, e.imagen_portada, p.nombre as plataforma
     FROM coleccion_usuario cu
     JOIN ediciones e ON cu.edicion_id = e.id
     JOIN juegos j ON e.juego_id = j.id
@@ -86,6 +86,16 @@ include '../../includes/header.php';
         <h2 style="margin-bottom: 10px;"><?php echo $lang['frontend_edit_item_title']; ?></h2>
         <p style="color: #666;"><?php echo sprintf($lang['frontend_edit_item_desc'], htmlspecialchars($item->titulo)); ?></p>
     </header>
+
+    <div class="about-box" style="padding: 18px; background: white; border-radius: 20px; border: 1px solid #eee; margin-bottom: 20px; display: flex; justify-content: center;">
+        <div style="width: min(260px, 100%); aspect-ratio: 3/4; border-radius: 14px; overflow: hidden; background: #f3f4f6; display: flex; align-items: center; justify-content: center;">
+            <?php if (!empty($item->imagen_portada)): ?>
+                <img src="../../img/portadas/<?php echo htmlspecialchars($item->imagen_portada); ?>" alt="<?php echo htmlspecialchars($item->titulo); ?>" style="width:100%; height:100%; object-fit:cover; display:block;">
+            <?php else: ?>
+                <span style="font-size: 4rem;">🎮</span>
+            <?php endif; ?>
+        </div>
+    </div>
 
     <div class="about-box" style="padding: 40px; background: white; border-radius: 20px; border: 1px solid #eee; box-shadow: 0 4px 15px rgba(0,0,0,0.02); margin-bottom: 30px;">
         <form action="../../controllers/ColeccionController.php?action=actualizar" method="POST">
