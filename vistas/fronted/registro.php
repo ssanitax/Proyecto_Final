@@ -1,4 +1,5 @@
 <?php 
+require_once '../../includes/auth.php';
 require_once '../../config/config.php';
 require_once '../../controllers/AuthController.php';
 
@@ -11,7 +12,7 @@ $auth->registrar();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro | Bengala</title>
+    <title><?php echo $lang['frontend_register_title']; ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -133,13 +134,46 @@ $auth->registrar();
         .footer-links a:hover {
             text-decoration: underline;
         }
+
+        .lang-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .lang-btn {
+            padding: 6px 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #666;
+            background: #f5f5f5;
+            transition: 0.3s;
+        }
+
+        .lang-btn:hover {
+            background: var(--graphite);
+            color: white;
+        }
+
+        .lang-btn.active {
+            background: var(--graphite);
+            color: white;
+        }
     </style>
 </head>
 <body>
 
 <div class="register-card">
-    <h1>ÚNETE A BENGALA</h1>
-    <p>Crea tu cuenta para gestionar tu colección física</p>
+    <div class="lang-selector">
+        <a href="?lang=es" class="lang-btn <?php echo ($idiomaActual == 'es') ? 'active' : ''; ?>">ES</a>
+        <a href="?lang=en" class="lang-btn <?php echo ($idiomaActual == 'en') ? 'active' : ''; ?>">EN</a>
+    </div>
+    <h1><?php echo $lang['frontend_register_heading']; ?></h1>
+    <p><?php echo $lang['frontend_register_subtitle']; ?></p>
 
     <?php if(isset($error)): ?>
         <div class="error-msg"><?php echo $error; ?></div>
@@ -147,32 +181,32 @@ $auth->registrar();
 
     <form method="POST" action="">
         <div class="form-group">
-            <label>NOMBRE COMPLETO</label>
-            <input type="text" name="nombre" placeholder="Ej. Ana Sánchez" 
+            <label><?php echo $lang['frontend_register_label_name']; ?></label>
+            <input type="text" name="nombre" placeholder="<?php echo $lang['frontend_register_placeholder_name']; ?>" 
                    value="<?php echo isset($_POST['nombre']) ? htmlspecialchars($_POST['nombre']) : ''; ?>" required>
         </div>
 
         <div class="form-group">
-            <label>CORREO ELECTRÓNICO</label>
-            <input type="email" name="email" placeholder="tu@email.com" 
+            <label><?php echo $lang['frontend_register_label_email']; ?></label>
+            <input type="email" name="email" placeholder="<?php echo $lang['frontend_register_placeholder_email']; ?>" 
                    value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" required>
         </div>
 
         <div class="form-group">
-            <label>CONTRASEÑA</label>
-            <input type="password" name="password" id="pass1" placeholder="••••••••" required>
+            <label><?php echo $lang['frontend_register_label_password']; ?></label>
+            <input type="password" name="password" id="pass1" placeholder="<?php echo $lang['frontend_register_placeholder_password']; ?>" required>
         </div>
 
         <div class="form-group">
-            <label>CONFIRMAR CONTRASEÑA</label>
-            <input type="password" name="password_confirm" id="pass2" placeholder="••••••••" oninput="validarPasswords(this)" required>
+            <label><?php echo $lang['frontend_register_label_confirm_password']; ?></label>
+            <input type="password" name="password_confirm" id="pass2" placeholder="<?php echo $lang['frontend_register_placeholder_password']; ?>" oninput="validarPasswords(this)" required>
         </div>
 
-        <button type="submit" class="btn-register">Crear mi biblioteca</button>
+        <button type="submit" class="btn-register"><?php echo $lang['frontend_register_button']; ?></button>
     </form>
 
     <div class="footer-links">
-        ¿Ya tienes una cuenta? <a href="login.php">Inicia sesión</a>
+        <?php echo $lang['frontend_register_login_text']; ?> <a href="login.php"><?php echo $lang['frontend_register_login_link']; ?></a>
     </div>
 </div>
 

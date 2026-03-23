@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bengala | Iniciar Sesión</title>
+    <title><?php echo $lang['frontend_login_title']; ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -134,12 +134,45 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             font-weight: 700; 
             text-decoration: none;
         }
+
+        .lang-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .lang-btn {
+            padding: 6px 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #666;
+            background: #f5f5f5;
+            transition: 0.3s;
+        }
+
+        .lang-btn:hover {
+            background: var(--graphite);
+            color: white;
+        }
+
+        .lang-btn.active {
+            background: var(--graphite);
+            color: white;
+        }
     </style>
 </head>
 <body>
 
 <div class="login-box">
-    <h2>BENGALA</h2>
+    <div class="lang-selector">
+        <a href="?lang=es" class="lang-btn <?php echo ($idiomaActual == 'es') ? 'active' : ''; ?>">ES</a>
+        <a href="?lang=en" class="lang-btn <?php echo ($idiomaActual == 'en') ? 'active' : ''; ?>">EN</a>
+    </div>
+    <h2><?php echo $lang['frontend_login_heading']; ?></h2>
     
     <?php if ($error): ?>
         <div class="error-alert">
@@ -148,13 +181,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <?php endif; ?>
 
     <form method="POST" action="">
-        <input type="email" name="email" placeholder="Correo electrónico" required>
-        <input type="password" name="password" placeholder="Contraseña" required>
-        <button type="submit" class="btn-login">ENTRAR</button>
+        <input type="email" name="email" placeholder="<?php echo $lang['frontend_login_email_placeholder']; ?>" required>
+        <input type="password" name="password" placeholder="<?php echo $lang['frontend_login_password_placeholder']; ?>" required>
+        <button type="submit" class="btn-login"><?php echo $lang['frontend_login_button']; ?></button>
     </form>
 
     <div class="register-link">
-        ¿No tienes cuenta? <a href="registro.php">Regístrate ahora</a>
+        <?php echo $lang['frontend_login_register_text']; ?> <a href="registro.php"><?php echo $lang['frontend_login_register_link']; ?></a>
     </div>
 </div>
 

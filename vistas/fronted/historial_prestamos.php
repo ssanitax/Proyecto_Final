@@ -93,11 +93,11 @@ include '../../includes/header.php';
 <div class="fade-up visible">
     <header style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
         <div style="text-align: left;">
-            <h2 style="margin: 0; text-align: left;">Historial de Préstamos</h2>
-            <p style="color: #666; margin: 5px 0 0 0;">Registro de tus movimientos pasados en la colección</p>
+            <h2 style="margin: 0; text-align: left;"><?php echo $lang['frontend_history_title']; ?></h2>
+            <p style="color: #666; margin: 5px 0 0 0;"><?php echo $lang['frontend_history_desc']; ?></p>
         </div>
         <a href="mis_prestamos.php" class="btn-back">
-            ← Volver a Préstamos
+            <?php echo $lang['frontend_history_back']; ?>
         </a>
     </header>
 
@@ -105,16 +105,16 @@ include '../../includes/header.php';
         <?php if (empty($historial)): ?>
             <div style="padding: 80px; text-align: center;">
                 <span style="font-size: 3rem; display: block; margin-bottom: 20px;">📂</span>
-                <p style="color: #999; font-style: italic;">No tienes ningún registro de préstamos devueltos todavía.</p>
+                <p style="color: #999; font-style: italic;"><?php echo $lang['frontend_history_empty']; ?></p>
             </div>
         <?php else: ?>
             <table class="history-table">
                 <thead>
                     <tr>
-                        <th>Videojuego y Edición</th>
-                        <th>Prestado a</th>
-                        <th>Fecha Salida</th>
-                        <th>Fecha Devuelto</th>
+                        <th><?php echo $lang['frontend_history_table_game']; ?></th>
+                        <th><?php echo $lang['frontend_history_table_person']; ?></th>
+                        <th><?php echo $lang['frontend_history_table_out']; ?></th>
+                        <th><?php echo $lang['frontend_history_table_return']; ?></th>
                     </tr>
                 </thead>
                 <tbody>

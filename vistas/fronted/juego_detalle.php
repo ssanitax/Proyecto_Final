@@ -15,7 +15,7 @@ $stmt = $pdo->prepare("SELECT * FROM juegos WHERE id = ?");
 $stmt->execute([$id_juego]);
 $juego = $stmt->fetch();
 
-if (!$juego) { die("Juego no encontrado."); }
+if (!$juego) { die($lang['frontend_game_detail_not_found']); }
 
 // 2. Obtener las variantes físicas (Consola + Región)
 $stmtEdic = $pdo->prepare("
@@ -37,7 +37,7 @@ include '../../includes/header.php';
             <div style="background: #1c1f26; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center; font-size: 6rem; border-radius: 15px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
                 🎮
             </div>
-            <p style="margin-top: 20px; color: #888; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Base de datos #<?php echo $juego->id; ?></p>
+            <p style="margin-top: 20px; color: #888; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;"><?php echo $lang['frontend_game_detail_database_id']; ?><?php echo $juego->id; ?></p>
         </div>
 
         <div style="flex: 1.5; min-width: 320px; text-align: left;">
@@ -45,12 +45,12 @@ include '../../includes/header.php';
             <p style="color: #666; margin-bottom: 30px;"><?php echo htmlspecialchars($juego->desarrollador); ?></p>
             
             <div style="border-top: 1px solid #eee; padding-top: 25px;">
-                <h4 style="margin-bottom: 20px; font-size: 0.85rem; color: #333; font-weight: 800;">SELECCIONA TU VERSIÓN FÍSICA</h4>
+                <h4 style="margin-bottom: 20px; font-size: 0.85rem; color: #333; font-weight: 800;"><?php echo $lang['frontend_game_detail_select_version']; ?></h4>
                 
                 <form action="../../controllers/ColeccionController.php?action=agregar" method="POST">
                     <div style="display: grid; gap: 12px;">
                         <?php if (empty($ediciones)): ?>
-                            <p style="color: #999; font-style: italic; padding: 20px; background: #f9f9f9; border-radius: 10px;">No hay consolas registradas para este título.</p>
+                            <p style="color: #999; font-style: italic; padding: 20px; background: #f9f9f9; border-radius: 10px;"><?php echo $lang['frontend_game_detail_no_consoles']; ?></p>
                         <?php else: ?>
                             <?php foreach($ediciones as $edic): ?>
                                 <label class="version-card">
@@ -65,15 +65,15 @@ include '../../includes/header.php';
                                 </label>
                             <?php endforeach; ?>
                             
-                            <button type="submit" class="btn-confirm">Añadir a mi Biblioteca</button>
+                            <button type="submit" class="btn-confirm"><?php echo $lang['frontend_game_detail_add_library']; ?></button>
                         <?php endif; ?>
                     </div>
                 </form>
 
                 <div style="margin-top: 40px; padding: 20px; background: #f4f5f7; border-radius: 12px; text-align: center;">
-                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">¿Tienes este juego en otra consola o región?</p>
+                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;"><?php echo $lang['frontend_game_detail_suggest_question']; ?></p>
                     <a href="proponer_edicion.php?juego_id=<?php echo $juego->id; ?>" style="color: var(--graphite); font-weight: 800; text-decoration: none; font-size: 0.85rem;">
-                        + Sugerir plataforma/idioma faltante
+                        <?php echo $lang['frontend_game_detail_suggest_link']; ?>
                     </a>
                 </div>
             </div>

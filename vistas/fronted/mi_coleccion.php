@@ -54,21 +54,21 @@ include '../../includes/header.php';
 
 <div class="fade-up visible">
     <header style="text-align: center; margin-bottom: 40px;">
-        <h2 style="margin-bottom: 10px;">Mi Colección Personal</h2>
-        <p style="color: #777;">Busca y filtra en tu estantería virtual</p>
+        <h2 style="margin-bottom: 10px;"><?php echo $lang['frontend_collection_title']; ?></h2>
+        <p style="color: #777;"><?php echo $lang['frontend_collection_desc']; ?></p>
     </header>
 
     <section style="background: white; padding: 25px; border-radius: 20px; margin-bottom: 40px; border: 1px solid #eee; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
         <form method="GET" action="" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
             <div style="flex: 1; min-width: 250px;">
-                <input type="text" name="search" placeholder="Buscar por título..." 
+                <input type="text" name="search" placeholder="<?php echo $lang['frontend_collection_search_placeholder']; ?>" 
                        value="<?php echo htmlspecialchars($busqueda); ?>"
                        style="width: 100%; padding: 12px 20px; border-radius: 12px; border: 1px solid #eee; outline: none; font-family: inherit;">
             </div>
             
             <div style="min-width: 200px;">
                 <select name="plataforma" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #eee; outline: none; font-family: inherit; background: white;">
-                    <option value="">Todas las Consolas</option>
+                    <option value=""><?php echo $lang['frontend_collection_all_platforms']; ?></option>
                     <?php foreach($plataformas_usuario as $plat): ?>
                         <option value="<?php echo $plat->id; ?>" <?php echo ($plataforma_filtro == $plat->id) ? 'selected' : ''; ?>>
                             <?php echo htmlspecialchars($plat->nombre); ?>
@@ -78,11 +78,11 @@ include '../../includes/header.php';
             </div>
 
             <button type="submit" style="padding: 12px 30px; border-radius: 50px; border: none; background: var(--graphite); color: white; cursor: pointer; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; transition: 0.3s;">
-                Filtrar
+                <?php echo $lang['frontend_collection_filter_button']; ?>
             </button>
             
             <?php if(!empty($busqueda) || !empty($plataforma_filtro)): ?>
-                <a href="mi_coleccion.php" style="color: #e74c3c; text-decoration: none; font-size: 0.85rem; font-weight: 700;">Limpiar filtros</a>
+                <a href="mi_coleccion.php" style="color: #e74c3c; text-decoration: none; font-size: 0.85rem; font-weight: 700;"><?php echo $lang['frontend_collection_clear_filters']; ?></a>
             <?php endif; ?>
         </form>
     </section>
@@ -91,7 +91,7 @@ include '../../includes/header.php';
         <?php if (empty($items)): ?>
             <div style="grid-column: 1/-1; text-align: center; padding: 80px 0;">
                 <span style="font-size: 3rem; display: block; margin-bottom: 20px;">🔍</span>
-                <p style="color: #999; font-style: italic;">No se han encontrado juegos con esos criterios.</p>
+                <p style="color: #999; font-style: italic;"><?php echo $lang['frontend_collection_empty']; ?></p>
             </div>
         <?php else: ?>
             <?php foreach($items as $item): ?>
@@ -126,7 +126,7 @@ include '../../includes/header.php';
 
                         <a href="editar_item.php?id=<?php echo $item->id; ?>" 
                            style="display: block; width: 100%; padding: 12px; border-radius: 50px; background: var(--graphite); color: white; text-decoration: none; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; text-align: center; transition: 0.3s;">
-                            Gestionar Copia
+                            <?php echo $lang['frontend_collection_manage_copy']; ?>
                         </a>
                     </div>
                 </div>

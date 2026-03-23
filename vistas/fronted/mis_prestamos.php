@@ -75,16 +75,16 @@ include '../../includes/header.php';
 
 <div class="fade-up visible">
     <header style="margin-bottom: 40px; text-align: center;">
-        <h2>Juegos fuera de casa 🤝</h2>
-        <p style="color: #666;">Préstamos activos actualmente</p>
+        <h2><?php echo $lang['frontend_loans_title']; ?></h2>
+        <p style="color: #666;"><?php echo $lang['frontend_loans_desc']; ?></p>
     </header>
 
     <?php if (empty($prestamosActivos)): ?>
         <div style="text-align: center; padding: 100px 0;">
             <span style="font-size: 4rem; display: block; margin-bottom: 20px;">🏠</span>
-            <p style="color:#999; margin-bottom: 20px;">¡Todos tus juegos están en la biblioteca!</p>
+            <p style="color:#999; margin-bottom: 20px;"><?php echo $lang['frontend_loans_empty']; ?></p>
             <a href="mi_coleccion.php" class="btn-dash" style="display: inline-block; text-decoration: none; background: var(--graphite); color: white; padding: 12px 30px; border-radius: 50px; font-weight: 600;">
-                Prestar un juego ahora
+                <?php echo $lang['frontend_loans_empty_button']; ?>
             </a>
         </div>
     <?php else: ?>
@@ -97,13 +97,13 @@ include '../../includes/header.php';
                     <div class="game-content">
                         <h3><?php echo htmlspecialchars($p->titulo); ?></h3>
                         <div class="borrower-info">
-                            <strong>Prestado a:</strong> <?php echo htmlspecialchars($p->nombre_persona); ?><br>
-                            <small>Desde el <?php echo date('d/m/Y', strtotime($p->fecha_prestamo)); ?></small>
+                            <strong><?php echo $lang['frontend_loans_borrowed_to']; ?></strong> <?php echo htmlspecialchars($p->nombre_persona); ?><br>
+                            <small><?php echo $lang['frontend_loans_since']; ?> <?php echo date('d/m/Y', strtotime($p->fecha_prestamo)); ?></small>
                         </div>
                         <a href="../../controllers/PrestamoController.php?action=devolver&id=<?php echo $p->id; ?>" 
                            class="btn-return"
-                           onclick="return confirm('¿Confirmas que has recuperado el juego?')">
-                            Marcar como recibido
+                           onclick="return confirm('<?php echo $lang['frontend_loans_confirm_return']; ?>')">
+                            <?php echo $lang['frontend_loans_return_button']; ?>
                         </a>
                     </div>
                 </div>
@@ -113,7 +113,7 @@ include '../../includes/header.php';
 
     <div class="history-section">
         <a href="historial_prestamos.php" class="btn-history">
-            📂 Ver historial de préstamos pasados
+            <?php echo $lang['frontend_loans_history_link']; ?>
         </a>
     </div>
 </div>
