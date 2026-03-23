@@ -2,6 +2,7 @@
 require_once '../../includes/auth.php';
 redirigirSiNoUsuario();
 require_once '../../config/config.php';
+require_once '../../models/Valoracion.php';
 
 $id_juego = $_GET['id'] ?? null;
 
@@ -27,6 +28,19 @@ $stmtEdic = $pdo->prepare("
 $stmtEdic->execute([$id_juego]);
 $ediciones = $stmtEdic->fetchAll();
 
+$valoracionModel = new Valoracion($pdo);
+$resumenValoraciones = $valoracionModel->obtenerResumenJuegoParaUsuario($id_juego, $_SESSION['usuario_id']);
+
+$mediaGlobal = $resumenValoraciones && $resumenValoraciones->media_global !== null
+    ? number_format((float)$resumenValoraciones->media_global, 1)
+    : null;
+
+$totalValoraciones = $resumenValoraciones ? (int)$resumenValoraciones->total_valoraciones : 0;
+
+$mediaUsuario = $resumenValoraciones && $resumenValoraciones->media_usuario !== null
+    ? number_format((float)$resumenValoraciones->media_usuario, 1)
+    : null;
+
 include '../../includes/header.php';
 ?>
 
@@ -43,6 +57,27 @@ include '../../includes/header.php';
         <div style="flex: 1.5; min-width: 320px; text-align: left;">
             <h2 style="text-align: left; margin-bottom: 5px;"><?php echo htmlspecialchars($juego->titulo); ?></h2>
             <p style="color: #666; margin-bottom: 30px;"><?php echo htmlspecialchars($juego->desarrollador); ?></p>
+
+            <div class="ratings-summary">
+                <div class="rating-box">
+                    <div class="rating-label"><?php echo $lang['frontend_ratings_average_label']; ?></div>
+                    <?php if ($mediaGlobal !== null): ?>
+                        <div class="rating-value">⭐ <?php echo $mediaGlobal; ?>/10</div>
+                        <div class="rating-meta"><?php echo sprintf($lang['frontend_ratings_votes'], $totalValoraciones); ?></div>
+                    <?php else: ?>
+                        <div class="rating-meta"><?php echo $lang['frontend_ratings_no_data']; ?></div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="rating-box">
+                    <div class="rating-label"><?php echo $lang['frontend_ratings_your_label']; ?></div>
+                    <?php if ($mediaUsuario !== null): ?>
+                        <div class="rating-value">🎯 <?php echo $mediaUsuario; ?>/10</div>
+                    <?php else: ?>
+                        <div class="rating-meta"><?php echo $lang['frontend_ratings_no_personal']; ?></div>
+                    <?php endif; ?>
+                </div>
+            </div>
             
             <div style="border-top: 1px solid #eee; padding-top: 25px;">
                 <h4 style="margin-bottom: 20px; font-size: 0.85rem; color: #333; font-weight: 800;"><?php echo $lang['frontend_game_detail_select_version']; ?></h4>
@@ -82,6 +117,40 @@ include '../../includes/header.php';
 </div>
 
 <style>
+    .ratings-summary {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(180px, 1fr));
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .rating-box {
+        background: #f8f9fb;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 12px 14px;
+    }
+
+    .rating-label {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: #6b7280;
+        margin-bottom: 6px;
+    }
+
+    .rating-value {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--graphite);
+    }
+
+    .rating-meta {
+        font-size: 0.82rem;
+        color: #7a7a7a;
+    }
+
     .version-card {
         display: flex;
         align-items: center;
@@ -115,6 +184,12 @@ include '../../includes/header.php';
         letter-spacing: 1px;
     }
     .btn-confirm:hover { background: #333; transform: translateY(-2px); }
+
+    @media (max-width: 700px) {
+        .ratings-summary {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 
 <?php include '../../includes/footer.php'; ?>

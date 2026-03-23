@@ -27,9 +27,28 @@ class ColeccionController {
             }
 
             try {
+                // Si el usuario ya valoró este juego en otra copia, heredamos esa nota.
+                $sqlValoracionExistente = "SELECT cu.valoracion_personal
+                                           FROM coleccion_usuario cu
+                                           JOIN ediciones e_copia ON e_copia.id = cu.edicion_id
+                                           JOIN ediciones e_nueva ON e_nueva.id = ?
+                                           WHERE cu.usuario_id = ?
+                                             AND e_copia.juego_id = e_nueva.juego_id
+                                             AND cu.valoracion_personal IS NOT NULL
+                                           ORDER BY cu.id DESC
+                                           LIMIT 1";
+                $stmtValoracionExistente = $this->pdo->prepare($sqlValoracionExistente);
+                $stmtValoracionExistente->execute([$edicion_id, $usuario_id]);
+                $valoracionExistente = $stmtValoracionExistente->fetchColumn();
+
                 // Ahora simplemente insertamos. Al no haber restricción UNIQUE, 
                 // se creará una nueva fila cada vez que el usuario pulse el botón.
-                $this->coleccionModel->agregarEdicion($usuario_id, $edicion_id, 'bueno');
+                $this->coleccionModel->agregarEdicion(
+                    $usuario_id,
+                    $edicion_id,
+                    'bueno',
+                    $valoracionExistente !== false ? $valoracionExistente : null
+                );
                 header("Location: ../vistas/fronted/mi_coleccion.php?status=success");
                 exit();
             } catch (PDOException $e) {
@@ -44,13 +63,45 @@ class ColeccionController {
             session_start();
             $id = $_POST['id'];
             $estado = $_POST['estado'];
-            $valoracion = $_POST['valoracion'];
+            $valoracion = isset($_POST['valoracion']) && $_POST['valoracion'] !== '' ? (int)$_POST['valoracion'] : null;
             $notas = $_POST['notas'];
 
-            // Llamamos al modelo para actualizar
-            $sql = "UPDATE coleccion_usuario SET estado = ?, valoracion_personal = ?, notas = ? WHERE id = ? AND usuario_id = ?";
-            $stmt = $this->pdo->prepare($sql);
-            $exito = $stmt->execute([$estado, $valoracion, $notas, $id, $_SESSION['usuario_id']]);
+            try {
+                $this->pdo->beginTransaction();
+
+                // 1) Actualizamos estado y notas solo de la copia editada
+                $sql = "UPDATE coleccion_usuario SET estado = ?, notas = ? WHERE id = ? AND usuario_id = ?";
+                $stmt = $this->pdo->prepare($sql);
+                $exito = $stmt->execute([$estado, $notas, $id, $_SESSION['usuario_id']]);
+
+                // 2) Detectamos el juego al que pertenece esa copia
+                $sqlJuego = "SELECT e.juego_id
+                             FROM coleccion_usuario cu
+                             JOIN ediciones e ON e.id = cu.edicion_id
+                             WHERE cu.id = ? AND cu.usuario_id = ?
+                             LIMIT 1";
+                $stmtJuego = $this->pdo->prepare($sqlJuego);
+                $stmtJuego->execute([$id, $_SESSION['usuario_id']]);
+                $juegoId = $stmtJuego->fetchColumn();
+
+                // 3) Propagamos la valoración a TODAS las copias del mismo juego del usuario
+                if ($juegoId) {
+                    $sqlPropaga = "UPDATE coleccion_usuario cu
+                                   JOIN ediciones e ON e.id = cu.edicion_id
+                                   SET cu.valoracion_personal = ?
+                                   WHERE cu.usuario_id = ?
+                                     AND e.juego_id = ?";
+                    $stmtPropaga = $this->pdo->prepare($sqlPropaga);
+                    $stmtPropaga->execute([$valoracion, $_SESSION['usuario_id'], $juegoId]);
+                }
+
+                $this->pdo->commit();
+            } catch (Exception $e) {
+                if ($this->pdo->inTransaction()) {
+                    $this->pdo->rollBack();
+                }
+                $exito = false;
+            }
 
             header('Location: ../vistas/fronted/mi_coleccion.php?updated=' . ($exito ? '1' : '0'));
             exit();

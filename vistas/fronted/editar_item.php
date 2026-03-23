@@ -24,6 +24,63 @@ if (!$item) {
 include '../../includes/header.php';
 ?>
 
+<style>
+    .rating-panel {
+        background: #f8f9fb;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 14px;
+    }
+
+    .rating-panel-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .rating-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border: 1px solid #d1d5db;
+        background: white;
+        color: #4b5563;
+    }
+
+    .rating-input {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--graphite);
+        background: white;
+    }
+
+    .rating-input:focus {
+        outline: none;
+        border-color: var(--graphite);
+        box-shadow: 0 0 0 3px rgba(28, 31, 38, 0.08);
+    }
+
+    .rating-help {
+        margin-top: 8px;
+        font-size: 0.78rem;
+        color: #6b7280;
+        line-height: 1.4;
+    }
+</style>
+
 <div class="fade-up visible" style="max-width: 700px; margin: 0 auto;">
     <header style="text-align: center; margin-bottom: 40px;">
         <h2 style="margin-bottom: 10px;"><?php echo $lang['frontend_edit_item_title']; ?></h2>
@@ -46,8 +103,14 @@ include '../../includes/header.php';
 
                 <div class="form-group" style="text-align: left;">
                     <label style="font-weight: 800; font-size: 0.75rem; color: var(--graphite); display: block; margin-bottom: 10px; text-transform: uppercase;"><?php echo $lang['frontend_edit_item_label_rating']; ?></label>
-                    <input type="number" name="valoracion" min="1" max="10" value="<?php echo $item->valoracion_personal; ?>" 
-                           style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #eee;">
+                    <div class="rating-panel">
+                        <div class="rating-panel-head">
+                            <span class="rating-chip"><?php echo $lang['frontend_ratings_your_label']; ?></span>
+                            <span class="rating-chip">1-10</span>
+                        </div>
+                        <input type="number" name="valoracion" min="1" max="10" value="<?php echo $item->valoracion_personal; ?>" class="rating-input">
+                        <p class="rating-help"><?php echo $lang['frontend_edit_item_rating_scope']; ?></p>
+                    </div>
                 </div>
             </div>
 

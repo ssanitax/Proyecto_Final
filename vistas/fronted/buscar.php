@@ -3,9 +3,12 @@ require_once '../../includes/auth.php';
 redirigirSiNoUsuario();
 require_once '../../config/config.php';
 require_once '../../models/Juego.php';
+require_once '../../models/Valoracion.php';
 
 $juegoModel = new Juego($pdo);
+$valoracionModel = new Valoracion($pdo);
 $resultados = [];
+$valoracionesPorJuego = [];
 $busquedaRealizada = false;
 
 // Lógica de búsqueda
@@ -16,6 +19,13 @@ if (isset($_GET['q']) && !empty(trim($_GET['q']))) {
 } else {
     // Si no hay búsqueda activa, mostramos todo el catálogo
     $resultados = $juegoModel->obtenerTodos();
+}
+
+if (!empty($resultados)) {
+    $juegoIds = array_map(function ($juego) {
+        return (int)$juego->id;
+    }, $resultados);
+    $valoracionesPorJuego = $valoracionModel->obtenerResumenPorJuegos($juegoIds);
 }
 
 include '../../includes/header.php';
@@ -73,6 +83,18 @@ include '../../includes/header.php';
         color: var(--graphite);
         line-height: 1.3;
         text-align: left;
+    }
+
+    .rating-line {
+        font-size: 0.82rem;
+        color: #555;
+        margin-bottom: 12px;
+        text-align: left;
+    }
+
+    .rating-empty {
+        color: #999;
+        font-style: italic;
     }
 
     .btn-add {
@@ -159,6 +181,20 @@ include '../../includes/header.php';
                     
                     <div class="game-content">
                         <h3><?php echo htmlspecialchars($juego->titulo); ?></h3>
+
+                        <?php
+                            $ratingData = $valoracionesPorJuego[$juego->id] ?? null;
+                            $tieneMedia = $ratingData && $ratingData['total'] > 0;
+                        ?>
+
+                        <?php if ($tieneMedia): ?>
+                            <p class="rating-line">
+                                ⭐ <strong><?php echo number_format($ratingData['media'], 1); ?>/10</strong>
+                                · <?php echo sprintf($lang['frontend_ratings_votes'], (int)$ratingData['total']); ?>
+                            </p>
+                        <?php else: ?>
+                            <p class="rating-line rating-empty"><?php echo $lang['frontend_ratings_no_data']; ?></p>
+                        <?php endif; ?>
                         
                         <a href="juego_detalle.php?id=<?php echo $juego->id; ?>" class="btn-add">
                             <?php echo $lang['frontend_search_add_game']; ?>

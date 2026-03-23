@@ -24,11 +24,23 @@ $plataformas_usuario = $stmtPlats->fetchAll();
 // 3. Construir la consulta con las columnas correctas de tu DB
 // Se cambió 'e.imagen_url' por 'e.imagen_portada' y se eliminó 'p.color_hex'
 $sql = "SELECT cu.*, j.titulo, e.region, e.edicion_nombre, p.nombre as plataforma_nombre, 
-               e.imagen_portada
+               e.imagen_portada,
+               rating_user.valoracion_juego_usuario
         FROM coleccion_usuario cu
         JOIN ediciones e ON cu.edicion_id = e.id
         JOIN juegos j ON e.juego_id = j.id
         JOIN plataformas p ON e.plataforma_id = p.id
+        LEFT JOIN (
+            SELECT t.usuario_id, t.juego_id, cu3.valoracion_personal AS valoracion_juego_usuario
+            FROM (
+                SELECT cu2.usuario_id, e2.juego_id, MAX(cu2.id) AS ultimo_id
+                FROM coleccion_usuario cu2
+                JOIN ediciones e2 ON e2.id = cu2.edicion_id
+                WHERE cu2.valoracion_personal IS NOT NULL
+                GROUP BY cu2.usuario_id, e2.juego_id
+            ) t
+            JOIN coleccion_usuario cu3 ON cu3.id = t.ultimo_id
+        ) rating_user ON rating_user.usuario_id = cu.usuario_id AND rating_user.juego_id = e.juego_id
         WHERE cu.usuario_id = ?";
 
 $params = [$usuario_id];
@@ -51,6 +63,41 @@ $items = $stmt->fetchAll();
 
 include '../../includes/header.php';
 ?>
+
+<style>
+    .user-rating-badge {
+        margin-top: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        background: #f4f5f7;
+        border: 1px solid #e5e7eb;
+    }
+
+    .user-rating-label {
+        font-size: 0.62rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #6b7280;
+    }
+
+    .user-rating-value {
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: var(--graphite);
+    }
+
+    .user-rating-empty {
+        margin-top: 10px;
+        display: inline-block;
+        font-size: 0.74rem;
+        color: #9ca3af;
+        font-style: italic;
+    }
+</style>
 
 <div class="fade-up visible">
     <header style="text-align: center; margin-bottom: 40px;">
@@ -122,6 +169,14 @@ include '../../includes/header.php';
                             <p style="font-size: 0.8rem; color: #888;">
                                 <?php echo htmlspecialchars($item->edicion_nombre); ?> • <?php echo htmlspecialchars($item->region); ?>
                             </p>
+                            <?php if ($item->valoracion_juego_usuario !== null): ?>
+                                <div class="user-rating-badge">
+                                    <span class="user-rating-label"><?php echo $lang['frontend_ratings_your_label']; ?></span>
+                                    <span class="user-rating-value">⭐ <?php echo number_format((float)$item->valoracion_juego_usuario, 1); ?>/10</span>
+                                </div>
+                            <?php else: ?>
+                                <span class="user-rating-empty"><?php echo $lang['frontend_ratings_no_personal']; ?></span>
+                            <?php endif; ?>
                         </div>
 
                         <a href="editar_item.php?id=<?php echo $item->id; ?>" 
