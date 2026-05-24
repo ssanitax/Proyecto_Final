@@ -10,11 +10,12 @@ class AdminController {
             header('Location: ../vistas/fronted/login.php');
             exit();
         }
+        $this->pdo = $pdo;
+        sincronizarRolSesion($this->pdo);
         if (!esAdmin()) {
             header('Location: ../vistas/fronted/dashboard.php');
             exit();
         }
-        $this->pdo = $pdo;
     }
 
     /**

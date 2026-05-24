@@ -65,8 +65,11 @@ class AuthController {
                 $_SESSION['usuario_id'] = $usuario->id;
                 $_SESSION['usuario_nombre'] = $usuario->nombre;
                 $_SESSION['usuario_rol'] = $usuario->rol;
+                if (!empty($GLOBALS['pdo'])) {
+                    sincronizarRolSesion($GLOBALS['pdo']);
+                }
 
-                if (rolTieneAccesoAdmin($usuario->rol)) {
+                if (rolTieneAccesoAdmin($_SESSION['usuario_rol'])) {
                     header('Location: ../admin/dashboard.php');
                 } else {
                     header('Location: dashboard.php');

@@ -1,7 +1,7 @@
 <?php
 require_once '../../includes/auth.php';
 redirigirSiNoAdmin();
-require_once '../../config/config.php';
+$pdo = $GLOBALS['pdo'];
 
 $usuarios = $pdo->query("SELECT id, nombre, email, rol FROM usuarios ORDER BY id ASC")->fetchAll();
 

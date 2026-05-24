@@ -1,7 +1,7 @@
 <?php
 require_once '../../includes/auth.php';
 redirigirSiNoAdmin();
-require_once '../../config/config.php';
+$pdo = $GLOBALS['pdo'];
 
 // 1. Obtener todas las plataformas
 $plataformas = $pdo->query("SELECT * FROM plataformas ORDER BY nombre ASC")->fetchAll();

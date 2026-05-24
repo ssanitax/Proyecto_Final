@@ -1,7 +1,7 @@
 <?php
 require_once '../../includes/auth.php';
 redirigirSiNoAdmin();
-require_once '../../config/config.php';
+$pdo = $GLOBALS['pdo'];
 
 $stmtJuegos = $pdo->query("
     SELECT j.id, j.titulo,

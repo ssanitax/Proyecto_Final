@@ -54,6 +54,25 @@ function esSuperAdmin() {
 }
 
 /**
+ * Actualiza $_SESSION['usuario_rol'] desde la BD (útil tras migrar a super_admin sin cerrar sesión).
+ */
+function sincronizarRolSesion($pdo) {
+    if (!estaLogueado() || !$pdo) {
+        return;
+    }
+    try {
+        $stmt = $pdo->prepare("SELECT rol FROM usuarios WHERE id = ? AND activo = TRUE");
+        $stmt->execute([(int)$_SESSION['usuario_id']]);
+        $row = $stmt->fetch();
+        if ($row && !empty($row->rol)) {
+            $_SESSION['usuario_rol'] = $row->rol;
+        }
+    } catch (PDOException $e) {
+        // Sin conexión o columna rol antigua: se mantiene el rol de sesión
+    }
+}
+
+/**
  * ¿Puede el usuario en sesión eliminar al objetivo?
  */
 function puedeEliminarUsuario($rolObjetivo, $idObjetivo) {
@@ -115,9 +134,22 @@ function redirigirSiNoUsuario() {
     }
 }
 
+/** Carga BD si hace falta y actualiza el rol en sesión desde la tabla usuarios. */
+function prepararSesionAdmin() {
+    if (empty($GLOBALS['pdo'])) {
+        require_once __DIR__ . '/../config/config.php';
+    }
+    sincronizarRolSesion($GLOBALS['pdo']);
+}
+
 // Proteger vistas de administración
 function redirigirSiNoAdmin() {
-    if (!estaLogueado() || !esAdmin()) {
+    if (!estaLogueado()) {
+        header('Location: ../fronted/login.php');
+        exit();
+    }
+    prepararSesionAdmin();
+    if (!esAdmin()) {
         header('Location: ../fronted/login.php');
         exit();
     }

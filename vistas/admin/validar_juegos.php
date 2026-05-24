@@ -1,7 +1,7 @@
 <?php
 require_once '../../includes/auth.php';
 redirigirSiNoAdmin();
-require_once '../../config/config.php';
+$pdo = $GLOBALS['pdo'];
 
 // Consulta corregida para traer el nombre de la plataforma sugerida
 $sql = "SELECT jp.*, u.nombre as nombre_usuario, 

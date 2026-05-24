@@ -25,4 +25,6 @@ try {
     // Si la conexión falla, detenemos la ejecución y mostramos el error
     die("Error crítico de conexión: " . $e->getMessage());
 }
+
+$GLOBALS['pdo'] = $pdo;
 ?>

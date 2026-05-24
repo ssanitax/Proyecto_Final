@@ -3,8 +3,7 @@ require_once '../../includes/auth.php';
 
 // Seguridad: Si no es admin, fuera de aquí
 redirigirSiNoAdmin();
-
-require_once '../../config/config.php';
+$pdo = $GLOBALS['pdo'];
 
 // Consultas para estadísticas
 $stmtJuegos = $pdo->query("SELECT COUNT(*) FROM juegos_pendientes WHERE estado = 'pendiente'");

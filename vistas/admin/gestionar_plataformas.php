@@ -1,8 +1,7 @@
 <?php
 require_once '../../includes/auth.php';
-redirigirSiNoAdmin(); // Nueva función de seguridad que creamos [cite: 876, 877]
-
-require_once '../../config/config.php';
+redirigirSiNoAdmin();
+$pdo = $GLOBALS['pdo'];
 
 // 1. PROCESAR EL ALTA DE UNA NUEVA PLATAFORMA
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['nombre_plataforma'])) {
