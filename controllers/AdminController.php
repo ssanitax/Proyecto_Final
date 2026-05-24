@@ -146,6 +146,20 @@ class AdminController {
         }
     }
 
+    public function registrarIdiomaDirecto() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $nombre = htmlspecialchars(trim($_POST['nombre']));
+            try {
+                $stmt = $this->pdo->prepare("INSERT INTO idiomas (nombre) VALUES (?)");
+                $stmt->execute([$nombre]);
+                header('Location: ../vistas/admin/registrar_directo.php?status=success');
+            } catch (Exception $e) {
+                header('Location: ../vistas/admin/registrar_directo.php?error=exists');
+            }
+            exit();
+        }
+    }
+
     public function subirPortadaJuego() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: ../vistas/admin/registrar_directo.php');
@@ -256,6 +270,16 @@ class AdminController {
         exit();
     }
 
+    public function eliminarIdioma() {
+        $id = $_GET['id'] ?? null;
+        if ($id) {
+            $stmt = $this->pdo->prepare("DELETE FROM idiomas WHERE id = ?");
+            $stmt->execute([$id]);
+        }
+        header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
+        exit();
+    }
+
     public function eliminarPorRegion() {
         $region = $_GET['nombre'] ?? null;
         if ($region) {
@@ -324,7 +348,9 @@ if (isset($_GET['action'])) {
     if ($_GET['action'] == 'rechazar') $admin->rechazarPropuesta();
     if ($_GET['action'] == 'registrar_plataforma') $admin->registrarPlataformaDirecta();
     if ($_GET['action'] == 'registrar_juego') $admin->registrarJuegoDirecto();
+    if ($_GET['action'] == 'registrar_idioma') $admin->registrarIdiomaDirecto();
     if ($_GET['action'] == 'subir_portada_juego') $admin->subirPortadaJuego();
+    if ($_GET['action'] == 'eliminar_idioma') $admin->eliminarIdioma();
     if ($_GET['action'] == 'eliminar_region') $admin->eliminarPorRegion();  
     
     // Rutas para el Inventario Maestro

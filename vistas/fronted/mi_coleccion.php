@@ -24,12 +24,13 @@ $plataformas_usuario = $stmtPlats->fetchAll();
 // 3. Construir la consulta con las columnas correctas de tu DB
 // Se cambió 'e.imagen_url' por 'e.imagen_portada' y se eliminó 'p.color_hex'
 $sql = "SELECT cu.*, j.titulo, e.region, e.edicion_nombre, p.nombre as plataforma_nombre, 
-               e.imagen_portada,
+               e.imagen_portada, i.nombre as idioma_nombre,
                rating_user.valoracion_juego_usuario
         FROM coleccion_usuario cu
         JOIN ediciones e ON cu.edicion_id = e.id
         JOIN juegos j ON e.juego_id = j.id
         JOIN plataformas p ON e.plataforma_id = p.id
+        LEFT JOIN idiomas i ON cu.idioma_id = i.id
         LEFT JOIN (
             SELECT t.usuario_id, t.juego_id, cu3.valoracion_personal AS valoracion_juego_usuario
             FROM (
@@ -168,6 +169,9 @@ include '../../includes/header.php';
                             </h3>
                             <p style="font-size: 0.8rem; color: #888;">
                                 <?php echo htmlspecialchars($item->edicion_nombre); ?> • <?php echo htmlspecialchars($item->region); ?>
+                                <?php if (!empty($item->idioma_nombre)): ?>
+                                    • <?php echo $lang['frontend_collection_language_label']; ?> <?php echo htmlspecialchars($item->idioma_nombre); ?>
+                                <?php endif; ?>
                             </p>
                             <?php if ($item->valoracion_juego_usuario !== null): ?>
                                 <div class="user-rating-badge">

@@ -7,13 +7,14 @@ class Coleccion {
     }
 
     // Añadir un juego a la estantería del usuario
-    public function agregarEdicion($usuario_id, $edicion_id, $estado_conservacion, $valoracion_personal = null) {
-        $sql = "INSERT INTO coleccion_usuario (usuario_id, edicion_id, estado_conservacion, valoracion_personal) 
-                VALUES (:usuario_id, :edicion_id, :estado_conservacion, :valoracion_personal)";
+    public function agregarEdicion($usuario_id, $edicion_id, $estado_conservacion, $valoracion_personal = null, $idioma_id = null) {
+        $sql = "INSERT INTO coleccion_usuario (usuario_id, edicion_id, idioma_id, estado_conservacion, valoracion_personal) 
+                VALUES (:usuario_id, :edicion_id, :idioma_id, :estado_conservacion, :valoracion_personal)";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
             ':usuario_id' => $usuario_id,
             ':edicion_id' => $edicion_id,
+            ':idioma_id' => $idioma_id,
             ':estado_conservacion' => $estado_conservacion,
             ':valoracion_personal' => $valoracion_personal
         ]);
@@ -28,11 +29,13 @@ class Coleccion {
                     e.edicion_nombre, 
                     e.region, 
                     e.imagen_portada,
-                    p.nombre as plataforma 
+                    p.nombre as plataforma,
+                    i.nombre as idioma_nombre
                 FROM coleccion_usuario cu
                 JOIN ediciones e ON cu.edicion_id = e.id
                 JOIN juegos j ON e.juego_id = j.id
                 JOIN plataformas p ON e.plataforma_id = p.id
+                LEFT JOIN idiomas i ON cu.idioma_id = i.id
                 LEFT JOIN prestamos pr ON pr.coleccion_id = cu.id AND pr.devuelto = FALSE
                 WHERE cu.usuario_id = :usuario_id 
                 ORDER BY cu.fecha_adicion DESC";

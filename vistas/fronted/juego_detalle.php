@@ -32,6 +32,13 @@ $stmtEdic = $pdo->prepare("
 $stmtEdic->execute([$id_juego]);
 $ediciones = $stmtEdic->fetchAll();
 
+$idiomas = [];
+try {
+    $idiomas = $pdo->query("SELECT id, nombre FROM idiomas ORDER BY nombre ASC")->fetchAll();
+} catch (PDOException $e) {
+    $idiomas = [];
+}
+
 $valoracionModel = new Valoracion($pdo);
 $resumenValoraciones = $valoracionModel->obtenerResumenJuegoParaUsuario($id_juego, $_SESSION['usuario_id']);
 
@@ -89,8 +96,15 @@ include '../../includes/header.php';
             
             <div style="border-top: 1px solid #eee; padding-top: 25px;">
                 <h4 style="margin-bottom: 20px; font-size: 0.85rem; color: #333; font-weight: 800;"><?php echo $lang['frontend_game_detail_select_version']; ?></h4>
+
+                <?php if (isset($_GET['error']) && $_GET['error'] === 'no_language'): ?>
+                    <div style="background:#fee2e2;color:#991b1b;padding:12px;border-radius:10px;margin-bottom:16px;font-size:0.85rem;font-weight:600;">
+                        <?php echo $lang['frontend_game_detail_language_required']; ?>
+                    </div>
+                <?php endif; ?>
                 
                 <form action="../../controllers/ColeccionController.php?action=agregar" method="POST">
+                    <input type="hidden" name="juego_id" value="<?php echo (int)$juego->id; ?>">
                     <div style="display: grid; gap: 12px;">
                         <?php if (empty($ediciones)): ?>
                             <p style="color: #999; font-style: italic; padding: 20px; background: #f9f9f9; border-radius: 10px;"><?php echo $lang['frontend_game_detail_no_consoles']; ?></p>
@@ -107,6 +121,24 @@ include '../../includes/header.php';
                                     </div>
                                 </label>
                             <?php endforeach; ?>
+
+                            <?php if (!empty($idiomas)): ?>
+                                <div style="margin-top: 8px; text-align: left;">
+                                    <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #666; display: block; margin-bottom: 8px;">
+                                        <?php echo $lang['frontend_game_detail_label_language']; ?>
+                                    </label>
+                                    <select name="idioma_id" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit;">
+                                        <option value=""><?php echo $lang['frontend_game_detail_select_language']; ?></option>
+                                        <?php foreach ($idiomas as $idioma): ?>
+                                            <option value="<?php echo (int)$idioma->id; ?>"><?php echo htmlspecialchars($idioma->nombre); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            <?php else: ?>
+                                <p style="font-size: 0.8rem; color: #999; font-style: italic; margin-top: 8px; text-align: left;">
+                                    <?php echo $lang['frontend_game_detail_no_languages']; ?>
+                                </p>
+                            <?php endif; ?>
                             
                             <button type="submit" class="btn-confirm"><?php echo $lang['frontend_game_detail_add_library']; ?></button>
                         <?php endif; ?>

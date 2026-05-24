@@ -288,6 +288,14 @@ include '../../includes/admin_header.php';
         </div>
 
         <div class="dash-card">
+            <h3 style="margin-bottom: 20px; font-weight: 800;"><?php echo $lang['admin_direct_new_language']; ?></h3>
+            <form action="../../controllers/AdminController.php?action=registrar_idioma" method="POST">
+                <input type="text" name="nombre" placeholder="<?php echo $lang['admin_direct_language_placeholder']; ?>" required>
+                <button type="submit" class="btn-dash"><?php echo $lang['admin_direct_save_language']; ?></button>
+            </form>
+        </div>
+
+        <div class="dash-card">
             <h3 style="margin-bottom: 20px; font-weight: 800;"><?php echo $lang['admin_direct_new_game']; ?></h3>
             <form action="../../controllers/AdminController.php?action=registrar_juego" method="POST">
                 <input type="text" name="titulo" placeholder="<?php echo $lang['admin_direct_game_title_placeholder']; ?>" required>

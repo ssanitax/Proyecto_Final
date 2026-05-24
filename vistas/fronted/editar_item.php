@@ -17,6 +17,13 @@ $stmt = $pdo->prepare("
 $stmt->execute([$id_coleccion, $_SESSION['usuario_id']]);
 $item = $stmt->fetch();
 
+$idiomas = [];
+try {
+    $idiomas = $pdo->query("SELECT id, nombre FROM idiomas ORDER BY nombre ASC")->fetchAll();
+} catch (PDOException $e) {
+    $idiomas = [];
+}
+
 if (!$item) {
     die($lang['frontend_edit_item_not_found']);
 }
@@ -100,6 +107,20 @@ include '../../includes/header.php';
     <div class="about-box" style="padding: 40px; background: white; border-radius: 20px; border: 1px solid #eee; box-shadow: 0 4px 15px rgba(0,0,0,0.02); margin-bottom: 30px;">
         <form action="../../controllers/ColeccionController.php?action=actualizar" method="POST">
             <input type="hidden" name="id" value="<?php echo $item->id; ?>">
+
+            <?php if (!empty($idiomas)): ?>
+            <div class="form-group" style="text-align: left; margin-bottom: 20px;">
+                <label style="font-weight: 800; font-size: 0.75rem; color: var(--graphite); display: block; margin-bottom: 10px; text-transform: uppercase;"><?php echo $lang['frontend_edit_item_label_language']; ?></label>
+                <select name="idioma_id" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #eee; font-family: inherit;">
+                    <option value=""><?php echo $lang['frontend_edit_item_language_none']; ?></option>
+                    <?php foreach ($idiomas as $idioma): ?>
+                        <option value="<?php echo (int)$idioma->id; ?>" <?php echo ((int)$item->idioma_id === (int)$idioma->id) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($idioma->nombre); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <?php endif; ?>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
                 <div class="form-group" style="text-align: left;">

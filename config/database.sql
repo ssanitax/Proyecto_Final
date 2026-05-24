@@ -42,6 +42,15 @@ CREATE TABLE plataformas (
 );
 
 
+/* TABLA: IDIOMAS
+   - Idiomas del cartucho/disco (gestionados por admin) */
+
+CREATE TABLE idiomas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE
+);
+
+
 /* TABLA: JUEGOS 
    - Juego como concepto general */
 
@@ -100,6 +109,7 @@ CREATE TABLE coleccion_usuario (
 
     usuario_id INT NOT NULL,
     edicion_id INT NOT NULL,
+    idioma_id INT NULL,
 
     estado ENUM('pendiente', 'jugando', 'completado') 
         DEFAULT 'pendiente',
@@ -119,6 +129,10 @@ CREATE TABLE coleccion_usuario (
     FOREIGN KEY (edicion_id) 
         REFERENCES ediciones(id) 
         ON DELETE CASCADE,
+
+    FOREIGN KEY (idioma_id)
+        REFERENCES idiomas(id)
+        ON DELETE SET NULL,
 
     CONSTRAINT unique_usuario_edicion UNIQUE (usuario_id, edicion_id)
 );
@@ -262,6 +276,15 @@ INSERT INTO plataformas (nombre) VALUES
 ('PlayStation 4'), 
 ('PC'),
 ('GameCube');
+
+/* 1b. INSERTAR IDIOMAS */
+INSERT INTO idiomas (nombre) VALUES
+('Español'),
+('Inglés'),
+('Francés'),
+('Alemán'),
+('Italiano'),
+('Japonés');
 
 /* 2. INSERTAR JUEGOS (MAESTROS) */
 INSERT INTO juegos (titulo, desarrollador, fecha_lanzamiento, descripcion) VALUES 

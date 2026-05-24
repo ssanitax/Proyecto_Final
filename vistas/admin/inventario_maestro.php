@@ -9,6 +9,14 @@ $plataformas = $pdo->query("SELECT * FROM plataformas ORDER BY nombre ASC")->fet
 // 2. Obtener regiones distintas usadas actualmente (ya que no tienen tabla propia)
 $regiones = $pdo->query("SELECT DISTINCT region FROM ediciones WHERE region IS NOT NULL AND region != '' ORDER BY region ASC")->fetchAll();
 
+// 2b. Idiomas del catálogo
+$idiomas = [];
+try {
+    $idiomas = $pdo->query("SELECT * FROM idiomas ORDER BY nombre ASC")->fetchAll();
+} catch (PDOException $e) {
+    $idiomas = [];
+}
+
 // 3. Obtener todas las ediciones (Juego + Plataforma + Región)
 $ediciones = $pdo->query("
     SELECT e.*, j.titulo as juego_titulo, p.nombre as plataforma_nombre 
@@ -113,7 +121,44 @@ include '../../includes/admin_header.php';
         </table>
     </div>
 
-    <!-- SECCIÓN 3: EDICIONES (Vínculo Juego-Consola) -->
+    <!-- SECCIÓN 3: IDIOMAS -->
+    <div class="admin-section">
+        <div class="section-header">
+            <h3><?php echo $lang['admin_section_languages']; ?> <span class="badge-count"><?php echo count($idiomas); ?></span></h3>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th><?php echo $lang['admin_table_language']; ?></th>
+                    <th style="text-align: right;"><?php echo $lang['admin_table_action']; ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($idiomas)): ?>
+                    <tr>
+                        <td colspan="2" style="text-align: center; color: #999; padding: 40px;">
+                            <?php echo ($idiomaActual ?? 'es') === 'en' ? 'No languages registered yet.' : 'No hay idiomas registrados todavía.'; ?>
+                        </td>
+                    </tr>
+                <?php else: ?>
+                    <?php foreach ($idiomas as $idioma): ?>
+                        <tr>
+                            <td><strong>🗣️ <?php echo htmlspecialchars($idioma->nombre); ?></strong></td>
+                            <td style="text-align: right;">
+                                <a href="../../controllers/AdminController.php?action=eliminar_idioma&id=<?php echo (int)$idioma->id; ?>"
+                                   class="btn-delete"
+                                   onclick="return confirm('<?php echo sprintf($lang['admin_confirm_delete_language'], htmlspecialchars($idioma->nombre)); ?>')">
+                                   <?php echo $lang['admin_user_delete']; ?>
+                                </a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- SECCIÓN 4: EDICIONES (Vínculo Juego-Consola) -->
     <div class="admin-section">
         <div class="section-header">
             <h3><?php echo $lang['admin_section_editions']; ?> <span class="badge-count"><?php echo count($ediciones); ?></span></h3>
