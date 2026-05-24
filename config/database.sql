@@ -19,7 +19,7 @@ CREATE TABLE usuarios (
 
     password VARCHAR(255) NOT NULL,
 
-    rol ENUM('usuario', 'admin') NOT NULL DEFAULT 'usuario',
+    rol ENUM('usuario', 'admin', 'super_admin') NOT NULL DEFAULT 'usuario',
 
     activo BOOLEAN DEFAULT TRUE,
 

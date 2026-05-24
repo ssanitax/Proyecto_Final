@@ -454,6 +454,94 @@ class AdminController {
         exit();
     }
 
+    private function validarDatosNuevoUsuario($nombre, $email, $password, $passwordConfirm) {
+        if ($nombre === '' || $email === '' || $password === '') {
+            return 'user_fields';
+        }
+        if ($password !== $passwordConfirm) {
+            return 'user_password_mismatch';
+        }
+        if (strlen($password) < 6) {
+            return 'user_password_short';
+        }
+        $stmtCheck = $this->pdo->prepare("SELECT id FROM usuarios WHERE email = ?");
+        $stmtCheck->execute([$email]);
+        if ($stmtCheck->fetch()) {
+            return 'user_email_exists';
+        }
+        return null;
+    }
+
+    public function crearUsuario() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ../vistas/admin/gestionar_usuarios.php');
+            exit();
+        }
+
+        if (!esAdmin()) {
+            header('Location: ../vistas/admin/gestionar_usuarios.php?error=no_permission');
+            exit();
+        }
+
+        $nombre = trim($_POST['nombre'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? '';
+        $passwordConfirm = $_POST['password_confirm'] ?? '';
+
+        $error = $this->validarDatosNuevoUsuario($nombre, $email, $password, $passwordConfirm);
+        if ($error) {
+            header('Location: ../vistas/admin/gestionar_usuarios.php?error=' . $error);
+            exit();
+        }
+
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, 'usuario')"
+        );
+        $stmt->execute([$nombre, $email, $hash]);
+
+        header('Location: ../vistas/admin/gestionar_usuarios.php?status=user_created');
+        exit();
+    }
+
+    public function crearAdministrador() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ../vistas/admin/gestionar_usuarios.php');
+            exit();
+        }
+
+        if (!esSuperAdmin()) {
+            header('Location: ../vistas/admin/gestionar_usuarios.php?error=no_permission');
+            exit();
+        }
+
+        $nombre = trim($_POST['nombre'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? '';
+        $passwordConfirm = $_POST['password_confirm'] ?? '';
+        $rol = $_POST['rol'] ?? 'admin';
+
+        if (!in_array($rol, ['admin', 'super_admin'], true)) {
+            $rol = 'admin';
+        }
+
+        $error = $this->validarDatosNuevoUsuario($nombre, $email, $password, $passwordConfirm);
+        if ($error) {
+            header('Location: ../vistas/admin/gestionar_usuarios.php?error=' . $error);
+            exit();
+        }
+
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $stmt = $this->pdo->prepare(
+            "INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)"
+        );
+        $stmt->execute([$nombre, $email, $hash, $rol]);
+
+        $status = $rol === 'super_admin' ? 'super_admin_created' : 'admin_created';
+        header('Location: ../vistas/admin/gestionar_usuarios.php?status=' . $status);
+        exit();
+    }
+
     public function eliminarUsuario() {
         $id = $_GET['id'] ?? null;
 
@@ -462,18 +550,25 @@ class AdminController {
             exit();
         }
 
-        // Impedir eliminar admin o a sí mismo
         $stmt = $this->pdo->prepare("SELECT id, rol FROM usuarios WHERE id = ?");
         $stmt->execute([$id]);
         $usuario = $stmt->fetch();
 
-        if (!$usuario || $usuario->rol === 'admin') {
-            header('Location: ../vistas/admin/gestionar_usuarios.php?error=cannot_delete');
+        if (!$usuario) {
+            header('Location: ../vistas/admin/gestionar_usuarios.php?error=not_found');
             exit();
         }
 
-        if (isset($_SESSION['usuario_id']) && (int)$_SESSION['usuario_id'] === (int)$id) {
-            header('Location: ../vistas/admin/gestionar_usuarios.php?error=cannot_delete_self');
+        if (!puedeEliminarUsuario($usuario->rol, $usuario->id)) {
+            $error = 'cannot_delete';
+            if ((int)$_SESSION['usuario_id'] === (int)$usuario->id) {
+                $error = 'cannot_delete_self';
+            } elseif ($usuario->rol === 'super_admin') {
+                $error = 'cannot_delete_super';
+            } elseif ($usuario->rol === 'admin' && !esSuperAdmin()) {
+                $error = 'cannot_delete_admin';
+            }
+            header('Location: ../vistas/admin/gestionar_usuarios.php?error=' . $error);
             exit();
         }
 
@@ -504,4 +599,6 @@ if (isset($_GET['action'])) {
     if ($_GET['action'] == 'eliminar_edicion') $admin->eliminarEdicion();
     if ($_GET['action'] == 'eliminar_juego') $admin->eliminarJuegoMaestro();
     if ($_GET['action'] == 'eliminar_usuario') $admin->eliminarUsuario();
+    if ($_GET['action'] == 'crear_usuario') $admin->crearUsuario();
+    if ($_GET['action'] == 'crear_admin') $admin->crearAdministrador();
 }

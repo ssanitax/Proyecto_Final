@@ -66,7 +66,7 @@ class AuthController {
                 $_SESSION['usuario_nombre'] = $usuario->nombre;
                 $_SESSION['usuario_rol'] = $usuario->rol;
 
-                if ($usuario->rol === 'admin') {
+                if (rolTieneAccesoAdmin($usuario->rol)) {
                     header('Location: ../admin/dashboard.php');
                 } else {
                     header('Location: dashboard.php');

@@ -41,8 +41,39 @@ function estaLogueado() {
     return isset($_SESSION['usuario_id']);
 }
 
+function rolTieneAccesoAdmin($rol) {
+    return in_array($rol, ['admin', 'super_admin'], true);
+}
+
 function esAdmin() {
-    return isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'admin';
+    return isset($_SESSION['usuario_rol']) && rolTieneAccesoAdmin($_SESSION['usuario_rol']);
+}
+
+function esSuperAdmin() {
+    return isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'super_admin';
+}
+
+/**
+ * ¿Puede el usuario en sesión eliminar al objetivo?
+ */
+function puedeEliminarUsuario($rolObjetivo, $idObjetivo) {
+    $miRol = $_SESSION['usuario_rol'] ?? '';
+    $miId = (int)($_SESSION['usuario_id'] ?? 0);
+    $idObjetivo = (int)$idObjetivo;
+
+    if ($miId <= 0 || $idObjetivo <= 0 || $miId === $idObjetivo) {
+        return false;
+    }
+    if ($rolObjetivo === 'super_admin') {
+        return false;
+    }
+    if ($miRol === 'super_admin') {
+        return in_array($rolObjetivo, ['usuario', 'admin'], true);
+    }
+    if ($miRol === 'admin') {
+        return $rolObjetivo === 'usuario';
+    }
+    return false;
 }
 
 /**
