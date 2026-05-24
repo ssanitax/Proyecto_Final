@@ -80,6 +80,18 @@ CREATE TABLE juegos (
 CREATE INDEX idx_juego_titulo ON juegos(titulo);
 
 
+/* TABLA: JUEGO_IDIOMAS
+   - Idiomas del cartucho/disco del juego en catálogo (varios por juego) */
+
+CREATE TABLE juego_idiomas (
+    juego_id INT NOT NULL,
+    idioma_id INT NOT NULL,
+    PRIMARY KEY (juego_id, idioma_id),
+    FOREIGN KEY (juego_id) REFERENCES juegos(id) ON DELETE CASCADE,
+    FOREIGN KEY (idioma_id) REFERENCES idiomas(id) ON DELETE CASCADE
+);
+
+
 /* TABLA: EDICIONES
    - Versiones físicas concretas del juego
    - Diferencia región, año, edición especial, etc.  */

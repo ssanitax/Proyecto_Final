@@ -176,14 +176,103 @@ class AdminController {
     }
 
     public function registrarJuegoDirecto() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $titulo = htmlspecialchars(trim($_POST['titulo']));
-            $dev = htmlspecialchars(trim($_POST['desarrollador']));
-            $stmt = $this->pdo->prepare("INSERT INTO juegos (titulo, desarrollador) VALUES (?, ?)");
-            $stmt->execute([$titulo, $dev]);
-            header('Location: ../vistas/admin/registrar_directo.php?status=success');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            return;
+        }
+
+        $titulo = trim($_POST['titulo'] ?? '');
+        $dev = trim($_POST['desarrollador'] ?? '');
+        $descripcion = trim($_POST['descripcion'] ?? '');
+        $fecha = trim($_POST['fecha_lanzamiento'] ?? '');
+        $ediciones = $_POST['ediciones'] ?? [];
+        $idiomasIds = $_POST['idiomas'] ?? [];
+
+        if ($titulo === '') {
+            header('Location: ../vistas/admin/registrar_directo.php?game_error=title');
             exit();
         }
+
+        $edicionesValidas = [];
+        foreach ($ediciones as $ed) {
+            if (!is_array($ed)) {
+                continue;
+            }
+            $platId = (int)($ed['plataforma_id'] ?? 0);
+            if ($platId <= 0) {
+                continue;
+            }
+            $region = trim($ed['region'] ?? '');
+            $nombreEd = trim($ed['edicion_nombre'] ?? '');
+            if ($nombreEd === '') {
+                $nombreEd = 'Edición Estándar';
+            }
+            $edicionesValidas[] = [
+                'plataforma_id' => $platId,
+                'region' => $region,
+                'edicion_nombre' => $nombreEd,
+            ];
+        }
+
+        if (empty($edicionesValidas)) {
+            header('Location: ../vistas/admin/registrar_directo.php?game_error=editions');
+            exit();
+        }
+
+        try {
+            $this->pdo->beginTransaction();
+
+            $stmtJuego = $this->pdo->prepare(
+                "INSERT INTO juegos (titulo, desarrollador, descripcion, fecha_lanzamiento) VALUES (?, ?, ?, ?)"
+            );
+            $stmtJuego->execute([
+                htmlspecialchars($titulo),
+                htmlspecialchars($dev) !== '' ? htmlspecialchars($dev) : null,
+                $descripcion !== '' ? htmlspecialchars($descripcion) : null,
+                $fecha !== '' ? $fecha : null,
+            ]);
+            $juegoId = (int)$this->pdo->lastInsertId();
+
+            $stmtEd = $this->pdo->prepare(
+                "INSERT INTO ediciones (juego_id, plataforma_id, region, edicion_nombre) VALUES (?, ?, ?, ?)"
+            );
+            foreach ($edicionesValidas as $ed) {
+                if ($ed['region'] !== '') {
+                    asegurarRegionEnCatalogo($this->pdo, $ed['region']);
+                }
+                $stmtEd->execute([
+                    $juegoId,
+                    $ed['plataforma_id'],
+                    $ed['region'] !== '' ? $ed['region'] : null,
+                    $ed['edicion_nombre'],
+                ]);
+            }
+
+            $idiomasIds = array_unique(array_filter(array_map('intval', (array)$idiomasIds)));
+            if (!empty($idiomasIds)) {
+                try {
+                    $stmtJi = $this->pdo->prepare(
+                        "INSERT IGNORE INTO juego_idiomas (juego_id, idioma_id) VALUES (?, ?)"
+                    );
+                    foreach ($idiomasIds as $idiomaId) {
+                        if ($idiomaId > 0) {
+                            $stmtJi->execute([$juegoId, $idiomaId]);
+                        }
+                    }
+                } catch (PDOException $e) {
+                    // Tabla juego_idiomas aún no migrada: el juego y ediciones ya quedan guardados
+                }
+            }
+
+            $this->pdo->commit();
+            header('Location: ../vistas/admin/registrar_directo.php?status=success&ediciones=' . count($edicionesValidas));
+        } catch (Exception $e) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            header('Location: ../vistas/admin/registrar_directo.php?game_error=save');
+            exit();
+        }
+        exit();
     }
 
     public function registrarIdiomaDirecto() {

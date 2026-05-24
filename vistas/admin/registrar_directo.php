@@ -15,6 +15,23 @@ $juegos = $stmtJuegos->fetchAll();
 
 $portadasDir = __DIR__ . '/../../img/portadas';
 
+$plataformas = $pdo->query("SELECT id, nombre FROM plataformas ORDER BY nombre ASC")->fetchAll();
+$regiones = [];
+try {
+    $regiones = $pdo->query("SELECT nombre FROM regiones ORDER BY nombre ASC")->fetchAll();
+} catch (PDOException $e) {
+    $legacy = $pdo->query(
+        "SELECT DISTINCT region AS nombre FROM ediciones WHERE region IS NOT NULL AND region != '' ORDER BY region ASC"
+    )->fetchAll();
+    $regiones = $legacy;
+}
+$idiomasCatalogo = [];
+try {
+    $idiomasCatalogo = $pdo->query("SELECT id, nombre FROM idiomas ORDER BY nombre ASC")->fetchAll();
+} catch (PDOException $e) {
+    $idiomasCatalogo = [];
+}
+
 $juegosSinPortada = [];
 $juegosConPortada = [];
 foreach ($juegos as $juego) {
@@ -234,6 +251,95 @@ include '../../includes/admin_header.php';
         font-style: italic;
         padding: 8px 0;
     }
+
+    .idiomas-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    .idioma-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border: 1px solid #eee;
+        border-radius: 999px;
+        background: #fafafa;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+
+    .idioma-chip:has(input:checked) {
+        border-color: var(--graphite);
+        background: #f0f0f0;
+    }
+
+    .idioma-chip input { margin: 0; }
+
+    .form-label {
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #888;
+        margin-bottom: 6px;
+    }
+
+    textarea {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid #eee;
+        margin-bottom: 15px;
+        font-family: inherit;
+        resize: vertical;
+        min-height: 70px;
+    }
+
+    .edition-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr auto;
+        gap: 10px;
+        align-items: end;
+        margin-bottom: 10px;
+        padding: 12px;
+        background: #f9fafb;
+        border-radius: 12px;
+        border: 1px solid #eee;
+    }
+
+    @media (max-width: 720px) {
+        .edition-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .btn-row-remove {
+        padding: 10px 14px;
+        border: 1px solid #fecaca;
+        background: #fff;
+        color: #dc2626;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.75rem;
+    }
+
+    .btn-row-add {
+        display: inline-block;
+        margin: 8px 0 16px;
+        padding: 8px 16px;
+        border: 2px dashed #ccc;
+        background: transparent;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.8rem;
+        color: #555;
+    }
+
 </style>
 
 <div class="fade-up visible">
@@ -244,7 +350,26 @@ include '../../includes/admin_header.php';
 
     <?php if (isset($_GET['status']) && $_GET['status'] == 'success'): ?>
         <div style="background: #d1fae5; color: #065f46; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 30px; font-weight: 600; border: 1px solid #a7f3d0;">
-            <?php echo $lang['registro_exitoso']; ?>
+            <?php
+                if (!empty($_GET['ediciones'])) {
+                    echo sprintf($lang['admin_direct_game_saved_with_editions'], (int)$_GET['ediciones']);
+                } else {
+                    echo $lang['registro_exitoso'];
+                }
+            ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['game_error'])): ?>
+        <div style="background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 30px; font-weight: 600; border: 1px solid #fecaca;">
+            <?php
+                $gameErrors = [
+                    'title' => $lang['admin_direct_game_error_title'],
+                    'editions' => $lang['admin_direct_game_error_editions'],
+                    'save' => $lang['admin_direct_game_error_save'],
+                ];
+                echo $gameErrors[$_GET['game_error']] ?? $lang['error_general'];
+            ?>
         </div>
     <?php endif; ?>
 
@@ -295,12 +420,78 @@ include '../../includes/admin_header.php';
             </form>
         </div>
 
-        <div class="dash-card">
-            <h3 style="margin-bottom: 20px; font-weight: 800;"><?php echo $lang['admin_direct_new_game']; ?></h3>
-            <form action="../../controllers/AdminController.php?action=registrar_juego" method="POST">
-                <input type="text" name="titulo" placeholder="<?php echo $lang['admin_direct_game_title_placeholder']; ?>" required>
-                <input type="text" name="desarrollador" placeholder="<?php echo $lang['admin_direct_game_dev_placeholder']; ?>">
-                <button type="submit" class="btn-dash"><?php echo $lang['admin_direct_save_game']; ?></button>
+        <div class="dash-card" style="grid-column: 1 / -1;">
+            <h3 style="margin-bottom: 8px; font-weight: 800;"><?php echo $lang['admin_direct_new_game']; ?></h3>
+            <p style="color: #666; font-size: 0.9rem; margin-bottom: 20px;"><?php echo $lang['admin_direct_new_game_desc']; ?></p>
+
+            <form action="../../controllers/AdminController.php?action=registrar_juego" method="POST" id="form-nuevo-juego">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0 16px;">
+                    <div>
+                        <label class="form-label"><?php echo $lang['admin_direct_game_title_placeholder']; ?> *</label>
+                        <input type="text" name="titulo" required>
+                    </div>
+                    <div>
+                        <label class="form-label"><?php echo $lang['admin_direct_game_dev_placeholder']; ?></label>
+                        <input type="text" name="desarrollador">
+                    </div>
+                    <div>
+                        <label class="form-label"><?php echo $lang['admin_direct_game_release_date']; ?></label>
+                        <input type="date" name="fecha_lanzamiento">
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label"><?php echo $lang['admin_direct_game_description']; ?></label>
+                    <textarea name="descripcion" placeholder="<?php echo $lang['admin_direct_game_description_placeholder']; ?>"></textarea>
+                </div>
+
+                <h4 style="font-size: 0.85rem; font-weight: 800; margin: 20px 0 10px;"><?php echo $lang['admin_direct_game_editions_title']; ?></h4>
+                <p style="font-size: 0.8rem; color: #888; margin: 0 0 12px;"><?php echo $lang['admin_direct_game_editions_help']; ?></p>
+
+                <div id="ediciones-container">
+                    <div class="edition-row" data-edition-row>
+                        <div>
+                            <label class="form-label"><?php echo $lang['admin_direct_game_label_platform']; ?> *</label>
+                            <select name="ediciones[0][plataforma_id]" required>
+                                <option value=""><?php echo $lang['admin_direct_game_select_platform']; ?></option>
+                                <?php foreach ($plataformas as $p): ?>
+                                    <option value="<?php echo (int)$p->id; ?>"><?php echo htmlspecialchars($p->nombre); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label"><?php echo $lang['admin_direct_game_label_region']; ?></label>
+                            <select name="ediciones[0][region]">
+                                <option value=""><?php echo $lang['admin_direct_game_no_region']; ?></option>
+                                <?php foreach ($regiones as $r): ?>
+                                    <option value="<?php echo htmlspecialchars($r->nombre); ?>"><?php echo htmlspecialchars($r->nombre); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label"><?php echo $lang['admin_direct_game_label_edition_name']; ?></label>
+                            <input type="text" name="ediciones[0][edicion_nombre]" value="Edición Estándar" placeholder="Edición Estándar">
+                        </div>
+                        <button type="button" class="btn-row-remove" data-remove-edition hidden aria-label="Quitar">✕</button>
+                    </div>
+                </div>
+                <button type="button" class="btn-row-add" id="btn-add-edicion">+ <?php echo $lang['admin_direct_game_add_edition']; ?></button>
+
+                <?php if (!empty($idiomasCatalogo)): ?>
+                <h4 style="font-size: 0.85rem; font-weight: 800; margin: 16px 0 10px;"><?php echo $lang['admin_direct_game_languages_title']; ?></h4>
+                <p style="font-size: 0.8rem; color: #888; margin: 0 0 12px;"><?php echo $lang['admin_direct_game_languages_help']; ?></p>
+                <div class="idiomas-grid">
+                    <?php foreach ($idiomasCatalogo as $idioma): ?>
+                        <label class="idioma-chip">
+                            <input type="checkbox" name="idiomas[]" value="<?php echo (int)$idioma->id; ?>">
+                            <?php echo htmlspecialchars($idioma->nombre); ?>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
+                <?php else: ?>
+                    <p style="font-size: 0.85rem; color: #999; font-style: italic; margin-bottom: 16px;"><?php echo $lang['admin_direct_game_no_languages_yet']; ?></p>
+                <?php endif; ?>
+
+                <button type="submit" class="btn-dash" style="max-width: 320px;"><?php echo $lang['admin_direct_save_game']; ?></button>
             </form>
         </div>
 
@@ -371,6 +562,47 @@ include '../../includes/admin_header.php';
 </div>
 
 <script>
+(function () {
+    var edContainer = document.getElementById('ediciones-container');
+    var btnAdd = document.getElementById('btn-add-edicion');
+    if (edContainer && btnAdd) {
+        var editionIndex = 1;
+
+        function refreshRemoveButtons() {
+            var rows = edContainer.querySelectorAll('[data-edition-row]');
+            rows.forEach(function (row, i) {
+                var btn = row.querySelector('[data-remove-edition]');
+                if (btn) btn.hidden = rows.length <= 1;
+            });
+        }
+
+        btnAdd.addEventListener('click', function () {
+            var first = edContainer.querySelector('[data-edition-row]');
+            if (!first) return;
+            var clone = first.cloneNode(true);
+            clone.querySelectorAll('select, input').forEach(function (el) {
+                var name = el.getAttribute('name');
+                if (name) el.setAttribute('name', name.replace(/\[\d+\]/, '[' + editionIndex + ']'));
+                if (el.tagName === 'SELECT') el.selectedIndex = 0;
+                if (el.type === 'text') el.value = el.name.indexOf('edicion_nombre') >= 0 ? 'Edición Estándar' : '';
+            });
+            editionIndex++;
+            edContainer.appendChild(clone);
+            refreshRemoveButtons();
+        });
+
+        edContainer.addEventListener('click', function (e) {
+            if (!e.target.matches('[data-remove-edition]')) return;
+            var row = e.target.closest('[data-edition-row]');
+            if (!row || edContainer.querySelectorAll('[data-edition-row]').length <= 1) return;
+            row.remove();
+            refreshRemoveButtons();
+        });
+
+        refreshRemoveButtons();
+    }
+})();
+
 (function () {
     var form = document.getElementById('cover-upload-form');
     if (!form) return;

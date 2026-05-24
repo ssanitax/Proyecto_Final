@@ -34,9 +34,23 @@ $ediciones = $stmtEdic->fetchAll();
 
 $idiomas = [];
 try {
-    $idiomas = $pdo->query("SELECT id, nombre FROM idiomas ORDER BY nombre ASC")->fetchAll();
+    $stmtIdiomasJuego = $pdo->prepare(
+        "SELECT i.id, i.nombre FROM idiomas i
+         INNER JOIN juego_idiomas ji ON ji.idioma_id = i.id
+         WHERE ji.juego_id = ?
+         ORDER BY i.nombre ASC"
+    );
+    $stmtIdiomasJuego->execute([$id_juego]);
+    $idiomas = $stmtIdiomasJuego->fetchAll();
+    if (empty($idiomas)) {
+        $idiomas = $pdo->query("SELECT id, nombre FROM idiomas ORDER BY nombre ASC")->fetchAll();
+    }
 } catch (PDOException $e) {
-    $idiomas = [];
+    try {
+        $idiomas = $pdo->query("SELECT id, nombre FROM idiomas ORDER BY nombre ASC")->fetchAll();
+    } catch (PDOException $e2) {
+        $idiomas = [];
+    }
 }
 
 $valoracionModel = new Valoracion($pdo);
@@ -116,7 +130,9 @@ include '../../includes/header.php';
                                         <div class="plat-name"><?php echo htmlspecialchars($edic->plataforma_nombre); ?></div>
                                         <div class="edic-info">
                                             <?php echo htmlspecialchars($edic->edicion_nombre); ?> 
+                                            <?php if (!empty($edic->region)): ?>
                                             <span class="region-pill"><?php echo htmlspecialchars($edic->region); ?></span>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </label>
@@ -127,12 +143,19 @@ include '../../includes/header.php';
                                     <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #666; display: block; margin-bottom: 8px;">
                                         <?php echo $lang['frontend_game_detail_label_language']; ?>
                                     </label>
+                                    <?php if (count($idiomas) === 1): ?>
+                                        <input type="hidden" name="idioma_id" value="<?php echo (int)$idiomas[0]->id; ?>">
+                                        <p style="margin: 0; padding: 12px; background: #f4f5f7; border-radius: 10px; font-weight: 700; color: var(--graphite);">
+                                            <?php echo htmlspecialchars($idiomas[0]->nombre); ?>
+                                        </p>
+                                    <?php else: ?>
                                     <select name="idioma_id" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit;">
                                         <option value=""><?php echo $lang['frontend_game_detail_select_language']; ?></option>
                                         <?php foreach ($idiomas as $idioma): ?>
                                             <option value="<?php echo (int)$idioma->id; ?>"><?php echo htmlspecialchars($idioma->nombre); ?></option>
                                         <?php endforeach; ?>
                                     </select>
+                                    <?php endif; ?>
                                 </div>
                             <?php else: ?>
                                 <p style="font-size: 0.8rem; color: #999; font-style: italic; margin-top: 8px; text-align: left;">
