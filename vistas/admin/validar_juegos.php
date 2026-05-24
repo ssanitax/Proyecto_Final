@@ -5,7 +5,7 @@ require_once '../../config/config.php';
 
 // Consulta corregida para traer el nombre de la plataforma sugerida
 $sql = "SELECT jp.*, u.nombre as nombre_usuario, 
-               ep.region, ep.plataforma_nombre_nueva, ep.juego_id_real,
+               ep.region, ep.bloqueo_regional, ep.plataforma_nombre_nueva, ep.juego_id_real,
                p.nombre as plataforma_oficial 
         FROM juegos_pendientes jp
         JOIN usuarios u ON jp.usuario_id = u.id
@@ -83,7 +83,12 @@ include '../../includes/admin_header.php';
                                         </div>
                                         <div style="flex: 1;">
                                             <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_region']; ?></label>
-                                            <input type="text" name="corregir_region" value="<?php echo htmlspecialchars($p->region ?? ''); ?>" style="width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 5px;">
+                                            <?php if (!empty($p->bloqueo_regional)): ?>
+                                                <p style="font-size: 0.65rem; color: #b45309; margin: 0 0 6px 0; font-weight: 600;"><?php echo $lang['admin_validate_regional_lock_notice']; ?></p>
+                                            <?php endif; ?>
+                                            <input type="text" name="corregir_region" value="<?php echo htmlspecialchars($p->region ?? ''); ?>"
+                                                   style="width: 100%; padding: 8px; border: 1px solid <?php echo !empty($p->bloqueo_regional) ? '#fde68a' : '#eee'; ?>; border-radius: 5px; background: <?php echo !empty($p->bloqueo_regional) ? '#fffbeb' : 'white'; ?>;"
+                                                   placeholder="<?php echo !empty($p->bloqueo_regional) ? 'PAL, NTSC-U, NTSC-J...' : ''; ?>">
                                         </div>
                                     </div>
                                 </td>

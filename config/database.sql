@@ -226,6 +226,7 @@ CREATE TABLE ediciones_pendientes (
     plataforma_id INT NOT NULL,
 
     region VARCHAR(50),
+    bloqueo_regional TINYINT(1) NOT NULL DEFAULT 0,
     anio INT,
     edicion_nombre VARCHAR(255),
 

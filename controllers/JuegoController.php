@@ -28,9 +28,11 @@ class JuegoController {
                 $stmtJuego->execute([$usuario_id, "Juego: " . $_POST['titulo'], $_POST['desarrollador']]);
                 $juego_pendiente_id = $this->pdo->lastInsertId();
 
-                $sqlEdicion = "INSERT INTO ediciones_pendientes (juego_pendiente_id, plataforma_id, region, edicion_nombre) VALUES (?, ?, ?, 'Edición Estándar')";
+                $bloqueoRegional = isset($_POST['bloqueo_regional']) && $_POST['bloqueo_regional'] === '1' ? 1 : 0;
+
+                $sqlEdicion = "INSERT INTO ediciones_pendientes (juego_pendiente_id, plataforma_id, region, bloqueo_regional, edicion_nombre) VALUES (?, ?, NULL, ?, 'Edición Estándar')";
                 $stmtEdicion = $this->pdo->prepare($sqlEdicion);
-                $stmtEdicion->execute([$juego_pendiente_id, $_POST['plataforma_id'], $_POST['region']]);
+                $stmtEdicion->execute([$juego_pendiente_id, $_POST['plataforma_id'], $bloqueoRegional]);
 
                 $this->pdo->commit();
                 header('Location: ../vistas/fronted/mis_propuestas.php?status=enviado');
@@ -57,9 +59,11 @@ class JuegoController {
                 $stmtP->execute([$_SESSION['usuario_id'], $_POST['juego_id']]);
                 $nuevo_id = $this->pdo->lastInsertId();
 
-                $sql = "INSERT INTO ediciones_pendientes (juego_pendiente_id, juego_id_real, plataforma_id, region, edicion_nombre) VALUES (?, ?, ?, ?, ?)";
+                $bloqueoRegional = isset($_POST['bloqueo_regional']) && $_POST['bloqueo_regional'] === '1' ? 1 : 0;
+
+                $sql = "INSERT INTO ediciones_pendientes (juego_pendiente_id, juego_id_real, plataforma_id, region, bloqueo_regional, edicion_nombre) VALUES (?, ?, ?, NULL, ?, ?)";
                 $stmt = $this->pdo->prepare($sql);
-                $stmt->execute([$nuevo_id, $_POST['juego_id'], $_POST['plataforma_id'], $_POST['region'], $_POST['edicion_nombre']]);
+                $stmt->execute([$nuevo_id, $_POST['juego_id'], $_POST['plataforma_id'], $bloqueoRegional, $_POST['edicion_nombre']]);
 
                 $this->pdo->commit();
                 header('Location: ../vistas/fronted/mis_propuestas.php?status=enviado');

@@ -29,7 +29,7 @@ class AdminController {
 
             // 1. Obtener la propuesta completa
             $stmt = $this->pdo->prepare("
-                SELECT jp.*, ep.plataforma_id, ep.region, ep.edicion_nombre, ep.juego_id_real, ep.plataforma_nombre_nueva
+                SELECT jp.*, ep.plataforma_id, ep.region, ep.bloqueo_regional, ep.edicion_nombre, ep.juego_id_real, ep.plataforma_nombre_nueva
                 FROM juegos_pendientes jp
                 LEFT JOIN ediciones_pendientes ep ON ep.juego_pendiente_id = jp.id
                 WHERE jp.id = ?
@@ -42,8 +42,12 @@ class AdminController {
             // 2. Capturar correcciones del Admin (vienen por POST)
             $tituloCorregido = $_POST['corregir_titulo'] ?? $propuesta->titulo;
             $devCorregido    = $_POST['corregir_dev']    ?? $propuesta->desarrollador;
-            $regionCorregida = $_POST['corregir_region'] ?? $propuesta->region;
+            $regionCorregida = trim($_POST['corregir_region'] ?? $propuesta->region ?? '');
             $platNombre      = $_POST['corregir_plataforma'] ?? null;
+
+            if (!empty($propuesta->bloqueo_regional) && $regionCorregida === '') {
+                throw new Exception(__('admin_validate_region_required'));
+            }
 
             // 3. GESTIÓN DE LA PLATAFORMA (Crucial para que aparezca en el catálogo)
             $plataforma_id_final = $propuesta->plataforma_id;
@@ -85,7 +89,7 @@ class AdminController {
                     $this->pdo->prepare($sqlE)->execute([
                         $juego_id_final,
                         $plataforma_id_final,
-                        $regionCorregida,
+                        $regionCorregida !== '' ? $regionCorregida : null,
                         $propuesta->edicion_nombre ?? 'Edición Estándar'
                     ]);
                 }

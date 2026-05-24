@@ -86,6 +86,8 @@ $lang = [
     'admin_validate_label_title' => 'TITLE',
     'admin_validate_label_dev' => 'DEV',
     'admin_validate_label_region' => 'REGION',
+    'admin_validate_regional_lock_notice' => 'The user reported regional locking. Assign the region before approving.',
+    'admin_validate_region_required' => 'You must specify the region because the game has regional locking.',
     'admin_validate_btn_approve' => 'APPROVE',
     'admin_validate_btn_reject' => 'REJECT',
     'admin_user_management' => 'User Management 👥', 
@@ -248,6 +250,9 @@ $lang = [
     'frontend_proposals_status_approved' => 'ACCEPTED ✅',
     'frontend_proposals_status_rejected' => 'REJECTED ❌',
     'frontend_proposals_region_label' => 'Region:',
+    'frontend_proposals_regional_lock_label' => 'Regional lock:',
+    'frontend_proposals_regional_lock_yes' => 'Yes (region pending assignment)',
+    'frontend_proposals_regional_lock_no' => 'No',
 
     // Propose Edition
     'frontend_propose_edition_title' => 'Propose New Edition',
@@ -255,8 +260,10 @@ $lang = [
     'frontend_propose_edition_label_platform' => 'PLATFORM',
     'frontend_propose_edition_label_edition_name' => 'EDITION NAME',
     'frontend_propose_edition_placeholder_edition' => 'E.g: Black Label, Platinum, Collector\'s Edition...',
-    'frontend_propose_edition_label_region' => 'REGION',
-    'frontend_propose_edition_no_regions' => 'No regions available',
+    'frontend_propose_edition_label_regional_lock' => 'Does it have regional locking?',
+    'frontend_propose_edition_regional_lock_help' => 'Only on older consoles. If «Yes», an admin will set the region when approving.',
+    'frontend_propose_edition_regional_lock_yes' => 'Yes',
+    'frontend_propose_edition_regional_lock_no' => 'No',
     'frontend_propose_edition_submit' => 'Send for validation',
 
     // Propose Platform
@@ -283,8 +290,10 @@ $lang = [
     'frontend_register_game_placeholder_developer' => 'E.g: Konami',
     'frontend_register_game_edition_data' => 'First Edition Data',
     'frontend_register_game_label_platform' => 'PLATFORM',
-    'frontend_register_game_label_region' => 'REGION',
-    'frontend_register_game_no_regions' => 'No regions available',
+    'frontend_register_game_label_regional_lock' => 'Does it have regional locking?',
+    'frontend_register_game_regional_lock_help' => 'Only on older consoles (PS2, GameCube, etc.). If unsure, choose «No». An admin will assign the region when validating.',
+    'frontend_register_game_regional_lock_yes' => 'Yes, it has regional locking',
+    'frontend_register_game_regional_lock_no' => 'No',
     'frontend_register_game_submit' => 'Send proposal',
 
     // Homepage

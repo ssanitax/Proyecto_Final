@@ -10,17 +10,11 @@ if (!$juego_id) {
     exit();
 }
 
-// 1. Obtener nombre del juego maestro
 $stmt = $pdo->prepare("SELECT titulo FROM juegos WHERE id = ?");
 $stmt->execute([$juego_id]);
 $titulo_juego = $stmt->fetchColumn();
 
-// 2. Obtener plataformas para el select
 $plataformas = $pdo->query("SELECT * FROM plataformas ORDER BY nombre ASC")->fetchAll();
-
-// 3. Obtener regiones dinámicas del sistema (para que refleje los borrados del admin) 
-$stmtReg = $pdo->query("SELECT DISTINCT region FROM ediciones WHERE region IS NOT NULL AND region != '' ORDER BY region ASC");
-$regionesExistentes = $stmtReg->fetchAll();
 
 include '../../includes/header.php';
 ?>
@@ -46,29 +40,27 @@ include '../../includes/header.php';
 
             <div class="form-group" style="margin-bottom: 20px; text-align: left;">
                 <label style="font-weight: 800; font-size: 0.8rem; display: block; margin-bottom: 10px;"><?php echo $lang['frontend_propose_edition_label_edition_name']; ?></label>
-                <input type="text" name="edicion_nombre" placeholder="<?php echo $lang['frontend_propose_edition_placeholder_edition']; ?>" required 
+                <input type="text" name="edicion_nombre" placeholder="<?php echo $lang['frontend_propose_edition_placeholder_edition']; ?>" required
                        style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit;">
             </div>
 
             <div class="form-group" style="margin-bottom: 25px; text-align: left;">
-                <label style="font-weight: 800; font-size: 0.8rem; display: block; margin-bottom: 10px;"><?php echo $lang['frontend_propose_edition_label_region']; ?></label>
-                <select name="region" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit;">
-                    <?php if (empty($regionesExistentes)): ?>
-                        <option value=""><?php echo $lang['frontend_propose_edition_no_regions']; ?></option>
-                    <?php else: ?>
-                        <?php foreach($regionesExistentes as $r): ?>
-                            <option value="<?php echo htmlspecialchars($r->region); ?>">
-                                <?php echo htmlspecialchars($r->region); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </select>
+                <label style="font-weight: 800; font-size: 0.8rem; display: block; margin-bottom: 8px;"><?php echo $lang['frontend_propose_edition_label_regional_lock']; ?></label>
+                <p style="font-size: 0.8rem; color: #777; margin-bottom: 12px; line-height: 1.4;"><?php echo $lang['frontend_propose_edition_regional_lock_help']; ?></p>
+                <label style="display: block; margin-bottom: 8px; font-size: 0.9rem; cursor: pointer;">
+                    <input type="radio" name="bloqueo_regional" value="0" checked style="margin-right: 8px;">
+                    <?php echo $lang['frontend_propose_edition_regional_lock_no']; ?>
+                </label>
+                <label style="display: block; font-size: 0.9rem; cursor: pointer;">
+                    <input type="radio" name="bloqueo_regional" value="1" style="margin-right: 8px;">
+                    <?php echo $lang['frontend_propose_edition_regional_lock_yes']; ?>
+                </label>
             </div>
 
-            <button type="submit" 
-                style="width: 100%; padding: 15px; border-radius: 50px; 
-                    background: var(--graphite); color: white; font-weight: 700; 
-                    text-transform: uppercase; border: none; cursor: pointer; 
+            <button type="submit"
+                style="width: 100%; padding: 15px; border-radius: 50px;
+                    background: var(--graphite); color: white; font-weight: 700;
+                    text-transform: uppercase; border: none; cursor: pointer;
                     transition: 0.3s;"
                 onmouseover="this.style.background='#333'; this.style.transform='translateY(-2px)';"
                 onmouseout="this.style.background='var(--graphite)'; this.style.transform='translateY(0)';"

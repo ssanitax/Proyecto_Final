@@ -94,7 +94,13 @@ include '../../includes/header.php';
                                     <strong><?php echo htmlspecialchars($p->titulo); ?></strong>
                                 </div>
                                 <div style="font-size: 0.75rem; color: #888; margin-top: 4px;">
-                                    <?php echo $lang['frontend_proposals_region_label']; ?> <?php echo htmlspecialchars($p->region ?? 'N/A'); ?>
+                                    <?php if (!empty($p->region)): ?>
+                                        <?php echo $lang['frontend_proposals_region_label']; ?> <?php echo htmlspecialchars($p->region); ?>
+                                    <?php elseif (!empty($p->bloqueo_regional)): ?>
+                                        <?php echo $lang['frontend_proposals_regional_lock_label']; ?> <?php echo $lang['frontend_proposals_regional_lock_yes']; ?>
+                                    <?php elseif (isset($p->bloqueo_regional)): ?>
+                                        <?php echo $lang['frontend_proposals_regional_lock_label']; ?> <?php echo $lang['frontend_proposals_regional_lock_no']; ?>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                             <td style="padding: 20px;">

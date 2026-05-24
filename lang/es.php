@@ -86,6 +86,8 @@ $lang = [
     'admin_validate_label_title' => 'TÍTULO',
     'admin_validate_label_dev' => 'DEV',
     'admin_validate_label_region' => 'REGIÓN',
+    'admin_validate_regional_lock_notice' => 'El usuario indicó bloqueo regional. Asigna la región antes de aprobar.',
+    'admin_validate_region_required' => 'Debes indicar la región porque el juego tiene bloqueo regional.',
     'admin_validate_btn_approve' => 'APROBAR',
     'admin_validate_btn_reject' => 'RECHAZAR',
     'admin_user_management' => 'Gestión de Usuarios 👥',
@@ -250,6 +252,9 @@ $lang = [
     'frontend_proposals_status_approved' => 'ACEPTADO ✅',
     'frontend_proposals_status_rejected' => 'RECHAZADO ❌',
     'frontend_proposals_region_label' => 'Región:',
+    'frontend_proposals_regional_lock_label' => 'Bloqueo regional:',
+    'frontend_proposals_regional_lock_yes' => 'Sí (región pendiente de asignar)',
+    'frontend_proposals_regional_lock_no' => 'No',
 
     // Proponer Edición
     'frontend_propose_edition_title' => 'Proponer Nueva Edición',
@@ -257,8 +262,10 @@ $lang = [
     'frontend_propose_edition_label_platform' => 'PLATAFORMA',
     'frontend_propose_edition_label_edition_name' => 'NOMBRE DE LA EDICIÓN',
     'frontend_propose_edition_placeholder_edition' => 'Ej: Black Label, Platinum, Collector\'s Edition...',
-    'frontend_propose_edition_label_region' => 'REGIÓN',
-    'frontend_propose_edition_no_regions' => 'No hay regiones disponibles',
+    'frontend_propose_edition_label_regional_lock' => '¿Tiene bloqueo por regiones?',
+    'frontend_propose_edition_regional_lock_help' => 'Solo en consolas antiguas. Si marca «Sí», el administrador definirá la región al aprobar la propuesta.',
+    'frontend_propose_edition_regional_lock_yes' => 'Sí',
+    'frontend_propose_edition_regional_lock_no' => 'No',
     'frontend_propose_edition_submit' => 'Enviar para validación',
 
     // Proponer Plataforma
@@ -285,8 +292,10 @@ $lang = [
     'frontend_register_game_placeholder_developer' => 'Ej: Konami',
     'frontend_register_game_edition_data' => 'Datos de la Primera Edición',
     'frontend_register_game_label_platform' => 'PLATAFORMA',
-    'frontend_register_game_label_region' => 'REGIÓN',
-    'frontend_register_game_no_regions' => 'No hay regiones disponibles',
+    'frontend_register_game_label_regional_lock' => '¿Tiene bloqueo por regiones?',
+    'frontend_register_game_regional_lock_help' => 'Solo en consolas antiguas (PS2, GameCube, etc.). Si no estás seguro, marca «No». El administrador asignará la región al validar.',
+    'frontend_register_game_regional_lock_yes' => 'Sí, tiene bloqueo regional',
+    'frontend_register_game_regional_lock_no' => 'No',
     'frontend_register_game_submit' => 'Enviar propuesta',
 
     // Página de Inicio
