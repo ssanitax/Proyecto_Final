@@ -304,6 +304,15 @@ class AdminController {
         }
     }
 
+    private function redirigirErrorPortada($codigo, $juegoId = 0) {
+        $url = '../vistas/admin/registrar_directo.php?cover_error=' . urlencode($codigo);
+        if ($juegoId > 0) {
+            $url .= '&cover_juego_id=' . (int)$juegoId;
+        }
+        header('Location: ' . $url);
+        exit();
+    }
+
     public function subirPortadaJuego() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: ../vistas/admin/registrar_directo.php');
@@ -313,26 +322,22 @@ class AdminController {
         $juegoId = isset($_POST['juego_id']) ? (int)$_POST['juego_id'] : 0;
 
         if ($juegoId <= 0) {
-            header('Location: ../vistas/admin/registrar_directo.php?cover_error=invalid_game');
-            exit();
+            $this->redirigirErrorPortada('invalid_game');
         }
 
         $stmtTitulo = $this->pdo->prepare("SELECT titulo FROM juegos WHERE id = ?");
         $stmtTitulo->execute([$juegoId]);
         $tituloJuego = $stmtTitulo->fetchColumn();
         if ($tituloJuego === false) {
-            header('Location: ../vistas/admin/registrar_directo.php?cover_error=invalid_game');
-            exit();
+            $this->redirigirErrorPortada('invalid_game');
         }
 
         if (!asegurarEdicionParaPortada($this->pdo, $juegoId)) {
-            header('Location: ../vistas/admin/registrar_directo.php?cover_error=no_edition');
-            exit();
+            $this->redirigirErrorPortada('no_edition', $juegoId);
         }
 
         if (!isset($_FILES['portada']) || $_FILES['portada']['error'] !== UPLOAD_ERR_OK) {
-            header('Location: ../vistas/admin/registrar_directo.php?cover_error=upload');
-            exit();
+            $this->redirigirErrorPortada('upload', $juegoId);
         }
 
         $tmpPath = $_FILES['portada']['tmp_name'];
@@ -348,28 +353,44 @@ class AdminController {
         ];
 
         if (!isset($allowedMimes[$mimeType])) {
-            header('Location: ../vistas/admin/registrar_directo.php?cover_error=type');
-            exit();
+            $this->redirigirErrorPortada('type', $juegoId);
         }
 
         $ext = $allowedMimes[$mimeType];
         $fileName = nombreArchivoPortadaDesdeTitulo($tituloJuego, $ext);
-        $uploadDir = directorioPortadas();
-
-        if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true)) {
-            header('Location: ../vistas/admin/registrar_directo.php?cover_error=filesystem');
-            exit();
+        if (!asegurarDirectorioPortadas()) {
+            $this->redirigirErrorPortada('filesystem', $juegoId);
         }
 
+        $uploadDir = directorioPortadas();
         $destPath = $uploadDir . DIRECTORY_SEPARATOR . $fileName;
 
         if (is_file($destPath)) {
             @unlink($destPath);
         }
 
-        if (!move_uploaded_file($tmpPath, $destPath)) {
-            header('Location: ../vistas/admin/registrar_directo.php?cover_error=filesystem');
-            exit();
+        $guardado = move_uploaded_file($tmpPath, $destPath);
+        if (!$guardado && is_uploaded_file($tmpPath)) {
+            $guardado = @copy($tmpPath, $destPath);
+            if ($guardado) {
+                @unlink($tmpPath);
+            }
+        }
+        if (!$guardado) {
+            $fallback = 'juego_' . $juegoId . '.' . $ext;
+            $destPath = $uploadDir . DIRECTORY_SEPARATOR . $fallback;
+            if (is_file($destPath)) {
+                @unlink($destPath);
+            }
+            $guardado = is_uploaded_file($tmpPath)
+                ? move_uploaded_file($tmpPath, $destPath)
+                : @copy($tmpPath, $destPath);
+            if ($guardado) {
+                $fileName = $fallback;
+            }
+        }
+        if (!$guardado) {
+            $this->redirigirErrorPortada('filesystem', $juegoId);
         }
 
         $portadasAnteriores = obtenerPortadasPorFiltroEdiciones(

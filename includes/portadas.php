@@ -1,7 +1,21 @@
 <?php
 
 function directorioPortadas() {
-    return realpath(__DIR__ . '/../img/portadas') ?: (__DIR__ . '/../img/portadas');
+    $dir = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'img'
+        . DIRECTORY_SEPARATOR . 'portadas';
+    $resolved = realpath($dir);
+    return $resolved !== false ? $resolved : $dir;
+}
+
+/**
+ * Crea img/portadas si no existe y comprueba que el servidor pueda escribir.
+ */
+function asegurarDirectorioPortadas() {
+    $dir = directorioPortadas();
+    if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
+        return false;
+    }
+    return is_dir($dir) && is_writable($dir);
 }
 
 /**
@@ -15,6 +29,12 @@ function nombreArchivoPortadaDesdeTitulo($titulo, $extension) {
     $base = trim($base, '._');
     if ($base === '') {
         $base = 'juego';
+    }
+    if (preg_match('/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i', $base)) {
+        $base = 'juego_' . $base;
+    }
+    if (strlen($base) > 180) {
+        $base = substr($base, 0, 180);
     }
     $ext = strtolower(preg_replace('/[^a-z0-9]/', '', $extension));
     return $base . '.' . ($ext !== '' ? $ext : 'jpg');
