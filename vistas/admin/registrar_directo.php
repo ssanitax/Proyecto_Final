@@ -13,12 +13,21 @@ $stmtJuegos = $pdo->query("
 ");
 $juegos = $stmtJuegos->fetchAll();
 
+$portadasDir = __DIR__ . '/../../img/portadas';
+
 $juegosSinPortada = [];
 $juegosConPortada = [];
 foreach ($juegos as $juego) {
-    if (!empty($juego->imagen_portada)) {
+    $archivo = !empty($juego->imagen_portada) ? basename($juego->imagen_portada) : '';
+    $rutaPortada = $archivo !== '' ? $portadasDir . '/' . $archivo : '';
+
+    // Solo cuenta como "con portada" si el archivo existe en img/portadas/
+    // (la BD puede tener nombres del script de ejemplo sin imagen real subida)
+    if ($archivo !== '' && is_file($rutaPortada)) {
+        $juego->imagen_portada = $archivo;
         $juegosConPortada[] = $juego;
     } else {
+        $juego->imagen_portada = null;
         $juegosSinPortada[] = $juego;
     }
 }
