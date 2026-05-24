@@ -21,13 +21,13 @@ class AuthController {
             $password_confirm = $_POST['password_confirm'];
 
             if ($password !== $password_confirm) {
-                $error = $lang['passwords_not_match'];
+                $error = __('passwords_not_match');
                 include __DIR__ . '/../vistas/fronted/registro.php';
                 return;
             }
 
             if (strlen($password) < 6) {
-                $error = $lang['password_too_short'];
+                $error = __('password_too_short');
                 include __DIR__ . '/../vistas/fronted/registro.php';
                 return;
             }
@@ -47,7 +47,7 @@ class AuthController {
                 header('Location: dashboard.php');
                 exit();
             } else {
-                $error = $lang['email_already_registered'];
+                $error = __('email_already_registered');
                 include __DIR__ . '/../vistas/fronted/registro.php';
             }
         }
@@ -74,7 +74,7 @@ class AuthController {
                 exit();
             } else {
                 // RETORNAMOS el texto para que la vista lo pinte
-                return $lang['invalid_credentials'];
+                return __('invalid_credentials');
             }
         }
         return null;
