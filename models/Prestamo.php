@@ -8,7 +8,7 @@ class Prestamo {
 
     // Obtener los préstamos del usuario logueado
     public function obtenerPrestamosUsuario($usuario_id) {
-        $sql = "SELECT p.*, j.titulo, e.edicion_nombre, plat.nombre as plataforma_nombre 
+        $sql = "SELECT p.*, j.titulo, e.edicion_nombre, e.imagen_portada, plat.nombre AS plataforma_nombre 
                 FROM prestamos p
                 JOIN coleccion_usuario cu ON p.coleccion_id = cu.id
                 JOIN ediciones e ON cu.edicion_id = e.id

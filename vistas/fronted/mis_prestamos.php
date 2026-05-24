@@ -40,6 +40,26 @@ include '../../includes/header.php';
         display: flex;
         align-items: center;
         justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .game-cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    .plat-badge-cover {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: var(--graphite);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
     }
     .game-content { padding: 20px; flex-grow: 1; }
     .game-content h3 { font-size: 1.1rem; margin-bottom: 5px; font-weight: 800; color: var(--graphite); }
@@ -92,10 +112,23 @@ include '../../includes/header.php';
             <?php foreach ($prestamosActivos as $p): ?>
                 <div class="game-card">
                     <div class="game-cover">
-                        <span style="font-size: 4rem;">🤝</span>
+                        <?php if (!empty($p->imagen_portada)): ?>
+                            <img src="../../img/portadas/<?php echo htmlspecialchars($p->imagen_portada); ?>"
+                                 alt="<?php echo htmlspecialchars($p->titulo); ?>">
+                        <?php else: ?>
+                            <span style="font-size: 4rem;">🎮</span>
+                        <?php endif; ?>
+                        <?php if (!empty($p->plataforma_nombre)): ?>
+                            <span class="plat-badge-cover"><?php echo htmlspecialchars($p->plataforma_nombre); ?></span>
+                        <?php endif; ?>
                     </div>
                     <div class="game-content">
                         <h3><?php echo htmlspecialchars($p->titulo); ?></h3>
+                        <?php if (!empty($p->edicion_nombre)): ?>
+                            <p style="font-size: 0.8rem; color: #888; margin: 0 0 8px 0;">
+                                <?php echo htmlspecialchars($p->edicion_nombre); ?>
+                            </p>
+                        <?php endif; ?>
                         <div class="borrower-info">
                             <strong><?php echo $lang['frontend_loans_borrowed_to']; ?></strong> <?php echo htmlspecialchars($p->nombre_persona); ?><br>
                             <small><?php echo $lang['frontend_loans_since']; ?> <?php echo date('d/m/Y', strtotime($p->fecha_prestamo)); ?></small>
