@@ -70,7 +70,7 @@ class ColeccionController {
                 $this->coleccionModel->agregarEdicion(
                     $usuario_id,
                     $edicion_id,
-                    'bueno',
+                    null,
                     $valoracionExistente !== false ? $valoracionExistente : null,
                     $idioma_id
                 );
