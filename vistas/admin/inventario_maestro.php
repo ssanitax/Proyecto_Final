@@ -26,7 +26,16 @@ try {
     $idiomas = [];
 }
 
-// 3. Obtener todas las ediciones (Juego + Plataforma + Región)
+// 3. Juegos maestro (agrupados, para borrado completo del título)
+$juegosCatalogo = $pdo->query("
+    SELECT j.id, j.titulo, j.desarrollador, COUNT(e.id) AS num_ediciones
+    FROM juegos j
+    LEFT JOIN ediciones e ON e.juego_id = j.id
+    GROUP BY j.id, j.titulo, j.desarrollador
+    ORDER BY j.titulo ASC
+")->fetchAll();
+
+// 4. Obtener todas las ediciones (Juego + Plataforma + Región)
 $ediciones = $pdo->query("
     SELECT e.*, j.titulo as juego_titulo, p.nombre as plataforma_nombre 
     FROM ediciones e
@@ -59,6 +68,11 @@ include '../../includes/admin_header.php';
         <p style="color: #666;"><?php echo $lang['admin_inventory_desc']; ?></p>
     </header>
 
+    <?php if (isset($_GET['error']) && $_GET['error'] === 'delete_game'): ?>
+        <div style="background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: center; font-weight: 600;">
+            <?php echo $lang['error_delete_game']; ?>
+        </div>
+    <?php endif; ?>
     <?php if(isset($_GET['status']) && $_GET['status'] == 'deleted'): ?>
         <div style="background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: center; font-weight: 600;">
             <?php echo $lang['elemento_eliminado']; ?>
@@ -70,13 +84,23 @@ include '../../includes/admin_header.php';
         </div>
     <?php endif; ?>
     <?php if (esSuperAdmin()): ?>
-        <p style="margin-bottom: 24px; text-align: center;">
+        <p style="margin-bottom: 24px; text-align: center; display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;">
+            <a href="../../controllers/AdminController.php?action=limpiar_juegos_sin_ediciones"
+               style="font-size: 0.85rem; font-weight: 700; color: #666;"
+               onclick="return confirm('<?php echo htmlspecialchars($lang['admin_orphan_games_clean_confirm'], ENT_QUOTES); ?>');">
+                <?php echo $lang['admin_orphan_games_clean_link']; ?>
+            </a>
             <a href="../../controllers/AdminController.php?action=limpiar_portadas_huerfanas"
                style="font-size: 0.85rem; font-weight: 700; color: #666;"
                onclick="return confirm('<?php echo htmlspecialchars($lang['admin_covers_clean_confirm'], ENT_QUOTES); ?>');">
                 <?php echo $lang['admin_covers_clean_link']; ?>
             </a>
         </p>
+    <?php endif; ?>
+    <?php if(isset($_GET['status']) && $_GET['status'] == 'orphan_games_cleaned'): ?>
+        <div style="background: #dbeafe; color: #1d4ed8; padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: center; font-weight: 600;">
+            <?php echo sprintf($lang['admin_orphan_games_cleaned'], (int)($_GET['n'] ?? 0)); ?>
+        </div>
     <?php endif; ?>
 
     <!-- SECCIÓN 1: PLATAFORMAS -->
@@ -181,7 +205,51 @@ include '../../includes/admin_header.php';
         </table>
     </div>
 
-    <!-- SECCIÓN 4: EDICIONES (Vínculo Juego-Consola) -->
+    <!-- SECCIÓN 4: JUEGOS (borrado del título completo) -->
+    <div class="admin-section">
+        <div class="section-header">
+            <h3><?php echo $lang['admin_section_games']; ?> <span class="badge-count"><?php echo count($juegosCatalogo); ?></span></h3>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th><?php echo $lang['admin_table_game']; ?></th>
+                    <th><?php echo $lang['admin_table_editions_count']; ?></th>
+                    <th style="text-align: right;"><?php echo $lang['admin_table_action']; ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($juegosCatalogo)): ?>
+                    <tr>
+                        <td colspan="3" style="text-align: center; color: #999; padding: 40px;">
+                            <?php echo ($idiomaActual ?? 'es') === 'en' ? 'No games in the catalog.' : 'No hay juegos en el catálogo.'; ?>
+                        </td>
+                    </tr>
+                <?php else: ?>
+                    <?php foreach ($juegosCatalogo as $juego): ?>
+                        <tr>
+                            <td>
+                                <strong><?php echo htmlspecialchars($juego->titulo); ?></strong>
+                                <?php if (!empty($juego->desarrollador)): ?>
+                                    <br><span style="color: #888; font-size: 0.8rem;"><?php echo htmlspecialchars($juego->desarrollador); ?></span>
+                                <?php endif; ?>
+                            </td>
+                            <td><?php echo (int)$juego->num_ediciones; ?></td>
+                            <td style="text-align: right;">
+                                <a href="../../controllers/AdminController.php?action=eliminar_juego&id=<?php echo (int)$juego->id; ?>"
+                                   class="btn-delete"
+                                   onclick="return confirm('<?php echo htmlspecialchars(sprintf($lang['admin_confirm_delete_game'], $juego->titulo), ENT_QUOTES); ?>');">
+                                    <?php echo $lang['admin_delete_game_full']; ?>
+                                </a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- SECCIÓN 5: EDICIONES (solo una consola/región) -->
     <div class="admin-section">
         <div class="section-header">
             <h3><?php echo $lang['admin_section_editions']; ?> <span class="badge-count"><?php echo count($ediciones); ?></span></h3>
@@ -189,14 +257,21 @@ include '../../includes/admin_header.php';
         <table>
             <thead>
                 <tr>
-                    <th>Videojuego</th>
+                    <th><?php echo $lang['admin_table_game']; ?></th>
                     <th>Plataforma</th>
                     <th>Región</th>
                     <th>Detalle Edición</th>
-                    <th style="text-align: right;">Acción</th>
+                    <th style="text-align: right;"><?php echo $lang['admin_table_action']; ?></th>
                 </tr>
             </thead>
             <tbody>
+                <?php if (empty($ediciones)): ?>
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #999; padding: 40px;">
+                            <?php echo ($idiomaActual ?? 'es') === 'en' ? 'No editions registered.' : 'No hay ediciones registradas.'; ?>
+                        </td>
+                    </tr>
+                <?php else: ?>
                 <?php foreach($ediciones as $e): ?>
                     <tr>
                         <td><strong><?php echo htmlspecialchars($e->juego_titulo); ?></strong></td>
@@ -205,10 +280,11 @@ include '../../includes/admin_header.php';
                         <td style="color: #777; font-size: 0.8rem;"><?php echo htmlspecialchars($e->edicion_nombre); ?></td>
                         <td style="text-align: right;">
                             <a href="../../controllers/AdminController.php?action=eliminar_edicion&id=<?php echo $e->id; ?>" 
-                               class="btn-delete" onclick="return confirm('<?php echo $lang['admin_confirm_delete_edition']; ?>')"><?php echo $lang['admin_user_delete']; ?></a>
+                               class="btn-delete" onclick="return confirm('<?php echo htmlspecialchars($lang['admin_confirm_delete_edition'], ENT_QUOTES); ?>')"><?php echo $lang['admin_delete_edition_only']; ?></a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>

@@ -9,6 +9,7 @@ $stmtJuegos = $pdo->query("
          WHERE e.juego_id = j.id AND e.imagen_portada IS NOT NULL AND e.imagen_portada != ''
          LIMIT 1) AS imagen_portada
     FROM juegos j
+    WHERE EXISTS (SELECT 1 FROM ediciones e2 WHERE e2.juego_id = j.id)
     ORDER BY j.titulo ASC
 ");
 $juegos = $stmtJuegos->fetchAll();
@@ -386,7 +387,8 @@ include '../../includes/admin_header.php';
                     'invalid_game' => $lang['admin_cover_error_invalid_game'],
                     'upload' => $lang['admin_cover_error_upload'],
                     'type' => $lang['admin_cover_error_type'],
-                    'filesystem' => $lang['admin_cover_error_filesystem']
+                    'filesystem' => $lang['admin_cover_error_filesystem'],
+                    'no_edition' => $lang['admin_cover_error_no_edition']
                 ];
                 $errorKey = $_GET['cover_error'];
                 echo $errorMap[$errorKey] ?? $lang['error_general'];

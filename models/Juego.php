@@ -19,6 +19,9 @@ class Juego {
                                                      LIMIT 1
                                              ) AS imagen_portada
                                 FROM juegos j
+                                WHERE EXISTS (
+                                    SELECT 1 FROM ediciones e WHERE e.juego_id = j.id
+                                )
                                 ORDER BY j.titulo ASC";
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll();
@@ -38,6 +41,9 @@ class Juego {
                                              ) AS imagen_portada
                                 FROM juegos j
                                 WHERE j.titulo LIKE :termino
+                                  AND EXISTS (
+                                      SELECT 1 FROM ediciones e WHERE e.juego_id = j.id
+                                  )
                                 ORDER BY j.titulo ASC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':termino' => "%$termino%"]);

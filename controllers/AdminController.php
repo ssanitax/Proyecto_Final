@@ -317,6 +317,19 @@ class AdminController {
             exit();
         }
 
+        $stmtTitulo = $this->pdo->prepare("SELECT titulo FROM juegos WHERE id = ?");
+        $stmtTitulo->execute([$juegoId]);
+        $tituloJuego = $stmtTitulo->fetchColumn();
+        if ($tituloJuego === false) {
+            header('Location: ../vistas/admin/registrar_directo.php?cover_error=invalid_game');
+            exit();
+        }
+
+        if (!asegurarEdicionParaPortada($this->pdo, $juegoId)) {
+            header('Location: ../vistas/admin/registrar_directo.php?cover_error=no_edition');
+            exit();
+        }
+
         if (!isset($_FILES['portada']) || $_FILES['portada']['error'] !== UPLOAD_ERR_OK) {
             header('Location: ../vistas/admin/registrar_directo.php?cover_error=upload');
             exit();
@@ -340,22 +353,19 @@ class AdminController {
         }
 
         $ext = $allowedMimes[$mimeType];
-        $baseName = pathinfo($originalName, PATHINFO_FILENAME);
-        $safeBase = preg_replace('/[^a-zA-Z0-9_-]/', '_', $baseName);
-        $safeBase = trim($safeBase, '_');
-        if ($safeBase === '') {
-            $safeBase = 'cover';
-        }
-
-        $fileName = $safeBase . '_' . time() . '.' . $ext;
-        $uploadDir = __DIR__ . '/../img/portadas';
+        $fileName = nombreArchivoPortadaDesdeTitulo($tituloJuego, $ext);
+        $uploadDir = directorioPortadas();
 
         if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true)) {
             header('Location: ../vistas/admin/registrar_directo.php?cover_error=filesystem');
             exit();
         }
 
-        $destPath = $uploadDir . '/' . $fileName;
+        $destPath = $uploadDir . DIRECTORY_SEPARATOR . $fileName;
+
+        if (is_file($destPath)) {
+            @unlink($destPath);
+        }
 
         if (!move_uploaded_file($tmpPath, $destPath)) {
             header('Location: ../vistas/admin/registrar_directo.php?cover_error=filesystem');
@@ -395,6 +405,7 @@ class AdminController {
                 $stmt->execute([$id]);
 
                 limpiarArchivosPortadaLista($this->pdo, $portadas);
+                eliminarJuegosSinEdicionesEnBd($this->pdo);
 
                 $this->pdo->commit();
                 header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
@@ -411,17 +422,21 @@ class AdminController {
     public function eliminarEdicion() {
         $id = $_GET['id'] ?? null;
         if ($id) {
-            $stmtImg = $this->pdo->prepare(
-                "SELECT imagen_portada FROM ediciones WHERE id = ?"
+            $stmtInfo = $this->pdo->prepare(
+                "SELECT juego_id, imagen_portada FROM ediciones WHERE id = ?"
             );
-            $stmtImg->execute([$id]);
-            $portada = $stmtImg->fetchColumn();
+            $stmtInfo->execute([$id]);
+            $row = $stmtInfo->fetch(PDO::FETCH_ASSOC);
 
-            $stmt = $this->pdo->prepare("DELETE FROM ediciones WHERE id = ?");
-            $stmt->execute([$id]);
+            if ($row) {
+                $stmt = $this->pdo->prepare("DELETE FROM ediciones WHERE id = ?");
+                $stmt->execute([$id]);
 
-            if ($portada) {
-                eliminarArchivoPortadaSiHuerfano($this->pdo, $portada);
+                if (!empty($row['imagen_portada'])) {
+                    eliminarArchivoPortadaSiHuerfano($this->pdo, $row['imagen_portada']);
+                }
+
+                eliminarJuegoSiQuedoSinEdiciones($this->pdo, (int)$row['juego_id']);
             }
         }
         header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
@@ -429,18 +444,29 @@ class AdminController {
     }
 
     public function eliminarJuegoMaestro() {
-        $id = $_GET['id'] ?? null;
-        if ($id) {
-            $portadas = obtenerPortadasPorFiltroEdiciones(
-                $this->pdo,
-                'e.juego_id = ?',
-                [$id]
-            );
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        if ($id > 0) {
+            try {
+                $this->pdo->beginTransaction();
 
-            $stmt = $this->pdo->prepare("DELETE FROM juegos WHERE id = ?");
-            $stmt->execute([$id]);
+                $portadas = obtenerPortadasPorFiltroEdiciones(
+                    $this->pdo,
+                    'e.juego_id = ?',
+                    [$id]
+                );
 
-            limpiarArchivosPortadaLista($this->pdo, $portadas);
+                $stmt = $this->pdo->prepare("DELETE FROM juegos WHERE id = ?");
+                $stmt->execute([$id]);
+
+                $this->pdo->commit();
+                limpiarArchivosPortadaLista($this->pdo, $portadas);
+            } catch (Exception $e) {
+                if ($this->pdo->inTransaction()) {
+                    $this->pdo->rollBack();
+                }
+                header('Location: ../vistas/admin/inventario_maestro.php?error=delete_game');
+                exit();
+            }
         }
         header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
         exit();
@@ -453,6 +479,16 @@ class AdminController {
         }
         $n = limpiarTodasPortadasHuerfanasEnDisco($this->pdo);
         header('Location: ../vistas/admin/inventario_maestro.php?status=covers_cleaned&n=' . (int)$n);
+        exit();
+    }
+
+    public function limpiarJuegosSinEdiciones() {
+        if (!esSuperAdmin()) {
+            header('Location: ../vistas/admin/inventario_maestro.php?error=no_permission');
+            exit();
+        }
+        $n = eliminarJuegosSinEdicionesEnBd($this->pdo);
+        header('Location: ../vistas/admin/inventario_maestro.php?status=orphan_games_cleaned&n=' . $n);
         exit();
     }
 
@@ -493,6 +529,8 @@ class AdminController {
 
                 $stmt4 = $this->pdo->prepare("DELETE FROM regiones WHERE nombre = ?");
                 $stmt4->execute([$region]);
+
+                eliminarJuegosSinEdicionesEnBd($this->pdo);
                 
                 $this->pdo->commit();
                 header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
@@ -649,6 +687,7 @@ if (isset($_GET['action'])) {
     if ($_GET['action'] == 'eliminar_edicion') $admin->eliminarEdicion();
     if ($_GET['action'] == 'eliminar_juego') $admin->eliminarJuegoMaestro();
     if ($_GET['action'] == 'limpiar_portadas_huerfanas') $admin->limpiarPortadasHuerfanas();
+    if ($_GET['action'] == 'limpiar_juegos_sin_ediciones') $admin->limpiarJuegosSinEdiciones();
     if ($_GET['action'] == 'eliminar_usuario') $admin->eliminarUsuario();
     if ($_GET['action'] == 'crear_usuario') $admin->crearUsuario();
     if ($_GET['action'] == 'crear_admin') $admin->crearAdministrador();

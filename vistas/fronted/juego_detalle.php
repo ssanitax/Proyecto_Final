@@ -32,6 +32,11 @@ $stmtEdic = $pdo->prepare("
 $stmtEdic->execute([$id_juego]);
 $ediciones = $stmtEdic->fetchAll();
 
+if (empty($ediciones)) {
+    header('Location: buscar.php');
+    exit();
+}
+
 $idiomas = [];
 try {
     $stmtIdiomasJuego = $pdo->prepare(

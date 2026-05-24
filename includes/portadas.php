@@ -5,6 +5,43 @@ function directorioPortadas() {
 }
 
 /**
+ * Nombre de archivo a partir del título: espacios → guiones bajos.
+ */
+function nombreArchivoPortadaDesdeTitulo($titulo, $extension) {
+    $base = trim((string)$titulo);
+    $base = preg_replace('/\s+/u', '_', $base);
+    $base = preg_replace('/[\\\\\\/:\\*\\?\"<>\\|]/', '', $base);
+    $base = preg_replace('/_+/', '_', $base);
+    $base = trim($base, '._');
+    if ($base === '') {
+        $base = 'juego';
+    }
+    $ext = strtolower(preg_replace('/[^a-z0-9]/', '', $extension));
+    return $base . '.' . ($ext !== '' ? $ext : 'jpg');
+}
+
+/**
+ * Si el juego no tiene ninguna edición, crea una estándar para poder guardar la portada.
+ */
+function asegurarEdicionParaPortada($pdo, $juegoId) {
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM ediciones WHERE juego_id = ?");
+    $stmt->execute([(int)$juegoId]);
+    if ((int)$stmt->fetchColumn() > 0) {
+        return true;
+    }
+
+    $platId = $pdo->query("SELECT id FROM plataformas ORDER BY nombre ASC LIMIT 1")->fetchColumn();
+    if (!$platId) {
+        return false;
+    }
+
+    $ins = $pdo->prepare(
+        "INSERT INTO ediciones (juego_id, plataforma_id, edicion_nombre) VALUES (?, ?, 'Edición Estándar')"
+    );
+    return $ins->execute([(int)$juegoId, (int)$platId]);
+}
+
+/**
  * Rutas de portada distintas usadas por ediciones que coinciden con el filtro.
  * $whereSql solo condiciones con alias e (ej: "e.juego_id = ?").
  */
@@ -53,6 +90,37 @@ function limpiarArchivosPortadaLista($pdo, array $nombresArchivo) {
 /**
  * Borra en disco las imágenes de img/portadas que ya no están en ninguna edición.
  */
+/**
+ * Elimina filas de juegos que ya no tienen ninguna edición.
+ */
+function eliminarJuegosSinEdicionesEnBd($pdo) {
+    $stmt = $pdo->prepare(
+        "DELETE j FROM juegos j
+         LEFT JOIN ediciones e ON e.juego_id = j.id
+         WHERE e.id IS NULL"
+    );
+    $stmt->execute();
+    return (int)$stmt->rowCount();
+}
+
+/**
+ * Tras borrar ediciones, elimina el juego maestro si ha quedado vacío.
+ */
+function eliminarJuegoSiQuedoSinEdiciones($pdo, $juegoId) {
+    $juegoId = (int)$juegoId;
+    if ($juegoId <= 0) {
+        return false;
+    }
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM ediciones WHERE juego_id = ?");
+    $stmt->execute([$juegoId]);
+    if ((int)$stmt->fetchColumn() > 0) {
+        return false;
+    }
+    $del = $pdo->prepare("DELETE FROM juegos WHERE id = ?");
+    $del->execute([$juegoId]);
+    return $del->rowCount() > 0;
+}
+
 function limpiarTodasPortadasHuerfanasEnDisco($pdo) {
     $dir = directorioPortadas();
     if (!is_dir($dir)) {
