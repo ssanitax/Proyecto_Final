@@ -173,6 +173,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <a href="?lang=en" class="lang-btn <?php echo ($idiomaActual == 'en') ? 'active' : ''; ?>">EN</a>
     </div>
     <h2><?php echo $lang['frontend_login_heading']; ?></h2>
+
+    <?php if (isset($_GET['status']) && $_GET['status'] === 'account_deleted'): ?>
+        <div style="background: #d1fae5; color: #065f46; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem; font-weight: 600;">
+            <?php echo $lang['frontend_profile_account_deleted']; ?>
+        </div>
+    <?php endif; ?>
     
     <?php if ($error): ?>
         <div class="error-alert">

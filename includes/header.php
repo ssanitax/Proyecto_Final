@@ -123,6 +123,7 @@
         <a href="buscar.php"><?php echo __('buscar'); ?></a>
         <a href="mis_prestamos.php"><?php echo __('prestamos'); ?></a>
         <a href="mis_propuestas.php"><?php echo __('propuestas'); ?></a>
+        <a href="perfil.php"><?php echo __('perfil'); ?></a>
         
         <a href="?lang=es" class="lang-btn <?php echo ($idiomaActual == 'es') ? 'active' : ''; ?>">ES</a>
         <a href="?lang=en" class="lang-btn <?php echo ($idiomaActual == 'en') ? 'active' : ''; ?>">EN</a>

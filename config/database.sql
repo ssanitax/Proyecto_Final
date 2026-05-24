@@ -240,10 +240,12 @@ CREATE TABLE juegos_pendientes (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (usuario_id) 
-        REFERENCES usuarios(id),
+        REFERENCES usuarios(id)
+        ON DELETE CASCADE,
 
     FOREIGN KEY (revisado_por) 
         REFERENCES usuarios(id)
+        ON DELETE SET NULL
 );
 
 CREATE INDEX idx_juegos_pendientes_estado ON juegos_pendientes(estado);
