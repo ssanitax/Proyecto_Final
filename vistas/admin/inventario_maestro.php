@@ -64,6 +64,20 @@ include '../../includes/admin_header.php';
             <?php echo $lang['elemento_eliminado']; ?>
         </div>
     <?php endif; ?>
+    <?php if(isset($_GET['status']) && $_GET['status'] == 'covers_cleaned'): ?>
+        <div style="background: #dbeafe; color: #1d4ed8; padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: center; font-weight: 600;">
+            <?php echo sprintf($lang['admin_covers_cleaned'], (int)($_GET['n'] ?? 0)); ?>
+        </div>
+    <?php endif; ?>
+    <?php if (esSuperAdmin()): ?>
+        <p style="margin-bottom: 24px; text-align: center;">
+            <a href="../../controllers/AdminController.php?action=limpiar_portadas_huerfanas"
+               style="font-size: 0.85rem; font-weight: 700; color: #666;"
+               onclick="return confirm('<?php echo htmlspecialchars($lang['admin_covers_clean_confirm'], ENT_QUOTES); ?>');">
+                <?php echo $lang['admin_covers_clean_link']; ?>
+            </a>
+        </p>
+    <?php endif; ?>
 
     <!-- SECCIÓN 1: PLATAFORMAS -->
     <div class="admin-section">

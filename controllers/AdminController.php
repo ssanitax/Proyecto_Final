@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/portadas.php';
 
 class AdminController {
     private $pdo;
@@ -361,8 +362,16 @@ class AdminController {
             exit();
         }
 
+        $portadasAnteriores = obtenerPortadasPorFiltroEdiciones(
+            $this->pdo,
+            'e.juego_id = ?',
+            [$juegoId]
+        );
+
         $stmt = $this->pdo->prepare("UPDATE ediciones SET imagen_portada = ? WHERE juego_id = ?");
         $stmt->execute([$fileName, $juegoId]);
+
+        limpiarArchivosPortadaLista($this->pdo, $portadasAnteriores);
 
         header('Location: ../vistas/admin/registrar_directo.php?cover_status=success');
         exit();
@@ -375,12 +384,18 @@ class AdminController {
         if ($id) {
             try {
                 $this->pdo->beginTransaction();
-                
-                // Al ejecutar esto, la base de datos borrará automáticamente 
-                // las ediciones asociadas debido al ON DELETE CASCADE.
+
+                $portadas = obtenerPortadasPorFiltroEdiciones(
+                    $this->pdo,
+                    'e.plataforma_id = ?',
+                    [$id]
+                );
+
                 $stmt = $this->pdo->prepare("DELETE FROM plataformas WHERE id = ?");
                 $stmt->execute([$id]);
-                
+
+                limpiarArchivosPortadaLista($this->pdo, $portadas);
+
                 $this->pdo->commit();
                 header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
             } catch (Exception $e) {
@@ -396,8 +411,18 @@ class AdminController {
     public function eliminarEdicion() {
         $id = $_GET['id'] ?? null;
         if ($id) {
+            $stmtImg = $this->pdo->prepare(
+                "SELECT imagen_portada FROM ediciones WHERE id = ?"
+            );
+            $stmtImg->execute([$id]);
+            $portada = $stmtImg->fetchColumn();
+
             $stmt = $this->pdo->prepare("DELETE FROM ediciones WHERE id = ?");
             $stmt->execute([$id]);
+
+            if ($portada) {
+                eliminarArchivoPortadaSiHuerfano($this->pdo, $portada);
+            }
         }
         header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
         exit();
@@ -406,10 +431,28 @@ class AdminController {
     public function eliminarJuegoMaestro() {
         $id = $_GET['id'] ?? null;
         if ($id) {
+            $portadas = obtenerPortadasPorFiltroEdiciones(
+                $this->pdo,
+                'e.juego_id = ?',
+                [$id]
+            );
+
             $stmt = $this->pdo->prepare("DELETE FROM juegos WHERE id = ?");
             $stmt->execute([$id]);
+
+            limpiarArchivosPortadaLista($this->pdo, $portadas);
         }
         header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
+        exit();
+    }
+
+    public function limpiarPortadasHuerfanas() {
+        if (!esSuperAdmin()) {
+            header('Location: ../vistas/admin/inventario_maestro.php?error=no_permission');
+            exit();
+        }
+        $n = limpiarTodasPortadasHuerfanasEnDisco($this->pdo);
+        header('Location: ../vistas/admin/inventario_maestro.php?status=covers_cleaned&n=' . (int)$n);
         exit();
     }
 
@@ -429,10 +472,16 @@ class AdminController {
             try {
                 $this->pdo->beginTransaction();
                 
-                // 1. Borrar ediciones oficiales de esa región (Limpieza de catálogo)
-                // Esto dispara el CASCADE hacia coleccion_usuario y prestamos [cite: 779, 782, 785]
+                $portadas = obtenerPortadasPorFiltroEdiciones(
+                    $this->pdo,
+                    'e.region = ?',
+                    [$region]
+                );
+
                 $stmt1 = $this->pdo->prepare("DELETE FROM ediciones WHERE region = ?");
                 $stmt1->execute([$region]);
+
+                limpiarArchivosPortadaLista($this->pdo, $portadas);
 
                 // 2. Borrar propuestas de ediciones de usuarios que tengan esa región
                 $stmt2 = $this->pdo->prepare("DELETE FROM ediciones_pendientes WHERE region = ?");
@@ -599,6 +648,7 @@ if (isset($_GET['action'])) {
     if ($_GET['action'] == 'eliminar_plataforma') $admin->eliminarPlataforma();
     if ($_GET['action'] == 'eliminar_edicion') $admin->eliminarEdicion();
     if ($_GET['action'] == 'eliminar_juego') $admin->eliminarJuegoMaestro();
+    if ($_GET['action'] == 'limpiar_portadas_huerfanas') $admin->limpiarPortadasHuerfanas();
     if ($_GET['action'] == 'eliminar_usuario') $admin->eliminarUsuario();
     if ($_GET['action'] == 'crear_usuario') $admin->crearUsuario();
     if ($_GET['action'] == 'crear_admin') $admin->crearAdministrador();
