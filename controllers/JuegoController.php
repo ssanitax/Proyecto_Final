@@ -109,6 +109,34 @@ class JuegoController {
     /**
      * ACCIÓN 4: Sugerir Región Independiente
      */
+    public function sugerirIdiomaIndependiente() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            if (!isset($_SESSION)) { session_start(); }
+
+            $nombre = htmlspecialchars(trim($_POST['nombre_idioma']));
+
+            try {
+                $this->pdo->beginTransaction();
+
+                $sqlJp = "INSERT INTO juegos_pendientes (usuario_id, titulo, estado) VALUES (?, ?, 'pendiente')";
+                $stmtJp = $this->pdo->prepare($sqlJp);
+                $stmtJp->execute([$_SESSION['usuario_id'], "Idioma: " . $nombre]);
+                $jp_id = $this->pdo->lastInsertId();
+
+                $sqlEp = "INSERT INTO ediciones_pendientes (juego_pendiente_id, idioma_nombre_nueva) VALUES (?, ?)";
+                $stmtEp = $this->pdo->prepare($sqlEp);
+                $stmtEp->execute([$jp_id, $nombre]);
+
+                $this->pdo->commit();
+                header('Location: ../vistas/fronted/mis_propuestas.php?status=enviado');
+                exit();
+            } catch (Exception $e) {
+                if ($this->pdo->inTransaction()) { $this->pdo->rollBack(); }
+                die(__('error_critical') . $e->getMessage());
+            }
+        }
+    }
+
     public function sugerirRegionIndependiente() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!isset($_SESSION)) { session_start(); }
@@ -150,5 +178,6 @@ if (isset($_GET['action'])) {
     if ($_GET['action'] == 'proponer') $controller->proponer();
     if ($_GET['action'] == 'proponer_edicion_existente') $controller->proponerEdicionExistente();
     if ($_GET['action'] == 'sugerir_plataforma_independiente') $controller->sugerirPlataformaIndependiente();
+    if ($_GET['action'] == 'sugerir_idioma_independiente') $controller->sugerirIdiomaIndependiente();
     if ($_GET['action'] == 'sugerir_region_independiente') $controller->sugerirRegionIndependiente();
 }

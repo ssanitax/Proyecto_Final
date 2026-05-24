@@ -14,7 +14,7 @@ class JuegoPendiente {
      */
     public function obtenerPropuestasPorUsuario($usuario_id) {
         // Realizamos JOINs para traer el nombre de la consola asociada a la propuesta
-        $sql = "SELECT jp.*, p.nombre as plataforma_nombre, ep.region, ep.bloqueo_regional 
+        $sql = "SELECT jp.*, p.nombre as plataforma_nombre, ep.region, ep.bloqueo_regional, ep.idioma_nombre_nueva
                 FROM juegos_pendientes jp
                 LEFT JOIN ediciones_pendientes ep ON ep.juego_pendiente_id = jp.id
                 LEFT JOIN plataformas p ON ep.plataforma_id = p.id

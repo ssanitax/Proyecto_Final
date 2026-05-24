@@ -5,7 +5,7 @@ require_once '../../config/config.php';
 
 // Consulta corregida para traer el nombre de la plataforma sugerida
 $sql = "SELECT jp.*, u.nombre as nombre_usuario, 
-               ep.region, ep.bloqueo_regional, ep.plataforma_nombre_nueva, ep.juego_id_real,
+               ep.region, ep.bloqueo_regional, ep.plataforma_nombre_nueva, ep.idioma_nombre_nueva, ep.juego_id_real,
                p.nombre as plataforma_oficial 
         FROM juegos_pendientes jp
         JOIN usuarios u ON jp.usuario_id = u.id
@@ -55,6 +55,12 @@ include '../../includes/admin_header.php';
                 </thead>
                 <tbody>
                     <?php foreach ($pendientes as $p): ?>
+                        <?php
+                            $esPropuestaIdioma = strpos($p->titulo, 'Idioma:') === 0;
+                            $esPropuestaPlataforma = strpos($p->titulo, 'Plataforma:') === 0;
+                            $esPropuestaRegion = strpos($p->titulo, 'Región:') === 0;
+                            $nombreIdiomaPropuesto = $p->idioma_nombre_nueva ?? trim(str_replace('Idioma:', '', $p->titulo));
+                        ?>
                         <tr style="border-bottom: 1px solid #f5f5f5;">
                             <form action="../../controllers/AdminController.php?action=aprobar&id=<?php echo $p->id; ?>" method="POST">
                                 <td style="padding: 20px;">
@@ -63,12 +69,24 @@ include '../../includes/admin_header.php';
                                     <?php if($p->juego_id_real): ?>
                                         <div style="margin-top:8px; background:#e0f2fe; color:#0369a1; padding:4px 8px; border-radius:4px; font-size:0.6rem; font-weight:800; display:inline-block;"><?php echo $lang['admin_validate_badge_existing']; ?></div>
                                     <?php endif; ?>
+                                    <?php if ($esPropuestaIdioma): ?>
+                                        <div style="margin-top:8px; background:#ede9fe; color:#5b21b6; padding:4px 8px; border-radius:4px; font-size:0.6rem; font-weight:800; display:inline-block;"><?php echo $lang['admin_validate_badge_language']; ?></div>
+                                    <?php endif; ?>
                                 </td>
                                 <td style="padding: 20px;">
+                                    <?php if ($esPropuestaIdioma): ?>
+                                        <input type="hidden" name="corregir_titulo" value="<?php echo htmlspecialchars($p->titulo); ?>">
+                                        <div style="margin-bottom: 10px;">
+                                            <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_language']; ?></label>
+                                            <input type="text" name="corregir_idioma" value="<?php echo htmlspecialchars($nombreIdiomaPropuesto); ?>"
+                                                   style="width: 100%; padding: 8px; border: 1px solid #fde68a; border-radius: 5px; background: #fffbeb; font-weight: 700;" required>
+                                        </div>
+                                        <p style="font-size: 0.75rem; color: #666;"><?php echo $lang['admin_validate_language_notice']; ?></p>
+                                    <?php else: ?>
                                     <div style="margin-bottom: 10px;">
                                         <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_platform']; ?></label>
                                         <input type="text" name="corregir_plataforma" 
-                                               value="<?php echo htmlspecialchars($p->plataforma_oficial ?? $p->plataforma_nombre_nueva); ?>" 
+                                               value="<?php echo htmlspecialchars($p->plataforma_oficial ?? $p->plataforma_nombre_nueva ?? ''); ?>" 
                                                style="width: 100%; padding: 8px; border: 1px solid <?php echo $p->plataforma_oficial ? '#eee' : '#fde68a'; ?>; border-radius: 5px; background: <?php echo $p->plataforma_oficial ? 'white' : '#fffbeb'; ?>; font-weight: 700;">
                                     </div>
                                     <div style="margin-bottom: 10px;">
@@ -76,10 +94,11 @@ include '../../includes/admin_header.php';
                                         <input type="text" name="corregir_titulo" value="<?php echo htmlspecialchars($p->titulo); ?>" 
                                                style="width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 5px; font-weight: 700;">
                                     </div>
+                                    <?php if (!$esPropuestaPlataforma && !$esPropuestaRegion): ?>
                                     <div style="display: flex; gap: 10px;">
                                         <div style="flex: 1;">
-                                            <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_dev']; ?></label>
-                                            <input type="text" name="corregir_dev" value="<?php echo htmlspecialchars($p->desarrollador); ?>" style="width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 5px;">
+                                            <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo (($idiomaActual ?? 'es') === 'en') ? 'DEVELOPER' : 'DESARROLLADOR'; ?></label>
+                                            <input type="text" name="corregir_dev" value="<?php echo htmlspecialchars($p->desarrollador ?? ''); ?>" style="width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 5px;">
                                         </div>
                                         <div style="flex: 1;">
                                             <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_region']; ?></label>
@@ -91,6 +110,8 @@ include '../../includes/admin_header.php';
                                                    placeholder="<?php echo !empty($p->bloqueo_regional) ? 'PAL, NTSC-U, NTSC-J...' : ''; ?>">
                                         </div>
                                     </div>
+                                    <?php endif; ?>
+                                    <?php endif; ?>
                                 </td>
                                 <td style="padding: 20px;">
                                     <button type="submit" style="background: #1c1f26; color: white; border: none; padding: 10px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; width: 100%; cursor: pointer; margin-bottom: 8px;"><?php echo $lang['admin_validate_btn_approve']; ?></button>

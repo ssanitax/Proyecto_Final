@@ -65,6 +65,22 @@ include '../../includes/header.php';
                 <?php echo $lang['frontend_proposals_new_region_button']; ?>
             </span>
         </a>
+
+        <a href="proponer_idioma.php" class="dash-card" style="padding: 30px; text-decoration: none;">
+            <div style="font-size: 2.5rem; margin-bottom: 15px;">🗣️</div>
+            <h4 style="margin-bottom: 8px; color: var(--graphite); font-size: 1.2rem;"><?php echo $lang['frontend_proposals_new_language_title']; ?></h4>
+            <p style="font-size: 0.85rem; color: #777; min-height: 40px;"><?php echo $lang['frontend_proposals_new_language_desc']; ?></p>
+
+            <span style="display: block; width: 100%; padding: 12px; border-radius: 50px;
+                        background: var(--graphite); color: white; font-weight: 700;
+                        text-transform: uppercase; font-size: 0.75rem; text-align: center;
+                        margin-top: 20px; transition: 0.3s;"
+                onmouseover="this.style.background='#333'; this.style.transform='translateY(-2px)';"
+                onmouseout="this.style.background='var(--graphite)'; this.style.transform='translateY(0)';"
+            >
+                <?php echo $lang['frontend_proposals_new_language_button']; ?>
+            </span>
+        </a>
     </div>
 
     <div class="about-box" style="padding: 0; overflow: hidden; background: white; border-radius: 20px; border: 1px solid #eee;">
@@ -94,7 +110,10 @@ include '../../includes/header.php';
                                     <strong><?php echo htmlspecialchars($p->titulo); ?></strong>
                                 </div>
                                 <div style="font-size: 0.75rem; color: #888; margin-top: 4px;">
-                                    <?php if (!empty($p->region)): ?>
+                                    <?php if (!empty($p->idioma_nombre_nueva) || strpos($p->titulo, 'Idioma:') === 0): ?>
+                                        <?php echo $lang['frontend_proposals_language_label']; ?>
+                                        <?php echo htmlspecialchars($p->idioma_nombre_nueva ?? trim(str_replace('Idioma:', '', $p->titulo))); ?>
+                                    <?php elseif (!empty($p->region)): ?>
                                         <?php echo $lang['frontend_proposals_region_label']; ?> <?php echo htmlspecialchars($p->region); ?>
                                     <?php elseif (!empty($p->bloqueo_regional)): ?>
                                         <?php echo $lang['frontend_proposals_regional_lock_label']; ?> <?php echo $lang['frontend_proposals_regional_lock_yes']; ?>

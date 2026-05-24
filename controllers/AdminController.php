@@ -29,7 +29,7 @@ class AdminController {
 
             // 1. Obtener la propuesta completa
             $stmt = $this->pdo->prepare("
-                SELECT jp.*, ep.plataforma_id, ep.region, ep.bloqueo_regional, ep.edicion_nombre, ep.juego_id_real, ep.plataforma_nombre_nueva
+                SELECT jp.*, ep.plataforma_id, ep.region, ep.bloqueo_regional, ep.edicion_nombre, ep.juego_id_real, ep.plataforma_nombre_nueva, ep.idioma_nombre_nueva
                 FROM juegos_pendientes jp
                 LEFT JOIN ediciones_pendientes ep ON ep.juego_pendiente_id = jp.id
                 WHERE jp.id = ?
@@ -44,9 +44,27 @@ class AdminController {
             $devCorregido    = $_POST['corregir_dev']    ?? $propuesta->desarrollador;
             $regionCorregida = trim($_POST['corregir_region'] ?? $propuesta->region ?? '');
             $platNombre      = $_POST['corregir_plataforma'] ?? null;
+            $idiomaNombre    = trim($_POST['corregir_idioma'] ?? '');
 
             if (!empty($propuesta->bloqueo_regional) && $regionCorregida === '') {
                 throw new Exception(__('admin_validate_region_required'));
+            }
+
+            // 2b. GESTIÓN DE IDIOMA (propuesta de nuevo idioma)
+            if ($idiomaNombre === '' && !empty($propuesta->idioma_nombre_nueva)) {
+                $idiomaNombre = trim($propuesta->idioma_nombre_nueva);
+            }
+            if ($idiomaNombre === '' && strpos($tituloCorregido, 'Idioma:') === 0) {
+                $idiomaNombre = trim(str_replace('Idioma:', '', $tituloCorregido));
+            }
+
+            if ($idiomaNombre !== '' && (strpos($tituloCorregido, 'Idioma:') === 0 || !empty($propuesta->idioma_nombre_nueva))) {
+                $stBuscaIdioma = $this->pdo->prepare("SELECT id FROM idiomas WHERE nombre = ?");
+                $stBuscaIdioma->execute([$idiomaNombre]);
+                if (!$stBuscaIdioma->fetch()) {
+                    $stInsIdioma = $this->pdo->prepare("INSERT INTO idiomas (nombre) VALUES (?)");
+                    $stInsIdioma->execute([$idiomaNombre]);
+                }
             }
 
             // 3. GESTIÓN DE LA PLATAFORMA (Crucial para que aparezca en el catálogo)
@@ -69,8 +87,8 @@ class AdminController {
             }
 
             // 4. LÓGICA DE JUEGO / EDICIÓN
-            if (strpos($tituloCorregido, 'Plataforma:') === 0 || strpos($tituloCorregido, 'Región:') === 0) {
-                // Era una propuesta solo de sistema/región, ya se gestionó arriba
+            if (strpos($tituloCorregido, 'Plataforma:') === 0 || strpos($tituloCorregido, 'Región:') === 0 || strpos($tituloCorregido, 'Idioma:') === 0) {
+                // Propuesta solo de plataforma, región o idioma
             } else {
                 $tituloLimpio = trim(str_replace('Juego: ', '', $tituloCorregido));
                 $juego_id_final = $propuesta->juego_id_real;
