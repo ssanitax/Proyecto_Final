@@ -41,14 +41,6 @@ foreach ($copias as $c) {
     }
 }
 
-$estadosConservacion = [
-    'nuevo' => $lang['frontend_collection_condition_new'] ?? 'Nuevo',
-    'como_nuevo' => $lang['frontend_collection_condition_like_new'] ?? 'Como nuevo',
-    'bueno' => $lang['frontend_collection_condition_good'] ?? 'Bueno',
-    'usado' => $lang['frontend_collection_condition_used'] ?? 'Usado',
-    'sin_caja' => $lang['frontend_collection_condition_no_box'] ?? 'Sin caja',
-];
-
 include '../../includes/header.php';
 ?>
 
@@ -184,11 +176,6 @@ include '../../includes/header.php';
                 <dl class="copy-meta">
                     <dt><?php echo $lang['frontend_edit_item_label_status']; ?></dt>
                     <dd><?php echo htmlspecialchars($copia->estado); ?></dd>
-
-                    <?php if (!empty($copia->estado_conservacion)): ?>
-                    <dt><?php echo $lang['frontend_collection_label_condition']; ?></dt>
-                    <dd><?php echo htmlspecialchars($estadosConservacion[$copia->estado_conservacion] ?? $copia->estado_conservacion); ?></dd>
-                    <?php endif; ?>
 
                     <?php if (!empty($copia->idioma_nombre)): ?>
                     <dt><?php echo $lang['frontend_collection_language_label']; ?></dt>

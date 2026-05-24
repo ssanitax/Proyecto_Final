@@ -7,7 +7,7 @@ class Coleccion {
     }
 
     // Añadir un juego a la estantería del usuario
-    public function agregarEdicion($usuario_id, $edicion_id, $estado_conservacion, $valoracion_personal = null, $idioma_id = null) {
+    public function agregarEdicion($usuario_id, $edicion_id, $estado_conservacion = null, $valoracion_personal = null, $idioma_id = null) {
         $sql = "INSERT INTO coleccion_usuario (usuario_id, edicion_id, idioma_id, estado_conservacion, valoracion_personal) 
                 VALUES (:usuario_id, :edicion_id, :idioma_id, :estado_conservacion, :valoracion_personal)";
         $stmt = $this->db->prepare($sql);

@@ -135,7 +135,7 @@ CREATE TABLE coleccion_usuario (
     estado ENUM('pendiente', 'jugando', 'completado') 
         DEFAULT 'pendiente',
 
-    estado_conservacion ENUM('nuevo', 'como_nuevo', 'bueno', 'usado', 'sin_caja'),
+    estado_conservacion ENUM('nuevo', 'como_nuevo', 'bueno', 'usado', 'sin_caja') NULL DEFAULT NULL,
 
     valoracion_personal INT CHECK (valoracion_personal BETWEEN 1 AND 10),
 
