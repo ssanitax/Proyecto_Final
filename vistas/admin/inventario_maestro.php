@@ -6,8 +6,17 @@ require_once '../../config/config.php';
 // 1. Obtener todas las plataformas
 $plataformas = $pdo->query("SELECT * FROM plataformas ORDER BY nombre ASC")->fetchAll();
 
-// 2. Obtener regiones distintas usadas actualmente (ya que no tienen tabla propia)
-$regiones = $pdo->query("SELECT DISTINCT region FROM ediciones WHERE region IS NOT NULL AND region != '' ORDER BY region ASC")->fetchAll();
+// 2. Catálogo maestro de regiones (fallback a ediciones si la tabla aún no existe)
+$regiones = [];
+try {
+    $regiones = $pdo->query("SELECT id, nombre FROM regiones ORDER BY nombre ASC")->fetchAll();
+} catch (PDOException $e) {
+    $legacy = $pdo->query("SELECT DISTINCT region AS nombre FROM ediciones WHERE region IS NOT NULL AND region != '' ORDER BY region ASC")->fetchAll();
+    foreach ($legacy as $row) {
+        $row->id = null;
+        $regiones[] = $row;
+    }
+}
 
 // 2b. Idiomas del catálogo
 $idiomas = [];
@@ -105,12 +114,12 @@ include '../../includes/admin_header.php';
                     <?php foreach($regiones as $reg): ?>
                         <tr>
                             <td>
-                                <strong>🌍 <?php echo htmlspecialchars($reg->region); ?></strong>
+                                <strong>🌍 <?php echo htmlspecialchars($reg->nombre); ?></strong>
                             </td>
                             <td style="text-align: right;">
-                                <a href="../../controllers/AdminController.php?action=eliminar_region&nombre=<?php echo urlencode($reg->region); ?>" 
+                                <a href="../../controllers/AdminController.php?action=eliminar_region&nombre=<?php echo urlencode($reg->nombre); ?>" 
                                    class="btn-delete" 
-                                   onclick="return confirm('<?php echo sprintf($lang['admin_confirm_delete_region'], htmlspecialchars($reg->region)); ?>')">
+                                   onclick="return confirm('<?php echo sprintf($lang['admin_confirm_delete_region'], htmlspecialchars($reg->nombre)); ?>')">
                                    <?php echo $lang['admin_user_delete']; ?>
                                 </a>
                             </td>

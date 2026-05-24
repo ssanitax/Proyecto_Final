@@ -1,0 +1,3 @@
+-- Permite varias copias del mismo juego/edición en la biblioteca de un usuario.
+-- ERROR 1091 "Can't DROP unique_usuario_edicion" = el índice ya no existe; no hace falta hacer nada.
+-- Para comprobar índices: SHOW INDEX FROM coleccion_usuario;

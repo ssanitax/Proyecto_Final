@@ -51,6 +51,15 @@ CREATE TABLE idiomas (
 );
 
 
+/* TABLA: REGIONES
+   - Códigos de región del catálogo (PAL, NTSC-J, etc.) */
+
+CREATE TABLE regiones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE
+);
+
+
 /* TABLA: JUEGOS 
    - Juego como concepto general */
 
@@ -102,7 +111,7 @@ CREATE INDEX idx_edicion_plataforma ON ediciones(plataforma_id);
 
 /* TABLA: COLECCION_USUARIO
    - Juegos que un usuario tiene en su estantería
-   - No dejamos que se creen duplicados (arreglar esto, alguien puede tenerlo repetido) */
+   - Un usuario puede tener varias copias de la misma edición */
 
 CREATE TABLE coleccion_usuario (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -132,9 +141,7 @@ CREATE TABLE coleccion_usuario (
 
     FOREIGN KEY (idioma_id)
         REFERENCES idiomas(id)
-        ON DELETE SET NULL,
-
-    CONSTRAINT unique_usuario_edicion UNIQUE (usuario_id, edicion_id)
+        ON DELETE SET NULL
 );
 
 CREATE INDEX idx_coleccion_usuario ON coleccion_usuario(usuario_id);
@@ -286,6 +293,13 @@ INSERT INTO idiomas (nombre) VALUES
 ('Italiano'),
 ('Japonés');
 
+/* 1c. INSERTAR REGIONES */
+INSERT INTO regiones (nombre) VALUES
+('PAL'),
+('NTSC-U'),
+('NTSC-J'),
+('Global');
+
 /* 2. INSERTAR JUEGOS (MAESTROS) */
 INSERT INTO juegos (titulo, desarrollador, fecha_lanzamiento, descripcion) VALUES 
 ('The Legend of Zelda: Breath of the Wild', 'Nintendo', '2017-03-03', 'Aventura de mundo abierto en el reino de Hyrule.'),
@@ -356,9 +370,6 @@ ADD COLUMN idioma_nombre_nueva VARCHAR(100) NULL AFTER plataforma_nombre_nueva;
 -- Permitir NULL en plataforma_id
 ALTER TABLE ediciones_pendientes
 MODIFY plataforma_id INT NULL;
-
--- Primero buscamos el nombre del índice/restricción y lo eliminamos
-ALTER TABLE coleccion_usuario DROP INDEX unique_usuario_edicion;
 
 -- 1. Averiguar el nombre exacto de la restricción (suele ser ediciones_pendientes_ibfk_2 según tu error)
 ALTER TABLE ediciones_pendientes DROP FOREIGN KEY ediciones_pendientes_ibfk_2;

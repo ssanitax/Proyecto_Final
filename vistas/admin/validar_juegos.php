@@ -60,6 +60,7 @@ include '../../includes/admin_header.php';
                             $esPropuestaPlataforma = strpos($p->titulo, 'Plataforma:') === 0;
                             $esPropuestaRegion = strpos($p->titulo, 'Región:') === 0;
                             $nombreIdiomaPropuesto = $p->idioma_nombre_nueva ?? trim(str_replace('Idioma:', '', $p->titulo));
+                            $nombreRegionPropuesta = $p->region ?? trim(str_replace('Región:', '', $p->titulo));
                         ?>
                         <tr style="border-bottom: 1px solid #f5f5f5;">
                             <form action="../../controllers/AdminController.php?action=aprobar&id=<?php echo $p->id; ?>" method="POST">
@@ -71,6 +72,8 @@ include '../../includes/admin_header.php';
                                     <?php endif; ?>
                                     <?php if ($esPropuestaIdioma): ?>
                                         <div style="margin-top:8px; background:#ede9fe; color:#5b21b6; padding:4px 8px; border-radius:4px; font-size:0.6rem; font-weight:800; display:inline-block;"><?php echo $lang['admin_validate_badge_language']; ?></div>
+                                    <?php elseif ($esPropuestaRegion): ?>
+                                        <div style="margin-top:8px; background:#dbeafe; color:#1e40af; padding:4px 8px; border-radius:4px; font-size:0.6rem; font-weight:800; display:inline-block;"><?php echo $lang['admin_validate_badge_region']; ?></div>
                                     <?php endif; ?>
                                 </td>
                                 <td style="padding: 20px;">
@@ -82,6 +85,14 @@ include '../../includes/admin_header.php';
                                                    style="width: 100%; padding: 8px; border: 1px solid #fde68a; border-radius: 5px; background: #fffbeb; font-weight: 700;" required>
                                         </div>
                                         <p style="font-size: 0.75rem; color: #666;"><?php echo $lang['admin_validate_language_notice']; ?></p>
+                                    <?php elseif ($esPropuestaRegion): ?>
+                                        <input type="hidden" name="corregir_titulo" value="<?php echo htmlspecialchars($p->titulo); ?>">
+                                        <div style="margin-bottom: 10px;">
+                                            <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_region']; ?></label>
+                                            <input type="text" name="corregir_region_catalogo" value="<?php echo htmlspecialchars($nombreRegionPropuesta); ?>"
+                                                   style="width: 100%; padding: 8px; border: 1px solid #bfdbfe; border-radius: 5px; background: #eff6ff; font-weight: 700;" required>
+                                        </div>
+                                        <p style="font-size: 0.75rem; color: #666;"><?php echo $lang['admin_validate_region_notice']; ?></p>
                                     <?php else: ?>
                                     <div style="margin-bottom: 10px;">
                                         <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_platform']; ?></label>

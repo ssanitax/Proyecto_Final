@@ -8,6 +8,7 @@ class ColeccionController {
     private $coleccionModel;
 
     public function __construct($pdo) {
+        exigirSesionEnControlador();
         $this->pdo = $pdo;
         $this->coleccionModel = new Coleccion($pdo);
     }
@@ -16,8 +17,6 @@ class ColeccionController {
     // Busca este bloque en ColeccionController.php
     public function agregar() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            if (!isset($_SESSION)) { session_start(); }
-            
             $usuario_id = $_SESSION['usuario_id'];
             $edicion_id = $_POST['edicion_id'] ?? null;
 
@@ -78,7 +77,7 @@ class ColeccionController {
                 header("Location: ../vistas/fronted/mi_coleccion.php?status=success");
                 exit();
             } catch (PDOException $e) {
-                die($lang['error_database'] . $e->getMessage());
+                die(__('error_database') . $e->getMessage());
             }
         }
     }
@@ -86,7 +85,6 @@ class ColeccionController {
     // 2. ACTUALIZAR JUEGO
     public function actualizar() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            session_start();
             $id = $_POST['id'];
             $estado = $_POST['estado'];
             $valoracion = isset($_POST['valoracion']) && $_POST['valoracion'] !== '' ? (int)$_POST['valoracion'] : null;
@@ -145,7 +143,6 @@ class ColeccionController {
 
     // 3. ELIMINAR JUEGO
     public function eliminar() {
-        session_start();
         $id = $_GET['id'] ?? null;
         if ($id) {
             $sql = "DELETE FROM coleccion_usuario WHERE id = ? AND usuario_id = ?";

@@ -45,6 +45,32 @@ function esAdmin() {
     return isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] === 'admin';
 }
 
+/**
+ * Obliga a tener sesión activa al llamar un controlador (ruta desde /controllers/).
+ */
+function exigirSesionEnControlador() {
+    if (!estaLogueado()) {
+        header('Location: ../vistas/fronted/login.php');
+        exit();
+    }
+}
+
+/**
+ * Añade una región al catálogo maestro si no existe (tabla regiones).
+ */
+function asegurarRegionEnCatalogo($pdo, $nombre) {
+    $nombre = trim($nombre);
+    if ($nombre === '') {
+        return;
+    }
+    $stmt = $pdo->prepare("SELECT id FROM regiones WHERE nombre = ?");
+    $stmt->execute([$nombre]);
+    if (!$stmt->fetch()) {
+        $ins = $pdo->prepare("INSERT INTO regiones (nombre) VALUES (?)");
+        $ins->execute([$nombre]);
+    }
+}
+
 // Proteger vistas de usuario (Mi Biblioteca, Buscar, etc.)
 function redirigirSiNoUsuario() {
     if (!estaLogueado()) {

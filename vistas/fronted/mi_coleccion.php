@@ -21,16 +21,28 @@ $stmtPlats = $pdo->prepare("
 $stmtPlats->execute([$usuario_id]);
 $plataformas_usuario = $stmtPlats->fetchAll();
 
-// 3. Construir la consulta con las columnas correctas de tu DB
-// Se cambió 'e.imagen_url' por 'e.imagen_portada' y se eliminó 'p.color_hex'
-$sql = "SELECT cu.*, j.titulo, e.region, e.edicion_nombre, p.nombre as plataforma_nombre, 
-               e.imagen_portada, i.nombre as idioma_nombre,
-               rating_user.valoracion_juego_usuario
+// 3. Una tarjeta por juego (agrupado); el detalle de cada copia está en coleccion_juego.php
+$sql = "SELECT 
+            e.juego_id,
+            j.titulo,
+            COUNT(cu.id) AS num_copias,
+            COUNT(DISTINCT p.id) AS num_plataformas,
+            MAX(p.nombre) AS plataforma_ejemplo,
+            MAX(cu.fecha_adicion) AS ultima_adicion,
+            (
+                SELECT e2.imagen_portada
+                FROM coleccion_usuario cu2
+                JOIN ediciones e2 ON e2.id = cu2.edicion_id
+                WHERE cu2.usuario_id = cu.usuario_id AND e2.juego_id = e.juego_id
+                  AND e2.imagen_portada IS NOT NULL AND e2.imagen_portada != ''
+                ORDER BY cu2.fecha_adicion DESC, cu2.id DESC
+                LIMIT 1
+            ) AS imagen_portada,
+            rating_user.valoracion_juego_usuario
         FROM coleccion_usuario cu
         JOIN ediciones e ON cu.edicion_id = e.id
         JOIN juegos j ON e.juego_id = j.id
         JOIN plataformas p ON e.plataforma_id = p.id
-        LEFT JOIN idiomas i ON cu.idioma_id = i.id
         LEFT JOIN (
             SELECT t.usuario_id, t.juego_id, cu3.valoracion_personal AS valoracion_juego_usuario
             FROM (
@@ -56,7 +68,8 @@ if (!empty($plataforma_filtro)) {
     $params[] = $plataforma_filtro;
 }
 
-$sql .= " ORDER BY cu.fecha_adicion DESC";
+$sql .= " GROUP BY e.juego_id, j.titulo, rating_user.valoracion_juego_usuario
+          ORDER BY ultima_adicion DESC";
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
@@ -97,6 +110,19 @@ include '../../includes/header.php';
         font-size: 0.74rem;
         color: #9ca3af;
         font-style: italic;
+    }
+
+    .copies-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: #6366f1;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
     }
 </style>
 
@@ -143,36 +169,38 @@ include '../../includes/header.php';
             </div>
         <?php else: ?>
             <?php foreach($items as $item): ?>
+                <?php
+                    $plataformaLabel = ((int)$item->num_plataformas > 1)
+                        ? $lang['frontend_collection_multiple_platforms']
+                        : htmlspecialchars($item->plataforma_ejemplo ?? '');
+                ?>
                 <div class="game-card" style="background: white; border-radius: 15px; overflow: hidden; border: 1px solid #eee; transition: 0.3s; display: flex; flex-direction: column;">
                     
                     <div style="width: 100%; aspect-ratio: 3/4; background: #f8f9fa; display: flex; align-items: center; justify-content: center; position: relative;">
+                        <?php if ((int)$item->num_copias > 1): ?>
+                            <span class="copies-badge"><?php echo sprintf($lang['frontend_collection_copies_badge'], (int)$item->num_copias); ?></span>
+                        <?php endif; ?>
                         <div style="position: absolute; top: 12px; right: 12px; background: var(--graphite); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase;">
-                            <?php echo htmlspecialchars($item->plataforma_nombre); ?>
+                            <?php echo $plataformaLabel; ?>
                         </div>
                         
                         <?php if(!empty($item->imagen_portada)): ?>
                             <img src="../../img/portadas/<?php echo htmlspecialchars($item->imagen_portada); ?>" style="width: 100%; height: 100%; object-fit: cover;">
                         <?php else: ?>
-                            <span style="font-size: 4rem;">
-                                <?php echo ($item->estado == 'completado') ? '⭐' : (($item->estado == 'jugando') ? '🕹️' : '💿'); ?>
-                            </span>
+                            <span style="font-size: 4rem;">🎮</span>
                         <?php endif; ?>
                     </div>
 
                     <div style="padding: 20px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
                         <div style="text-align: left; margin-bottom: 15px;">
-                            <span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: <?php echo ($item->estado == 'jugando') ? '#2ecc71' : '#aaa'; ?>;">
-                                ● <?php echo htmlspecialchars($item->estado); ?>
-                            </span>
-                            <h3 style="font-size: 1.1rem; margin: 8px 0 4px 0; font-weight: 800; color: var(--graphite); line-height: 1.2;">
+                            <h3 style="font-size: 1.1rem; margin: 0 0 8px 0; font-weight: 800; color: var(--graphite); line-height: 1.2;">
                                 <?php echo htmlspecialchars($item->titulo); ?>
                             </h3>
-                            <p style="font-size: 0.8rem; color: #888;">
-                                <?php echo htmlspecialchars($item->edicion_nombre); ?> • <?php echo htmlspecialchars($item->region); ?>
-                                <?php if (!empty($item->idioma_nombre)): ?>
-                                    • <?php echo $lang['frontend_collection_language_label']; ?> <?php echo htmlspecialchars($item->idioma_nombre); ?>
-                                <?php endif; ?>
-                            </p>
+                            <?php if ((int)$item->num_copias === 1): ?>
+                                <p style="font-size: 0.8rem; color: #888; margin: 0;"><?php echo $lang['frontend_collection_single_copy']; ?></p>
+                            <?php else: ?>
+                                <p style="font-size: 0.8rem; color: #888; margin: 0;"><?php echo sprintf($lang['frontend_collection_copies_summary'], (int)$item->num_copias); ?></p>
+                            <?php endif; ?>
                             <?php if ($item->valoracion_juego_usuario !== null): ?>
                                 <div class="user-rating-badge">
                                     <span class="user-rating-label"><?php echo $lang['frontend_ratings_your_label']; ?></span>
@@ -183,9 +211,9 @@ include '../../includes/header.php';
                             <?php endif; ?>
                         </div>
 
-                        <a href="editar_item.php?id=<?php echo $item->id; ?>" 
+                        <a href="coleccion_juego.php?juego_id=<?php echo (int)$item->juego_id; ?>" 
                            style="display: block; width: 100%; padding: 12px; border-radius: 50px; background: var(--graphite); color: white; text-decoration: none; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; text-align: center; transition: 0.3s;">
-                            <?php echo $lang['frontend_collection_manage_copy']; ?>
+                            <?php echo ((int)$item->num_copias > 1) ? $lang['frontend_collection_view_copies'] : $lang['frontend_collection_view_copy']; ?>
                         </a>
                     </div>
                 </div>

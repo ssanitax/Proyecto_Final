@@ -6,7 +6,10 @@ class AdminController {
     private $pdo;
 
     public function __construct($pdo) {
-        // Seguridad: Solo administradores
+        if (!estaLogueado()) {
+            header('Location: ../vistas/fronted/login.php');
+            exit();
+        }
         if (!esAdmin()) {
             header('Location: ../vistas/fronted/dashboard.php');
             exit();
@@ -45,6 +48,15 @@ class AdminController {
             $regionCorregida = trim($_POST['corregir_region'] ?? $propuesta->region ?? '');
             $platNombre      = $_POST['corregir_plataforma'] ?? null;
             $idiomaNombre    = trim($_POST['corregir_idioma'] ?? '');
+            $regionCatalogo  = trim($_POST['corregir_region_catalogo'] ?? $_POST['corregir_region'] ?? '');
+
+            if ($platNombre === null || $platNombre === '') {
+                if (!empty($propuesta->plataforma_nombre_nueva)) {
+                    $platNombre = $propuesta->plataforma_nombre_nueva;
+                } elseif (strpos($tituloCorregido, 'Plataforma:') === 0) {
+                    $platNombre = trim(str_replace('Plataforma:', '', $tituloCorregido));
+                }
+            }
 
             if (!empty($propuesta->bloqueo_regional) && $regionCorregida === '') {
                 throw new Exception(__('admin_validate_region_required'));
@@ -65,6 +77,16 @@ class AdminController {
                     $stInsIdioma = $this->pdo->prepare("INSERT INTO idiomas (nombre) VALUES (?)");
                     $stInsIdioma->execute([$idiomaNombre]);
                 }
+            }
+
+            if ($regionCatalogo === '' && !empty($propuesta->region)) {
+                $regionCatalogo = trim($propuesta->region);
+            }
+            if ($regionCatalogo === '' && strpos($tituloCorregido, 'Región:') === 0) {
+                $regionCatalogo = trim(str_replace('Región:', '', $tituloCorregido));
+            }
+            if ($regionCatalogo !== '' && (strpos($tituloCorregido, 'Región:') === 0 || !empty($propuesta->region))) {
+                asegurarRegionEnCatalogo($this->pdo, $regionCatalogo);
             }
 
             // 3. GESTIÓN DE LA PLATAFORMA (Crucial para que aparezca en el catálogo)
@@ -123,7 +145,7 @@ class AdminController {
 
         } catch (Exception $e) {
             if ($this->pdo->inTransaction()) $this->pdo->rollBack();
-            die($lang['error_validation'] . $e->getMessage());
+            die(__('error_validation') . $e->getMessage());
         }
     }
 
@@ -170,6 +192,19 @@ class AdminController {
             try {
                 $stmt = $this->pdo->prepare("INSERT INTO idiomas (nombre) VALUES (?)");
                 $stmt->execute([$nombre]);
+                header('Location: ../vistas/admin/registrar_directo.php?status=success');
+            } catch (Exception $e) {
+                header('Location: ../vistas/admin/registrar_directo.php?error=exists');
+            }
+            exit();
+        }
+    }
+
+    public function registrarRegionDirecta() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $nombre = htmlspecialchars(trim($_POST['nombre']));
+            try {
+                asegurarRegionEnCatalogo($this->pdo, $nombre);
                 header('Location: ../vistas/admin/registrar_directo.php?status=success');
             } catch (Exception $e) {
                 header('Location: ../vistas/admin/registrar_directo.php?error=exists');
@@ -260,7 +295,7 @@ class AdminController {
                 header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
             } catch (Exception $e) {
                 $this->pdo->rollBack();
-                die($lang['error_delete_platform'] . $e->getMessage());
+                die(__('error_delete_platform') . $e->getMessage());
             }
         } else {
             header('Location: ../vistas/admin/inventario_maestro.php');
@@ -316,12 +351,15 @@ class AdminController {
                 // 3. OPCIONAL: Si quieres borrar también la mención en el título de la propuesta maestra
                 $stmt3 = $this->pdo->prepare("DELETE FROM juegos_pendientes WHERE titulo = ?");
                 $stmt3->execute(["Región: " . $region]);
+
+                $stmt4 = $this->pdo->prepare("DELETE FROM regiones WHERE nombre = ?");
+                $stmt4->execute([$region]);
                 
                 $this->pdo->commit();
                 header('Location: ../vistas/admin/inventario_maestro.php?status=deleted');
             } catch (Exception $e) {
                 if ($this->pdo->inTransaction()) $this->pdo->rollBack();
-                die($lang['error_delete_region'] . $e->getMessage());
+                die(__('error_delete_region') . $e->getMessage());
             }
         }
         exit();
@@ -367,6 +405,7 @@ if (isset($_GET['action'])) {
     if ($_GET['action'] == 'registrar_plataforma') $admin->registrarPlataformaDirecta();
     if ($_GET['action'] == 'registrar_juego') $admin->registrarJuegoDirecto();
     if ($_GET['action'] == 'registrar_idioma') $admin->registrarIdiomaDirecto();
+    if ($_GET['action'] == 'registrar_region') $admin->registrarRegionDirecta();
     if ($_GET['action'] == 'subir_portada_juego') $admin->subirPortadaJuego();
     if ($_GET['action'] == 'eliminar_idioma') $admin->eliminarIdioma();
     if ($_GET['action'] == 'eliminar_region') $admin->eliminarPorRegion();  

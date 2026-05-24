@@ -8,6 +8,7 @@ class JuegoController {
     private $juegoModel;
 
     public function __construct($pdo) {
+        exigirSesionEnControlador();
         $this->pdo = $pdo;
         $this->juegoModel = new Juego($pdo);
     }
@@ -17,7 +18,6 @@ class JuegoController {
      */
     public function proponer() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            if (!isset($_SESSION)) { session_start(); }
             $usuario_id = $_SESSION['usuario_id'];
 
             try {
@@ -39,7 +39,7 @@ class JuegoController {
                 exit();
             } catch (Exception $e) {
                 if ($this->pdo->inTransaction()) { $this->pdo->rollBack(); }
-                die($lang['error_general'] . $e->getMessage());
+                die(__('error_general') . $e->getMessage());
             }
         }
     }
@@ -49,8 +49,6 @@ class JuegoController {
      */
     public function proponerEdicionExistente() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            if (!isset($_SESSION)) { session_start(); }
-            
             try {
                 $this->pdo->beginTransaction();
 
@@ -70,7 +68,7 @@ class JuegoController {
                 exit();
             } catch (Exception $e) {
                 if ($this->pdo->inTransaction()) { $this->pdo->rollBack(); }
-                die($lang['error_general'] . $e->getMessage());
+                die(__('error_general') . $e->getMessage());
             }
         }
     }
@@ -80,7 +78,6 @@ class JuegoController {
      */
     public function sugerirPlataformaIndependiente() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            if (!isset($_SESSION)) { session_start(); }
             
             $nombre = htmlspecialchars(trim($_POST['nombre_plataforma']));
 
@@ -101,7 +98,7 @@ class JuegoController {
                 exit();
             } catch (Exception $e) {
                 if ($this->pdo->inTransaction()) { $this->pdo->rollBack(); }
-                die($lang['error_critical'] . $e->getMessage());
+                die(__('error_critical') . $e->getMessage());
             }
         }
     }
@@ -111,7 +108,6 @@ class JuegoController {
      */
     public function sugerirIdiomaIndependiente() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            if (!isset($_SESSION)) { session_start(); }
 
             $nombre = htmlspecialchars(trim($_POST['nombre_idioma']));
 
@@ -139,7 +135,6 @@ class JuegoController {
 
     public function sugerirRegionIndependiente() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            if (!isset($_SESSION)) { session_start(); }
             
             $region = htmlspecialchars(trim($_POST['nombre_region']));
 
@@ -162,7 +157,7 @@ class JuegoController {
                 exit();
             } catch (Exception $e) {
                 if ($this->pdo->inTransaction()) { $this->pdo->rollBack(); }
-                die($lang['error_critical'] . $e->getMessage());
+                die(__('error_critical') . $e->getMessage());
             }
         }
     }
