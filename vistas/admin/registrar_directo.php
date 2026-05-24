@@ -91,16 +91,99 @@ include '../../includes/admin_header.php';
         border-color: var(--graphite);
     }
 
-    .cover-legend {
+    .cover-picker-section { margin-bottom: 18px; }
+
+    .cover-picker-heading {
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0 0 10px 0;
         display: flex;
-        gap: 16px;
-        font-size: 0.75rem;
-        margin: -8px 0 14px 0;
-        font-weight: 600;
+        align-items: center;
+        gap: 8px;
     }
 
-    .cover-legend-without { color: #b45309; }
-    .cover-legend-with { color: #047857; }
+    .cover-picker-heading.without { color: #b45309; }
+    .cover-picker-heading.with { color: #047857; }
+
+    .cover-picker-heading .count {
+        background: #f3f4f6;
+        color: #666;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 0.65rem;
+    }
+
+    .cover-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 10px;
+        max-height: 220px;
+        overflow-y: auto;
+        padding: 4px;
+        margin-bottom: 4px;
+    }
+
+    .cover-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 8px;
+        border-radius: 12px;
+        border: 2px solid #eee;
+        background: #fafafa;
+        cursor: pointer;
+        transition: 0.2s;
+        text-align: center;
+    }
+
+    .cover-item:hover { border-color: #ccc; background: #fff; }
+
+    .cover-item input { display: none; margin: 0; }
+
+    .cover-item:has(input:checked) {
+        border-color: var(--graphite);
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .cover-item-thumb {
+        width: 64px;
+        height: 64px;
+        border-radius: 8px;
+        object-fit: cover;
+        background: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        overflow: hidden;
+    }
+
+    .cover-item-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .cover-item.no-cover .cover-item-thumb {
+        background: #fef3c7;
+        color: #b45309;
+        font-size: 0.65rem;
+        font-weight: 800;
+        line-height: 1.1;
+        padding: 4px;
+    }
+
+    .cover-item-name {
+        font-size: 0.65rem;
+        font-weight: 700;
+        line-height: 1.2;
+        color: var(--graphite);
+        word-break: break-word;
+    }
 
     .cover-preview-box {
         display: none;
@@ -134,6 +217,13 @@ include '../../includes/admin_header.php';
         color: #999;
         font-style: italic;
         margin: 0;
+    }
+
+    .cover-picker-empty-msg {
+        font-size: 0.8rem;
+        color: #999;
+        font-style: italic;
+        padding: 8px 0;
     }
 </style>
 
@@ -197,35 +287,58 @@ include '../../includes/admin_header.php';
             </form>
         </div>
 
-        <div class="dash-card">
+        <div class="dash-card" style="grid-column: 1 / -1;">
             <h3 style="margin-bottom: 12px; font-weight: 800;"><?php echo $lang['admin_cover_title']; ?></h3>
             <p style="color: #666; font-size: 0.9rem; margin-bottom: 18px;"><?php echo $lang['admin_cover_desc']; ?></p>
-            <form action="../../controllers/AdminController.php?action=subir_portada_juego" method="POST" enctype="multipart/form-data">
-                <div class="cover-legend">
-                    <span class="cover-legend-without">● <?php echo $lang['admin_cover_legend_without']; ?> (<?php echo count($juegosSinPortada); ?>)</span>
-                    <span class="cover-legend-with">● <?php echo $lang['admin_cover_legend_with']; ?> (<?php echo count($juegosConPortada); ?>)</span>
+            <form action="../../controllers/AdminController.php?action=subir_portada_juego" method="POST" enctype="multipart/form-data" id="cover-upload-form">
+                <p style="font-size:0.85rem; font-weight:700; margin-bottom:14px; color:#444;">
+                    <?php echo ($idiomaActual ?? 'es') === 'en' ? 'Click a game to select it:' : 'Haz clic en un juego para seleccionarlo:'; ?>
+                </p>
+
+                <div class="cover-picker-section">
+                    <p class="cover-picker-heading without">
+                        <?php echo ($idiomaActual ?? 'es') === 'en' ? 'No cover' : 'Sin portada'; ?>
+                        <span class="count"><?php echo count($juegosSinPortada); ?></span>
+                    </p>
+                    <?php if (empty($juegosSinPortada)): ?>
+                        <p class="cover-picker-empty-msg"><?php echo ($idiomaActual ?? 'es') === 'en' ? 'All games have a cover.' : 'Todos los juegos tienen portada.'; ?></p>
+                    <?php else: ?>
+                        <div class="cover-grid">
+                            <?php $coverRadioRequired = true; foreach ($juegosSinPortada as $juego): ?>
+                                <label class="cover-item no-cover">
+                                    <input type="radio" name="juego_id" value="<?php echo (int)$juego->id; ?>"<?php if ($coverRadioRequired) { echo ' required'; $coverRadioRequired = false; } ?> data-portada="">
+                                    <span class="cover-item-thumb"><?php echo ($idiomaActual ?? 'es') === 'en' ? 'NO PHOTO' : 'SIN FOTO'; ?></span>
+                                    <span class="cover-item-name"><?php echo htmlspecialchars($juego->titulo); ?></span>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
-                <select name="juego_id" id="cover-game-select" required>
-                    <option value="" data-portada=""><?php echo $lang['admin_cover_select_game']; ?></option>
-                    <?php if (!empty($juegosSinPortada)): ?>
-                        <optgroup label="<?php echo $lang['admin_cover_group_without']; ?>">
-                            <?php foreach ($juegosSinPortada as $juego): ?>
-                                <option value="<?php echo (int)$juego->id; ?>" data-portada="">
-                                    ○ <?php echo htmlspecialchars($juego->titulo); ?> — <?php echo $lang['admin_cover_option_no_photo']; ?>
-                                </option>
+
+                <div class="cover-picker-section">
+                    <p class="cover-picker-heading with">
+                        <?php echo ($idiomaActual ?? 'es') === 'en' ? 'Has cover' : 'Con portada'; ?>
+                        <span class="count"><?php echo count($juegosConPortada); ?></span>
+                    </p>
+                    <?php if (empty($juegosConPortada)): ?>
+                        <p class="cover-picker-empty-msg"><?php echo ($idiomaActual ?? 'es') === 'en' ? 'No games have a cover yet.' : 'Ningún juego tiene portada todavía.'; ?></p>
+                    <?php else: ?>
+                        <div class="cover-grid">
+                            <?php
+                            if (!isset($coverRadioRequired)) { $coverRadioRequired = true; }
+                            foreach ($juegosConPortada as $juego):
+                            ?>
+                                <label class="cover-item has-cover">
+                                    <input type="radio" name="juego_id" value="<?php echo (int)$juego->id; ?>"<?php if ($coverRadioRequired) { echo ' required'; $coverRadioRequired = false; } ?> data-portada="<?php echo htmlspecialchars($juego->imagen_portada); ?>">
+                                    <span class="cover-item-thumb">
+                                        <img src="../../img/portadas/<?php echo htmlspecialchars($juego->imagen_portada); ?>" alt="">
+                                    </span>
+                                    <span class="cover-item-name"><?php echo htmlspecialchars($juego->titulo); ?></span>
+                                </label>
                             <?php endforeach; ?>
-                        </optgroup>
+                        </div>
                     <?php endif; ?>
-                    <?php if (!empty($juegosConPortada)): ?>
-                        <optgroup label="<?php echo $lang['admin_cover_group_with']; ?>">
-                            <?php foreach ($juegosConPortada as $juego): ?>
-                                <option value="<?php echo (int)$juego->id; ?>" data-portada="<?php echo htmlspecialchars($juego->imagen_portada); ?>">
-                                    ✓ <?php echo htmlspecialchars($juego->titulo); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </optgroup>
-                    <?php endif; ?>
-                </select>
+                </div>
 
                 <div id="cover-preview-box" class="cover-preview-box" aria-live="polite">
                     <div class="cover-preview-label" id="cover-preview-label"></div>
@@ -242,24 +355,26 @@ include '../../includes/admin_header.php';
 
 <script>
 (function () {
-    var select = document.getElementById('cover-game-select');
+    var form = document.getElementById('cover-upload-form');
+    if (!form) return;
+
+    var radios = form.querySelectorAll('input[name="juego_id"]');
     var box = document.getElementById('cover-preview-box');
     var img = document.getElementById('cover-preview-img');
     var label = document.getElementById('cover-preview-label');
     var empty = document.getElementById('cover-preview-empty');
-    var labelWith = <?php echo json_encode($lang['admin_cover_preview_label']); ?>;
-    var labelEmpty = <?php echo json_encode($lang['admin_cover_preview_empty']); ?>;
+    var labelWith = <?php echo json_encode($lang['admin_cover_preview_label'] ?? 'Portada actual'); ?>;
+    var labelEmpty = <?php echo json_encode($lang['admin_cover_preview_empty'] ?? 'Este juego aún no tiene portada.'); ?>;
     var basePath = '../../img/portadas/';
 
     function updatePreview() {
-        var option = select.options[select.selectedIndex];
-        var portada = option ? option.getAttribute('data-portada') : '';
-
-        if (!select.value) {
+        var selected = form.querySelector('input[name="juego_id"]:checked');
+        if (!selected) {
             box.classList.remove('visible');
             return;
         }
 
+        var portada = selected.getAttribute('data-portada') || '';
         box.classList.add('visible');
 
         if (portada) {
@@ -276,7 +391,9 @@ include '../../includes/admin_header.php';
         }
     }
 
-    select.addEventListener('change', updatePreview);
+    radios.forEach(function (radio) {
+        radio.addEventListener('change', updatePreview);
+    });
 })();
 </script>
 
