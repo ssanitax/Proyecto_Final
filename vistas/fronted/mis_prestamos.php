@@ -46,7 +46,9 @@ include '../../includes/header.php';
     .game-cover img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
+        object-position: center;
+        background: #e8eaed;
         display: block;
     }
     .plat-badge-cover {

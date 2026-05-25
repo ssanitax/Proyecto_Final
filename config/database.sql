@@ -38,7 +38,8 @@ CREATE INDEX idx_usuario_rol ON usuarios(rol);
 
 CREATE TABLE plataformas (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL UNIQUE
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+    fecha_lanzamiento DATE NULL
 );
 
 

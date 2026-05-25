@@ -52,6 +52,12 @@ $lang = [
     'admin_platforms_list_title' => 'Plataformas Registradas',
     'admin_inventory_title' => 'Inventario Maestro del Sistema',
     'admin_inventory_desc' => 'Gestiona y limpia los datos oficiales de la base de datos.',
+    'admin_platform_release_date' => 'Fecha de salida',
+    'admin_platform_release_save' => 'Guardar fecha',
+    'admin_platform_release_saved' => 'Fecha de la plataforma actualizada.',
+    'admin_direct_platform_release_label' => 'Fecha de salida de la consola',
+    'admin_validate_label_platform_release' => 'Fecha de salida de la consola',
+    'admin_validate_badge_platform' => 'NUEVA PLATAFORMA',
     'admin_section_platforms' => 'Consolas y Plataformas',
     'admin_section_regions' => 'Regiones Activas en el Sistema',
     'admin_section_games' => 'Juegos del catálogo (título completo)',
@@ -375,6 +381,7 @@ $lang = [
     'frontend_loans_history_link' => '📂 Ver historial de préstamos pasados',
 
     // Mis Propuestas
+    'frontend_proposals_sent_success' => 'Tu propuesta se ha enviado correctamente. El equipo la revisará en breve.',
     'frontend_proposals_title' => 'Centro de Propuestas',
     'frontend_proposals_desc' => 'Ayuda a expandir la base de datos de Bengala sugiriendo nuevos contenidos.',
     'frontend_proposals_new_game_title' => 'Nuevo Juego',
@@ -423,9 +430,11 @@ $lang = [
     // Proponer Plataforma
     'frontend_propose_platform_title' => 'Sugerir Nueva Plataforma',
     'frontend_propose_platform_desc' => '¿Falta alguna consola en Bengala? Pídela aquí.',
+    'frontend_propose_platform_label_release' => 'FECHA DE LANZAMIENTO DE LA CONSOLA',
     'frontend_propose_platform_label_name' => 'NOMBRE DE LA CONSOLA / PLATAFORMA',
     'frontend_propose_platform_placeholder' => 'Ej: PlayStation 5, Sega Saturn...',
     'frontend_propose_platform_submit' => 'Enviar Sugerencia',
+    'frontend_propose_error_missing_date' => 'Indica la fecha de lanzamiento de la consola.',
 
     // Proponer Región
     'frontend_propose_region_title' => 'Sugerir Nueva Región',

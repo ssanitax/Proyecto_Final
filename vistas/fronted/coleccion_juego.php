@@ -13,7 +13,7 @@ if ($juego_id <= 0) {
 }
 
 $sql = "SELECT cu.*, j.titulo, e.juego_id, e.id AS edicion_id, e.edicion_nombre, e.region, e.anio,
-               e.imagen_portada, j.fecha_lanzamiento,
+               e.imagen_portada, j.fecha_lanzamiento, p.fecha_lanzamiento AS plataforma_fecha_lanzamiento,
                p.nombre AS plataforma_nombre, i.nombre AS idioma_nombre,
                pr.nombre_persona AS prestado_a, pr.fecha_prestamo AS fecha_prestamo_activo
         FROM coleccion_usuario cu
@@ -74,7 +74,8 @@ include '../../includes/header.php';
         width: 100%;
         height: 100%;
         min-height: 128px;
-        object-fit: cover;
+        object-fit: contain;
+        object-position: center;
         display: block;
     }
     .copy-body {
@@ -177,13 +178,7 @@ include '../../includes/header.php';
     <a href="mi_coleccion.php" class="back-link">← <?php echo $lang['frontend_collection_back']; ?></a>
 
     <div class="game-hero">
-        <div class="game-hero-cover">
-            <?php if ($portada): ?>
-                <img src="../../img/portadas/<?php echo htmlspecialchars($portada); ?>" alt="" style="width:100%;height:100%;object-fit:cover;">
-            <?php else: ?>
-                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem;">🎮</div>
-            <?php endif; ?>
-        </div>
+        <?php echo htmlPortada($portada, 'hero'); ?>
         <div>
             <h2 style="margin: 0 0 8px 0;"><?php echo htmlspecialchars($titulo); ?></h2>
             <p style="color: #666; margin: 0;">

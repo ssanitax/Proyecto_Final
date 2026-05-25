@@ -179,7 +179,9 @@ include '../../includes/admin_header.php';
         width: 64px;
         height: 64px;
         border-radius: 8px;
-        object-fit: cover;
+        object-fit: contain;
+        object-position: center;
+        background: #e8eaed;
         background: #e5e7eb;
         display: flex;
         align-items: center;
@@ -191,7 +193,9 @@ include '../../includes/admin_header.php';
     .cover-item-thumb img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
+        object-position: center;
+        background: #e8eaed;
     }
 
     .cover-item.no-cover .cover-item-thumb {
@@ -402,6 +406,8 @@ include '../../includes/admin_header.php';
             <h3 style="margin-bottom: 20px; font-weight: 800;"><?php echo $lang['admin_direct_new_platform']; ?></h3>
             <form action="../../controllers/AdminController.php?action=registrar_plataforma" method="POST">
                 <input type="text" name="nombre" placeholder="<?php echo $lang['admin_direct_platform_placeholder']; ?>" required>
+                <label style="display:block; font-size:0.75rem; font-weight:700; margin:12px 0 6px; color:#666;"><?php echo $lang['admin_direct_platform_release_label']; ?></label>
+                <input type="date" name="fecha_lanzamiento" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; margin-bottom:12px;">
                 <button type="submit" class="btn-dash"><?php echo $lang['admin_direct_save_platform']; ?></button>
             </form>
         </div>

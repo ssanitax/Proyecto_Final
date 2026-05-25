@@ -97,6 +97,11 @@ include '../../includes/admin_header.php';
             </a>
         </p>
     <?php endif; ?>
+    <?php if(isset($_GET['status']) && $_GET['status'] == 'platform_date_saved'): ?>
+        <div style="background: #d1fae5; color: #065f46; padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: center; font-weight: 600;">
+            <?php echo $lang['admin_platform_release_saved']; ?>
+        </div>
+    <?php endif; ?>
     <?php if(isset($_GET['status']) && $_GET['status'] == 'orphan_games_cleaned'): ?>
         <div style="background: #dbeafe; color: #1d4ed8; padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: center; font-weight: 600;">
             <?php echo sprintf($lang['admin_orphan_games_cleaned'], (int)($_GET['n'] ?? 0)); ?>
@@ -112,6 +117,7 @@ include '../../includes/admin_header.php';
             <thead>
                 <tr>
                     <th><?php echo $lang['admin_table_name']; ?></th>
+                    <th><?php echo $lang['admin_platform_release_date']; ?></th>
                     <th style="text-align: right;"><?php echo $lang['admin_table_action']; ?></th>
                 </tr>
             </thead>
@@ -119,6 +125,16 @@ include '../../includes/admin_header.php';
                 <?php foreach($plataformas as $plat): ?>
                     <tr>
                         <td><strong><?php echo htmlspecialchars($plat->nombre); ?></strong></td>
+                        <td>
+                            <form action="../../controllers/AdminController.php?action=actualizar_fecha_plataforma" method="POST" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                <input type="hidden" name="plataforma_id" value="<?php echo (int)$plat->id; ?>">
+                                <input type="date" name="fecha_lanzamiento" value="<?php echo htmlspecialchars($plat->fecha_lanzamiento ?? ''); ?>"
+                                       style="padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px;">
+                                <button type="submit" style="padding: 6px 12px; border-radius: 6px; border: none; background: var(--graphite, #1c1f26); color: white; font-size: 0.75rem; font-weight: 700; cursor: pointer;">
+                                    <?php echo $lang['admin_platform_release_save']; ?>
+                                </button>
+                            </form>
+                        </td>
                         <td style="text-align: right;">
                             <a href="../../controllers/AdminController.php?action=eliminar_plataforma&id=<?php echo $plat->id; ?>" 
                                class="btn-delete" onclick="return confirm('<?php echo $lang['admin_confirm_delete_platform']; ?>')"><?php echo $lang['admin_user_delete']; ?></a>

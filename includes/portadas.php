@@ -58,14 +58,20 @@ function nombreArchivoPortadaEdicion($titulo, $plataforma, $region, $extension, 
 /**
  * Subconsulta SQL: portada de la edición con lanzamiento más reciente del juego.
  */
+function sqlOrdenPortadaReciente($aliasEdicion = 'e', $aliasPlataforma = 'p', $aliasJuego = 'j2') {
+    return "COALESCE({$aliasPlataforma}.fecha_lanzamiento, {$aliasEdicion}.anio, YEAR({$aliasJuego}.fecha_lanzamiento), '1970-01-01') DESC, {$aliasEdicion}.id DESC";
+}
+
 function sqlSelectPortadaMasRecientePorJuego($columnaJuegoId = 'j.id') {
+    $orden = sqlOrdenPortadaReciente('e', 'p', 'j2');
     return "(
         SELECT e.imagen_portada
         FROM ediciones e
         INNER JOIN juegos j2 ON j2.id = e.juego_id
+        INNER JOIN plataformas p ON p.id = e.plataforma_id
         WHERE e.juego_id = {$columnaJuegoId}
           AND e.imagen_portada IS NOT NULL AND e.imagen_portada != ''
-        ORDER BY COALESCE(e.anio, YEAR(j2.fecha_lanzamiento), 0) DESC, e.id DESC
+        ORDER BY {$orden}
         LIMIT 1
     )";
 }
@@ -75,20 +81,23 @@ function sqlSelectPortadaMasRecientePorJuego($columnaJuegoId = 'j.id') {
  */
 function portadaMasRecienteEntreCopias(array $copias) {
     $mejor = null;
-    $mejorClave = -1;
+    $mejorTs = 0;
     foreach ($copias as $copia) {
         if (empty($copia->imagen_portada)) {
             continue;
         }
-        $anio = isset($copia->anio) && $copia->anio !== null && $copia->anio !== ''
-            ? (int)$copia->anio
-            : 0;
-        if ($anio <= 0 && !empty($copia->fecha_lanzamiento)) {
-            $anio = (int)date('Y', strtotime($copia->fecha_lanzamiento));
+        $ts = 0;
+        if (!empty($copia->plataforma_fecha_lanzamiento)) {
+            $ts = strtotime($copia->plataforma_fecha_lanzamiento) ?: 0;
         }
-        $clave = $anio * 100000 + (int)($copia->edicion_id ?? $copia->id ?? 0);
-        if ($clave > $mejorClave) {
-            $mejorClave = $clave;
+        if ($ts <= 0 && !empty($copia->anio)) {
+            $ts = strtotime((int)$copia->anio . '-06-15') ?: 0;
+        }
+        if ($ts <= 0 && !empty($copia->fecha_lanzamiento)) {
+            $ts = strtotime($copia->fecha_lanzamiento) ?: 0;
+        }
+        if ($ts >= $mejorTs) {
+            $mejorTs = $ts;
             $mejor = $copia->imagen_portada;
         }
     }

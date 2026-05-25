@@ -34,9 +34,10 @@ $sql = "SELECT
                 FROM coleccion_usuario cu2
                 JOIN ediciones e2 ON e2.id = cu2.edicion_id
                 JOIN juegos j2 ON j2.id = e2.juego_id
+                JOIN plataformas p2 ON p2.id = e2.plataforma_id
                 WHERE cu2.usuario_id = cu.usuario_id AND e2.juego_id = e.juego_id
                   AND e2.imagen_portada IS NOT NULL AND e2.imagen_portada != ''
-                ORDER BY COALESCE(e2.anio, YEAR(j2.fecha_lanzamiento), 0) DESC, e2.id DESC
+                ORDER BY COALESCE(p2.fecha_lanzamiento, e2.anio, YEAR(j2.fecha_lanzamiento), '1970-01-01') DESC, e2.id DESC
                 LIMIT 1
             ) AS imagen_portada,
             rating_user.valoracion_juego_usuario
@@ -186,7 +187,7 @@ include '../../includes/header.php';
                         </div>
                         
                         <?php if(!empty($item->imagen_portada)): ?>
-                            <img src="../../img/portadas/<?php echo htmlspecialchars($item->imagen_portada); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                            <img src="../../img/portadas/<?php echo htmlspecialchars($item->imagen_portada); ?>" alt="" style="width: 100%; height: 100%; object-fit: contain; object-position: center;">
                         <?php else: ?>
                             <span style="font-size: 4rem;">🎮</span>
                         <?php endif; ?>

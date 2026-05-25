@@ -52,6 +52,12 @@ $lang = [
     'admin_platforms_list_title' => 'Registered Platforms',
     'admin_inventory_title' => 'Master Inventory',
     'admin_inventory_desc' => 'Manage and clean official database entries.',
+    'admin_platform_release_date' => 'Release date',
+    'admin_platform_release_save' => 'Save date',
+    'admin_platform_release_saved' => 'Platform release date updated.',
+    'admin_direct_platform_release_label' => 'Console release date',
+    'admin_validate_label_platform_release' => 'Console release date',
+    'admin_validate_badge_platform' => 'NEW PLATFORM',
     'admin_section_platforms' => 'Consoles and Platforms',
     'admin_section_regions' => 'Active Regions in System',
     'admin_section_games' => 'Catalog games (full title)',
@@ -373,6 +379,7 @@ $lang = [
     'frontend_loans_history_link' => '📂 View past loan history',
 
     // My Proposals
+    'frontend_proposals_sent_success' => 'Your proposal was submitted successfully. The team will review it shortly.',
     'frontend_proposals_title' => 'Proposal Center',
     'frontend_proposals_desc' => 'Help expand Bengala\'s database by suggesting new content.',
     'frontend_proposals_new_game_title' => 'New Game',
@@ -421,9 +428,11 @@ $lang = [
     // Propose Platform
     'frontend_propose_platform_title' => 'Suggest New Platform',
     'frontend_propose_platform_desc' => 'Is any console missing from Bengala? Request it here.',
+    'frontend_propose_platform_label_release' => 'CONSOLE RELEASE DATE',
     'frontend_propose_platform_label_name' => 'CONSOLE / PLATFORM NAME',
     'frontend_propose_platform_placeholder' => 'E.g: PlayStation 5, Sega Saturn...',
     'frontend_propose_platform_submit' => 'Send Suggestion',
+    'frontend_propose_error_missing_date' => 'Please enter the console release date.',
 
     // Propose Region
     'frontend_propose_region_title' => 'Suggest New Region',
