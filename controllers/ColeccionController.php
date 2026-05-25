@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../models/Coleccion.php';
+require_once __DIR__ . '/../includes/catalogo.php';
 
 class ColeccionController {
     private $pdo;
@@ -25,29 +26,39 @@ class ColeccionController {
                 exit();
             }
 
-            $idioma_id = !empty($_POST['idioma_id']) ? (int)$_POST['idioma_id'] : null;
-
-            $hayIdiomas = false;
-            try {
-                $hayIdiomas = (int)$this->pdo->query("SELECT COUNT(*) FROM idiomas")->fetchColumn() > 0;
-            } catch (PDOException $e) {
-                $hayIdiomas = false;
+            $stmtEd = $this->pdo->prepare("SELECT juego_id, bloqueo_regional FROM ediciones WHERE id = ?");
+            $stmtEd->execute([$edicion_id]);
+            $edicion = $stmtEd->fetch();
+            if (!$edicion) {
+                header('Location: ../vistas/fronted/buscar.php?error=no_selection');
+                exit();
             }
+            $juego_id_redirect = (int)$edicion->juego_id;
 
-            if ($hayIdiomas && !$idioma_id) {
-                $stmtJuego = $this->pdo->prepare("SELECT juego_id FROM ediciones WHERE id = ?");
-                $stmtJuego->execute([$edicion_id]);
-                $juego_id_redirect = (int)$stmtJuego->fetchColumn();
+            $idioma_id = !empty($_POST['idioma_id']) ? (int)$_POST['idioma_id'] : null;
+            $idiomasJuego = idiomasDisponiblesParaJuego($this->pdo, $juego_id_redirect);
+
+            if (!empty($idiomasJuego) && !$idioma_id) {
                 header('Location: ../vistas/fronted/juego_detalle.php?id=' . $juego_id_redirect . '&error=no_language');
                 exit();
             }
 
             if ($idioma_id) {
-                $stmtVal = $this->pdo->prepare("SELECT id FROM idiomas WHERE id = ?");
-                $stmtVal->execute([$idioma_id]);
-                if (!$stmtVal->fetch()) {
+                $permitidos = array_map(fn($i) => (int)$i->id, $idiomasJuego);
+                if (!in_array($idioma_id, $permitidos, true)) {
                     $idioma_id = null;
                 }
+            }
+
+            $regionCopia = trim($_POST['region_copia'] ?? '');
+            if (!empty($edicion->bloqueo_regional)) {
+                if ($regionCopia === '') {
+                    header('Location: ../vistas/fronted/juego_detalle.php?id=' . $juego_id_redirect . '&error=no_region');
+                    exit();
+                }
+                asegurarRegionEnCatalogo($this->pdo, $regionCopia);
+            } else {
+                $regionCopia = null;
             }
 
             try {
@@ -72,7 +83,8 @@ class ColeccionController {
                     $edicion_id,
                     null,
                     $valoracionExistente !== false ? $valoracionExistente : null,
-                    $idioma_id
+                    $idioma_id,
+                    $regionCopia
                 );
                 header("Location: ../vistas/fronted/mi_coleccion.php?status=success");
                 exit();
@@ -94,18 +106,40 @@ class ColeccionController {
                 $this->pdo->beginTransaction();
 
                 // 1) Actualizamos estado y notas solo de la copia editada
+                $stmtCopia = $this->pdo->prepare("SELECT e.juego_id, e.bloqueo_regional FROM coleccion_usuario cu JOIN ediciones e ON e.id = cu.edicion_id WHERE cu.id = ? AND cu.usuario_id = ?");
+                $stmtCopia->execute([$id, $_SESSION['usuario_id']]);
+                $copiaMeta = $stmtCopia->fetch();
+
                 $idioma_id = !empty($_POST['idioma_id']) ? (int)$_POST['idioma_id'] : null;
-                if ($idioma_id) {
-                    $stmtVal = $this->pdo->prepare("SELECT id FROM idiomas WHERE id = ?");
-                    $stmtVal->execute([$idioma_id]);
-                    if (!$stmtVal->fetch()) {
+                $idiomasJuego = $copiaMeta ? idiomasDisponiblesParaJuego($this->pdo, (int)$copiaMeta->juego_id) : [];
+                if (!empty($idiomasJuego) && !$idioma_id) {
+                    header('Location: ../vistas/fronted/editar_item.php?id=' . (int)$id . '&error=no_language');
+                    exit();
+                }
+                if ($idioma_id && !empty($idiomasJuego)) {
+                    $permitidos = array_map(fn($i) => (int)$i->id, $idiomasJuego);
+                    if (!in_array($idioma_id, $permitidos, true)) {
                         $idioma_id = null;
                     }
                 }
 
-                $sql = "UPDATE coleccion_usuario SET estado = ?, notas = ?, idioma_id = ? WHERE id = ? AND usuario_id = ?";
+                $region = trim($_POST['region_copia'] ?? '');
+                $stmtEd = $this->pdo->prepare("SELECT e.bloqueo_regional FROM coleccion_usuario cu JOIN ediciones e ON e.id = cu.edicion_id WHERE cu.id = ? AND cu.usuario_id = ?");
+                $stmtEd->execute([$id, $_SESSION['usuario_id']]);
+                $ed = $stmtEd->fetch();
+                if ($ed && !empty($ed->bloqueo_regional)) {
+                    if ($region === '') {
+                        header('Location: ../vistas/fronted/editar_item.php?id=' . (int)$id . '&error=no_region');
+                        exit();
+                    }
+                    asegurarRegionEnCatalogo($this->pdo, $region);
+                } else {
+                    $region = null;
+                }
+
+                $sql = "UPDATE coleccion_usuario SET estado = ?, notas = ?, idioma_id = ?, region = ? WHERE id = ? AND usuario_id = ?";
                 $stmt = $this->pdo->prepare($sql);
-                $exito = $stmt->execute([$estado, $notas, $idioma_id, $id, $_SESSION['usuario_id']]);
+                $exito = $stmt->execute([$estado, $notas, $idioma_id, $region !== '' ? $region : null, $id, $_SESSION['usuario_id']]);
 
                 // 2) Detectamos el juego al que pertenece esa copia
                 $sqlJuego = "SELECT e.juego_id

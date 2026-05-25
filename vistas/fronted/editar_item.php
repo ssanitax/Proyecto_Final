@@ -2,12 +2,12 @@
 require_once '../../includes/auth.php';
 redirigirSiNoUsuario();
 require_once '../../config/config.php';
+require_once '../../includes/catalogo.php';
 
 $id_coleccion = $_GET['id'] ?? null;
 
-// 1. Obtener los datos actuales del juego en la estantería del usuario
 $stmt = $pdo->prepare("
-    SELECT cu.*, j.titulo, e.juego_id, e.edicion_nombre, e.imagen_portada, p.nombre as plataforma
+    SELECT cu.*, j.titulo, e.juego_id, e.edicion_nombre, e.imagen_portada, e.bloqueo_regional, p.nombre as plataforma
     FROM coleccion_usuario cu
     JOIN ediciones e ON cu.edicion_id = e.id
     JOIN juegos j ON e.juego_id = j.id
@@ -17,12 +17,8 @@ $stmt = $pdo->prepare("
 $stmt->execute([$id_coleccion, $_SESSION['usuario_id']]);
 $item = $stmt->fetch();
 
-$idiomas = [];
-try {
-    $idiomas = $pdo->query("SELECT id, nombre FROM idiomas ORDER BY nombre ASC")->fetchAll();
-} catch (PDOException $e) {
-    $idiomas = [];
-}
+$idiomas = $item ? idiomasDisponiblesParaJuego($pdo, (int)$item->juego_id) : [];
+$regiones = regionesParaSelector($pdo);
 
 if (!$item) {
     die($lang['frontend_edit_item_not_found']);
@@ -92,6 +88,12 @@ include '../../includes/header.php';
     <a href="coleccion_juego.php?juego_id=<?php echo (int)$item->juego_id; ?>" style="display: inline-block; color: #666; text-decoration: none; font-weight: 700; font-size: 0.85rem; margin-bottom: 20px;">
         ← <?php echo $lang['frontend_collection_back']; ?>
     </a>
+    <?php if (isset($_GET['error']) && $_GET['error'] === 'no_region'): ?>
+        <div style="background:#fee2e2;color:#991b1b;padding:14px;border-radius:12px;margin-bottom:20px;font-weight:600;text-align:center;">
+            <?php echo $lang['frontend_game_detail_region_required']; ?>
+        </div>
+    <?php endif; ?>
+
     <header style="text-align: center; margin-bottom: 40px;">
         <h2 style="margin-bottom: 10px;"><?php echo $lang['frontend_edit_item_title']; ?></h2>
         <p style="color: #666;"><?php echo sprintf($lang['frontend_edit_item_desc'], htmlspecialchars($item->titulo)); ?></p>
@@ -114,14 +116,35 @@ include '../../includes/header.php';
             <?php if (!empty($idiomas)): ?>
             <div class="form-group" style="text-align: left; margin-bottom: 20px;">
                 <label style="font-weight: 800; font-size: 0.75rem; color: var(--graphite); display: block; margin-bottom: 10px; text-transform: uppercase;"><?php echo $lang['frontend_edit_item_label_language']; ?></label>
-                <select name="idioma_id" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #eee; font-family: inherit;">
-                    <option value=""><?php echo $lang['frontend_edit_item_language_none']; ?></option>
+                <p style="font-size: 0.8rem; color: #888; margin: 0 0 10px;"><?php echo $lang['frontend_game_detail_language_help']; ?></p>
+                <select name="idioma_id" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #eee; font-family: inherit;">
+                    <option value=""><?php echo $lang['frontend_game_detail_select_language']; ?></option>
                     <?php foreach ($idiomas as $idioma): ?>
                         <option value="<?php echo (int)$idioma->id; ?>" <?php echo ((int)$item->idioma_id === (int)$idioma->id) ? 'selected' : ''; ?>>
                             <?php echo htmlspecialchars($idioma->nombre); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
+            </div>
+            <?php endif; ?>
+
+            <?php if (!empty($item->bloqueo_regional)): ?>
+            <div class="form-group" style="text-align: left; margin-bottom: 20px;">
+                <label style="font-weight: 800; font-size: 0.75rem; color: var(--graphite); display: block; margin-bottom: 10px; text-transform: uppercase;"><?php echo $lang['frontend_game_detail_label_region_copy']; ?></label>
+                <p style="font-size: 0.8rem; color: #888; margin: 0 0 10px;"><?php echo $lang['frontend_game_detail_region_copy_help']; ?></p>
+                <?php if (!empty($regiones)): ?>
+                <select name="region_copia" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #eee; font-family: inherit;">
+                    <option value=""><?php echo $lang['frontend_game_detail_select_region']; ?></option>
+                    <?php foreach ($regiones as $reg): ?>
+                        <option value="<?php echo htmlspecialchars($reg->nombre); ?>" <?php echo ($item->region === $reg->nombre) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($reg->nombre); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <?php else: ?>
+                <input type="text" name="region_copia" value="<?php echo htmlspecialchars($item->region ?? ''); ?>" required
+                       style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #eee;">
+                <?php endif; ?>
             </div>
             <?php endif; ?>
 

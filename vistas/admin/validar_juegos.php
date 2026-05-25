@@ -1,5 +1,6 @@
 <?php
 require_once '../../includes/auth.php';
+require_once '../../includes/catalogo.php';
 redirigirSiNoAdmin();
 $pdo = $GLOBALS['pdo'];
 
@@ -73,6 +74,7 @@ include '../../includes/admin_header.php';
                             $nombreIdiomaPropuesto = $p->idioma_nombre_nueva ?? trim(str_replace('Idioma:', '', $p->titulo));
                             $nombreRegionPropuesta = $p->region ?? trim(str_replace('Región:', '', $p->titulo));
                             $nombrePlataformaPropuesta = $p->plataforma_nombre_nueva ?? trim(str_replace('Plataforma:', '', $p->titulo));
+                            $idiomasMarcadosPropuesta = idiomasPropuestaPendiente($pdo, (int)$p->id);
                         ?>
                         <tr style="border-bottom: 1px solid #f5f5f5;">
                             <form action="../../controllers/AdminController.php?action=aprobar&id=<?php echo $p->id; ?>" method="POST" enctype="multipart/form-data">
@@ -138,23 +140,23 @@ include '../../includes/admin_header.php';
                                                style="width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 5px;">
                                     </div>
                                     <div style="margin-bottom: 10px;">
-                                        <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_language']; ?> *</label>
-                                        <?php if (!empty($p->idioma_nombre_nueva) && empty($p->idioma_id)): ?>
-                                            <input type="text" name="corregir_idioma" value="<?php echo htmlspecialchars($p->idioma_nombre_nueva); ?>" required
-                                                   style="width: 100%; padding: 8px; border: 1px solid #fde68a; border-radius: 5px; background: #fffbeb; font-weight: 700; margin-bottom: 6px;">
-                                        <?php elseif (empty($idiomasCatalogo)): ?>
-                                            <input type="text" name="corregir_idioma" value="<?php echo htmlspecialchars($p->idioma_nombre_nueva ?? ''); ?>" required
-                                                   style="width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 5px;">
-                                        <?php endif; ?>
+                                        <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_languages_available']; ?></label>
+                                        <p style="font-size: 0.72rem; color: #666; margin: 0 0 8px;"><?php echo $lang['admin_validate_languages_available_help']; ?></p>
                                         <?php if (!empty($idiomasCatalogo)): ?>
-                                        <select name="corregir_idioma_id" <?php echo empty($p->idioma_nombre_nueva) ? 'required' : ''; ?> style="width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 5px;">
-                                            <option value=""><?php echo $lang['admin_validate_select_language']; ?></option>
+                                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                                             <?php foreach ($idiomasCatalogo as $idioma): ?>
-                                                <option value="<?php echo (int)$idioma->id; ?>" <?php echo ((int)$p->idioma_id === (int)$idioma->id) ? 'selected' : ''; ?>>
+                                                <?php
+                                                    $checked = empty($idiomasMarcadosPropuesta)
+                                                        || in_array((int)$idioma->id, $idiomasMarcadosPropuesta, true);
+                                                ?>
+                                                <label style="font-size: 0.75rem; display: flex; align-items: center; gap: 4px; padding: 6px 10px; background: #f8fafc; border-radius: 6px; border: 1px solid #e5e7eb;">
+                                                    <input type="checkbox" name="corregir_idiomas[]" value="<?php echo (int)$idioma->id; ?>" <?php echo $checked ? 'checked' : ''; ?>>
                                                     <?php echo htmlspecialchars($idioma->nombre); ?>
-                                                </option>
+                                                </label>
                                             <?php endforeach; ?>
-                                        </select>
+                                        </div>
+                                        <?php else: ?>
+                                        <p style="font-size: 0.75rem; color: #999;"><?php echo $lang['admin_direct_game_no_languages_yet']; ?></p>
                                         <?php endif; ?>
                                     </div>
                                     <?php if (!$esPropuestaPlataforma && !$esPropuestaRegion): ?>
@@ -166,10 +168,11 @@ include '../../includes/admin_header.php';
                                         <div style="flex: 1;">
                                             <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_region']; ?></label>
                                             <?php if (!empty($p->bloqueo_regional)): ?>
-                                                <p style="font-size: 0.65rem; color: #b45309; margin: 0 0 6px 0; font-weight: 600;"><?php echo $lang['admin_validate_regional_lock_notice']; ?></p>
-                                            <?php endif; ?>
+                                                <p style="font-size: 0.65rem; color: #b45309; margin: 0 0 6px 0; font-weight: 600;"><?php echo $lang['admin_validate_regional_lock_notice_v2']; ?></p>
+                                            <?php else: ?>
                                             <input type="text" name="corregir_region" value="<?php echo htmlspecialchars($p->region ?? ''); ?>"
-                                                   style="width: 100%; padding: 8px; border: 1px solid <?php echo !empty($p->bloqueo_regional) ? '#fde68a' : '#eee'; ?>; border-radius: 5px;">
+                                                   style="width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 5px;">
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                     <?php endif; ?>

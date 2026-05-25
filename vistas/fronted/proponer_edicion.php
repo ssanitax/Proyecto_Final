@@ -20,13 +20,6 @@ if (!$juego) {
 }
 
 $plataformas = $pdo->query("SELECT id, nombre FROM plataformas ORDER BY nombre ASC")->fetchAll();
-$idiomas = [];
-try {
-    $idiomas = $pdo->query("SELECT id, nombre FROM idiomas ORDER BY nombre ASC")->fetchAll();
-} catch (PDOException $e) {
-    $idiomas = [];
-}
-
 include '../../includes/header.php';
 ?>
 
@@ -42,7 +35,6 @@ include '../../includes/header.php';
                 $errores = [
                     'missing_platform' => $lang['frontend_register_game_error_platform'],
                     'missing_date' => $lang['frontend_register_game_error_date'],
-                    'missing_language' => $lang['frontend_register_game_error_language'],
                 ];
                 echo $errores[$_GET['error']] ?? $lang['error_general'];
             ?>
@@ -71,23 +63,6 @@ include '../../includes/header.php';
             </div>
 
             <div class="form-group" style="margin-bottom: 20px; text-align: left;">
-                <label style="font-weight: 800; font-size: 0.8rem; display: block; margin-bottom: 10px;"><?php echo $lang['frontend_register_game_label_language']; ?> *</label>
-                <?php if (!empty($idiomas)): ?>
-                <select name="idioma_id" id="idioma-select-edicion" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 10px;">
-                    <option value=""><?php echo $lang['frontend_register_game_select_language']; ?></option>
-                    <?php foreach ($idiomas as $idioma): ?>
-                        <option value="<?php echo (int)$idioma->id; ?>"><?php echo htmlspecialchars($idioma->nombre); ?></option>
-                    <?php endforeach; ?>
-                    <option value="otro"><?php echo $lang['frontend_register_game_language_other']; ?></option>
-                </select>
-                <?php endif; ?>
-                <input type="text" name="idioma_nombre_nueva" id="idioma-otro-edicion"
-                       placeholder="<?php echo $lang['frontend_register_game_language_other_placeholder']; ?>"
-                       style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; <?php echo empty($idiomas) ? '' : 'display:none;'; ?>"
-                       <?php echo empty($idiomas) ? 'required' : ''; ?>>
-            </div>
-
-            <div class="form-group" style="margin-bottom: 20px; text-align: left;">
                 <label style="font-weight: 800; font-size: 0.8rem; display: block; margin-bottom: 10px;"><?php echo $lang['frontend_propose_edition_label_edition_name']; ?></label>
                 <input type="text" name="edicion_nombre" placeholder="<?php echo $lang['frontend_propose_edition_placeholder_edition']; ?>" required
                        style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd;">
@@ -101,7 +76,7 @@ include '../../includes/header.php';
 
             <div class="form-group" style="margin-bottom: 25px; text-align: left;">
                 <label style="font-weight: 800; font-size: 0.8rem; display: block; margin-bottom: 8px;"><?php echo $lang['frontend_propose_edition_label_regional_lock']; ?></label>
-                <p style="font-size: 0.8rem; color: #777; margin-bottom: 12px;"><?php echo $lang['frontend_propose_edition_regional_lock_help']; ?></p>
+                <p style="font-size: 0.8rem; color: #777; margin-bottom: 12px;"><?php echo $lang['frontend_propose_edition_regional_lock_help_v2']; ?></p>
                 <label style="display: block; margin-bottom: 8px; font-size: 0.9rem; cursor: pointer;">
                     <input type="radio" name="bloqueo_regional" value="0" checked style="margin-right: 8px;">
                     <?php echo $lang['frontend_propose_edition_regional_lock_no']; ?>
@@ -118,26 +93,5 @@ include '../../includes/header.php';
         </form>
     </div>
 </div>
-
-<script>
-(function () {
-    var sel = document.getElementById('idioma-select-edicion');
-    var otro = document.getElementById('idioma-otro-edicion');
-    if (!sel || !otro) return;
-    sel.addEventListener('change', function () {
-        if (sel.value === 'otro') {
-            otro.style.display = 'block';
-            otro.required = true;
-            sel.removeAttribute('required');
-        } else {
-            otro.style.display = 'none';
-            otro.required = false;
-            otro.value = '';
-            sel.required = true;
-        }
-    });
-    sel.required = true;
-})();
-</script>
 
 <?php include '../../includes/footer.php'; ?>

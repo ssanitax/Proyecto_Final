@@ -12,8 +12,9 @@ if ($juego_id <= 0) {
     exit();
 }
 
-$sql = "SELECT cu.*, j.titulo, e.juego_id, e.id AS edicion_id, e.edicion_nombre, e.region, e.anio,
-               e.imagen_portada, j.fecha_lanzamiento, p.fecha_lanzamiento AS plataforma_fecha_lanzamiento,
+$sql = "SELECT cu.*, j.titulo, e.juego_id, e.id AS edicion_id, e.edicion_nombre, e.region AS region_edicion,
+               e.bloqueo_regional, e.anio, e.imagen_portada, j.fecha_lanzamiento,
+               p.fecha_lanzamiento AS plataforma_fecha_lanzamiento,
                p.nombre AS plataforma_nombre, i.nombre AS idioma_nombre,
                pr.nombre_persona AS prestado_a, pr.fecha_prestamo AS fecha_prestamo_activo
         FROM coleccion_usuario cu
@@ -206,8 +207,13 @@ include '../../includes/header.php';
                         <h3><?php echo htmlspecialchars($copia->plataforma_nombre); ?></h3>
                         <p style="margin: 2px 0 0; font-size: 0.78rem; color: #888;">
                             <?php echo htmlspecialchars($copia->edicion_nombre); ?>
-                            <?php if (!empty($copia->region)): ?>
-                                · <?php echo htmlspecialchars($copia->region); ?>
+                            <?php
+                                $regionCopia = !empty($copia->region) ? $copia->region : ($copia->region_edicion ?? '');
+                                if ($regionCopia !== ''):
+                            ?>
+                                · <?php echo htmlspecialchars($regionCopia); ?>
+                            <?php elseif (!empty($copia->bloqueo_regional)): ?>
+                                · <em><?php echo $lang['frontend_collection_region_pending']; ?></em>
                             <?php endif; ?>
                         </p>
                     </div>

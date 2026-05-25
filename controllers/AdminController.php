@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/portadas.php';
+require_once __DIR__ . '/../includes/catalogo.php';
 
 class AdminController {
     private $pdo;
@@ -63,10 +64,6 @@ class AdminController {
                 } elseif (strpos($tituloCorregido, 'Plataforma:') === 0) {
                     $platNombre = trim(str_replace('Plataforma:', '', $tituloCorregido));
                 }
-            }
-
-            if (!empty($propuesta->bloqueo_regional) && $regionCorregida === '') {
-                throw new Exception(__('admin_validate_region_required'));
             }
 
             // 2b. GESTIÓN DE IDIOMA (propuesta de nuevo idioma)
@@ -131,31 +128,12 @@ class AdminController {
                     throw new Exception(__('admin_validate_date_required'));
                 }
 
-                $idiomaIdFinal = $idiomaIdPost > 0 ? $idiomaIdPost : (int)($propuesta->idioma_id ?? 0);
-                if ($idiomaIdFinal <= 0 && $idiomaNombre === '' && empty($propuesta->idioma_nombre_nueva)) {
-                    throw new Exception(__('admin_validate_language_required'));
-                }
-                if ($idiomaIdFinal <= 0 && $idiomaNombre !== '') {
+                if ($idiomaNombre !== '') {
                     $stBuscaIdioma = $this->pdo->prepare('SELECT id FROM idiomas WHERE nombre = ?');
                     $stBuscaIdioma->execute([$idiomaNombre]);
-                    $exIdioma = $stBuscaIdioma->fetch();
-                    if ($exIdioma) {
-                        $idiomaIdFinal = (int)$exIdioma->id;
-                    } else {
+                    if (!$stBuscaIdioma->fetch()) {
                         $stInsIdioma = $this->pdo->prepare('INSERT INTO idiomas (nombre) VALUES (?)');
                         $stInsIdioma->execute([$idiomaNombre]);
-                        $idiomaIdFinal = (int)$this->pdo->lastInsertId();
-                    }
-                } elseif ($idiomaIdFinal <= 0 && !empty($propuesta->idioma_nombre_nueva)) {
-                    $stBuscaIdioma = $this->pdo->prepare('SELECT id FROM idiomas WHERE nombre = ?');
-                    $stBuscaIdioma->execute([trim($propuesta->idioma_nombre_nueva)]);
-                    $exIdioma = $stBuscaIdioma->fetch();
-                    if ($exIdioma) {
-                        $idiomaIdFinal = (int)$exIdioma->id;
-                    } else {
-                        $stInsIdioma = $this->pdo->prepare('INSERT INTO idiomas (nombre) VALUES (?)');
-                        $stInsIdioma->execute([trim($propuesta->idioma_nombre_nueva)]);
-                        $idiomaIdFinal = (int)$this->pdo->lastInsertId();
                     }
                 }
 
@@ -177,21 +155,30 @@ class AdminController {
                     $this->pdo->prepare($sqlUp)->execute([$fechaLanzamiento, $juego_id_final]);
                 }
 
-                if ($juego_id_final && $idiomaIdFinal > 0) {
-                    $stJi = $this->pdo->prepare('INSERT IGNORE INTO juego_idiomas (juego_id, idioma_id) VALUES (?, ?)');
-                    $stJi->execute([$juego_id_final, $idiomaIdFinal]);
+                $idiomasAprobados = array_unique(array_filter(array_map('intval', (array)($_POST['corregir_idiomas'] ?? []))));
+                if (empty($idiomasAprobados)) {
+                    $idiomasAprobados = idiomasPropuestaPendiente($this->pdo, (int)$id_pendiente);
+                }
+                if ($juego_id_final) {
+                    sincronizarIdiomasJuego($this->pdo, $juego_id_final, $idiomasAprobados);
                 }
 
+                $bloqueoRegional = (int)($propuesta->bloqueo_regional ?? 0);
                 $edicionId = null;
                 if ($juego_id_final && $plataforma_id_final) {
-                    $sqlE = 'INSERT INTO ediciones (juego_id, plataforma_id, region, anio, edicion_nombre) VALUES (?, ?, ?, ?, ?)';
+                    $regionCatalogoEdicion = $bloqueoRegional ? null : ($regionCorregida !== '' ? $regionCorregida : null);
+                    if ($regionCatalogoEdicion !== null && $regionCatalogoEdicion !== '') {
+                        asegurarRegionEnCatalogo($this->pdo, $regionCatalogoEdicion);
+                    }
+                    $sqlE = 'INSERT INTO ediciones (juego_id, plataforma_id, region, anio, edicion_nombre, bloqueo_regional) VALUES (?, ?, ?, ?, ?, ?)';
                     $stE = $this->pdo->prepare($sqlE);
                     $stE->execute([
                         $juego_id_final,
                         $plataforma_id_final,
-                        $regionCorregida !== '' ? $regionCorregida : null,
+                        $regionCatalogoEdicion,
                         $anioEdicion > 0 ? $anioEdicion : null,
-                        $propuesta->edicion_nombre ?? 'Edición Estándar'
+                        $propuesta->edicion_nombre ?? 'Edición Estándar',
+                        $bloqueoRegional
                     ]);
                     $edicionId = (int)$this->pdo->lastInsertId();
 
@@ -208,7 +195,7 @@ class AdminController {
                         $edicionId,
                         $tituloLimpio,
                         $platNombreFinal,
-                        $regionCorregida,
+                        $regionCatalogoEdicion ?? '',
                         $archivoAdmin,
                         $propuesta->imagen_portada_sugerida ?? null
                     );

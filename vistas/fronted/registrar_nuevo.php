@@ -69,19 +69,21 @@ include '../../includes/header.php';
         </div>
 
         <div class="form-group" style="margin-bottom:15px; text-align:left;">
-            <label style="font-weight:600; font-size:0.8rem;"><?php echo $lang['frontend_register_game_label_language']; ?> *</label>
-            <p style="font-size:0.8rem;color:#777;margin:0 0 10px;"><?php echo $lang['frontend_register_game_language_help']; ?></p>
+            <label style="font-weight:600; font-size:0.8rem;"><?php echo $lang['frontend_register_game_label_languages_available']; ?></label>
+            <p style="font-size:0.8rem;color:#777;margin:0 0 10px;"><?php echo $lang['frontend_register_game_languages_available_help']; ?></p>
             <?php if (!empty($idiomas)): ?>
-            <select name="idioma_id" id="idioma-select" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; margin-bottom:10px;">
-                <option value=""><?php echo $lang['frontend_register_game_select_language']; ?></option>
+            <div style="display:flex; flex-wrap:wrap; gap:10px;">
                 <?php foreach ($idiomas as $idioma): ?>
-                    <option value="<?php echo (int)$idioma->id; ?>"><?php echo htmlspecialchars($idioma->nombre); ?></option>
+                    <label style="display:flex; align-items:center; gap:6px; padding:8px 12px; background:#f4f5f7; border-radius:8px; font-size:0.85rem; cursor:pointer;">
+                        <input type="checkbox" name="idiomas_disponibles[]" value="<?php echo (int)$idioma->id; ?>" checked>
+                        <?php echo htmlspecialchars($idioma->nombre); ?>
+                    </label>
                 <?php endforeach; ?>
-                <option value="otro"><?php echo $lang['frontend_register_game_language_other']; ?></option>
-            </select>
+            </div>
+            <p style="font-size:0.75rem;color:#999;margin:10px 0 0;"><?php echo $lang['frontend_register_game_languages_available_hint']; ?></p>
+            <?php else: ?>
+            <p style="color:#b45309;font-size:0.85rem;"><?php echo $lang['frontend_register_game_no_languages_catalog']; ?></p>
             <?php endif; ?>
-            <input type="text" name="idioma_nombre_nueva" id="idioma-otro" placeholder="<?php echo $lang['frontend_register_game_language_other_placeholder']; ?>"
-                   style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; display:none;">
         </div>
 
         <div class="form-group" style="margin-bottom:15px; text-align:left;">
@@ -92,7 +94,7 @@ include '../../includes/header.php';
 
         <div class="form-group" style="margin-bottom:10px; text-align:left;">
             <label style="font-weight:600; font-size:0.8rem; display:block; margin-bottom:8px;"><?php echo $lang['frontend_register_game_label_regional_lock']; ?></label>
-            <p style="font-size:0.8rem; color:#777; margin-bottom:12px;"><?php echo $lang['frontend_register_game_regional_lock_help']; ?></p>
+            <p style="font-size:0.8rem; color:#777; margin-bottom:12px;"><?php echo $lang['frontend_register_game_regional_lock_help_v2']; ?></p>
             <label style="display:block; margin-bottom:8px; font-size:0.9rem; cursor:pointer;">
                 <input type="radio" name="bloqueo_regional" value="0" checked style="margin-right:8px;">
                 <?php echo $lang['frontend_register_game_regional_lock_no']; ?>
@@ -108,26 +110,5 @@ include '../../includes/header.php';
         </button>
     </form>
 </div>
-
-<script>
-(function () {
-    var sel = document.getElementById('idioma-select');
-    var otro = document.getElementById('idioma-otro');
-    if (!sel || !otro) return;
-    sel.addEventListener('change', function () {
-        if (sel.value === 'otro') {
-            otro.style.display = 'block';
-            otro.required = true;
-            sel.removeAttribute('required');
-        } else {
-            otro.style.display = 'none';
-            otro.required = false;
-            otro.value = '';
-            if (sel.options.length > 1) sel.required = true;
-        }
-    });
-    if (sel.options.length > 1) sel.required = true;
-})();
-</script>
 
 <?php include '../../includes/footer.php'; ?>

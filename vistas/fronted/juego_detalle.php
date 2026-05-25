@@ -3,6 +3,7 @@ require_once '../../includes/auth.php';
 redirigirSiNoUsuario();
 require_once '../../config/config.php';
 require_once '../../includes/portadas.php';
+require_once '../../includes/catalogo.php';
 require_once '../../models/Valoracion.php';
 
 $id_juego = $_GET['id'] ?? null;
@@ -48,12 +49,8 @@ if (empty($ediciones)) {
     exit();
 }
 
-$idiomas = [];
-try {
-    $idiomas = $pdo->query("SELECT id, nombre FROM idiomas ORDER BY nombre ASC")->fetchAll();
-} catch (PDOException $e) {
-    $idiomas = [];
-}
+$idiomas = idiomasDisponiblesParaJuego($pdo, (int)$juego->id);
+$regiones = regionesParaSelector($pdo);
 
 $valoracionModel = new Valoracion($pdo);
 $resumenValoraciones = $valoracionModel->obtenerResumenJuegoParaUsuario($id_juego, $_SESSION['usuario_id']);
@@ -112,6 +109,11 @@ include '../../includes/header.php';
                         <?php echo $lang['frontend_game_detail_language_required']; ?>
                     </div>
                 <?php endif; ?>
+                <?php if (isset($_GET['error']) && $_GET['error'] === 'no_region'): ?>
+                    <div style="background:#fee2e2;color:#991b1b;padding:12px;border-radius:10px;margin-bottom:16px;font-size:0.85rem;font-weight:600;">
+                        <?php echo $lang['frontend_game_detail_region_required']; ?>
+                    </div>
+                <?php endif; ?>
                 
                 <form action="../../controllers/ColeccionController.php?action=agregar" method="POST">
                     <input type="hidden" name="juego_id" value="<?php echo (int)$juego->id; ?>">
@@ -121,7 +123,8 @@ include '../../includes/header.php';
                         <?php else: ?>
                             <?php foreach($ediciones as $edic): ?>
                                 <label class="version-card">
-                                    <input type="radio" name="edicion_id" value="<?php echo $edic->id; ?>" required>
+                                    <input type="radio" name="edicion_id" value="<?php echo $edic->id; ?>" required
+                                           data-bloqueo="<?php echo !empty($edic->bloqueo_regional) ? '1' : '0'; ?>">
                                     <?php if (!empty($edic->imagen_portada)): ?>
                                         <span class="version-thumb">
                                             <img src="../../img/portadas/<?php echo htmlspecialchars($edic->imagen_portada); ?>" alt="">
@@ -131,7 +134,9 @@ include '../../includes/header.php';
                                         <div class="plat-name"><?php echo htmlspecialchars($edic->plataforma_nombre); ?></div>
                                         <div class="edic-info">
                                             <?php echo htmlspecialchars($edic->edicion_nombre); ?> 
-                                            <?php if (!empty($edic->region)): ?>
+                                            <?php if (!empty($edic->bloqueo_regional)): ?>
+                                            <span class="region-pill region-pill--lock"><?php echo $lang['frontend_game_detail_regional_lock_badge']; ?></span>
+                                            <?php elseif (!empty($edic->region)): ?>
                                             <span class="region-pill"><?php echo htmlspecialchars($edic->region); ?></span>
                                             <?php endif; ?>
                                             <?php if (!empty($edic->anio)): ?>
@@ -167,6 +172,24 @@ include '../../includes/header.php';
                                     <?php echo $lang['frontend_game_detail_no_languages']; ?>
                                 </p>
                             <?php endif; ?>
+
+                            <div id="region-copia-block" style="display:none; margin-top: 8px; text-align: left;">
+                                <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #666; display: block; margin-bottom: 8px;">
+                                    <?php echo $lang['frontend_game_detail_label_region_copy']; ?>
+                                </label>
+                                <p style="font-size: 0.8rem; color: #888; margin: 0 0 10px 0;"><?php echo $lang['frontend_game_detail_region_copy_help']; ?></p>
+                                <?php if (!empty($regiones)): ?>
+                                <select name="region_copia" id="region-copia-select" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit;">
+                                    <option value=""><?php echo $lang['frontend_game_detail_select_region']; ?></option>
+                                    <?php foreach ($regiones as $reg): ?>
+                                        <option value="<?php echo htmlspecialchars($reg->nombre); ?>"><?php echo htmlspecialchars($reg->nombre); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <?php else: ?>
+                                <input type="text" name="region_copia" id="region-copia-input" placeholder="<?php echo $lang['frontend_game_detail_region_placeholder']; ?>"
+                                       style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd;">
+                                <?php endif; ?>
+                            </div>
                             
                             <button type="submit" class="btn-confirm"><?php echo $lang['frontend_game_detail_add_library']; ?></button>
                         <?php endif; ?>
@@ -253,6 +276,7 @@ include '../../includes/header.php';
     .plat-name { font-weight: 800; font-size: 1rem; color: var(--graphite); text-transform: uppercase; }
     .edic-info { font-size: 0.85rem; color: #666; margin-top: 3px; }
     .region-pill { font-size: 0.7rem; background: #ddd; padding: 2px 6px; border-radius: 4px; margin-left: 5px; font-weight: 600; }
+    .region-pill--lock { background: #fef3c7; color: #92400e; }
     
     .btn-confirm {
         margin-top: 20px;
@@ -275,5 +299,29 @@ include '../../includes/header.php';
         }
     }
 </style>
+
+<script>
+(function () {
+    var radios = document.querySelectorAll('input[name="edicion_id"]');
+    var block = document.getElementById('region-copia-block');
+    var sel = document.getElementById('region-copia-select');
+    var inp = document.getElementById('region-copia-input');
+    if (!radios.length || !block) return;
+
+    function syncRegion() {
+        var checked = document.querySelector('input[name="edicion_id"]:checked');
+        var needs = checked && checked.getAttribute('data-bloqueo') === '1';
+        block.style.display = needs ? 'block' : 'none';
+        if (sel) sel.required = needs;
+        if (inp) inp.required = needs;
+        if (!needs) {
+            if (sel) sel.value = '';
+            if (inp) inp.value = '';
+        }
+    }
+    radios.forEach(function (r) { r.addEventListener('change', syncRegion); });
+    syncRegion();
+})();
+</script>
 
 <?php include '../../includes/footer.php'; ?>

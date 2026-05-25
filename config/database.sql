@@ -132,6 +132,7 @@ CREATE TABLE coleccion_usuario (
     usuario_id INT NOT NULL,
     edicion_id INT NOT NULL,
     idioma_id INT NULL,
+    region VARCHAR(50) NULL,
 
     estado ENUM('pendiente', 'jugando', 'completado') 
         DEFAULT 'pendiente',
