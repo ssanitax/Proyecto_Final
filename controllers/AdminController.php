@@ -35,8 +35,8 @@ class AdminController {
             // 1. Obtener la propuesta completa
             $stmt = $this->pdo->prepare("
                 SELECT jp.*, ep.plataforma_id, ep.region, ep.bloqueo_regional, ep.edicion_nombre,
-                       ep.juego_id_real, ep.plataforma_nombre_nueva, ep.idioma_nombre_nueva,
-                       ep.idioma_id, ep.imagen_portada_sugerida
+                       ep.juego_id_real, ep.plataforma_nombre_nueva, ep.fecha_plataforma_sugerida,
+                       ep.idioma_nombre_nueva, ep.idioma_id, ep.imagen_portada_sugerida
                 FROM juegos_pendientes jp
                 LEFT JOIN ediciones_pendientes ep ON ep.juego_pendiente_id = jp.id
                 WHERE jp.id = ?
@@ -54,6 +54,7 @@ class AdminController {
             $idiomaNombre    = trim($_POST['corregir_idioma'] ?? '');
             $idiomaIdPost    = isset($_POST['corregir_idioma_id']) ? (int)$_POST['corregir_idioma_id'] : 0;
             $fechaLanzamiento = trim($_POST['corregir_fecha'] ?? $propuesta->fecha_lanzamiento ?? '');
+            $fechaPlataforma = trim($_POST['corregir_fecha_plataforma'] ?? $propuesta->fecha_plataforma_sugerida ?? '');
             $regionCatalogo  = trim($_POST['corregir_region_catalogo'] ?? $_POST['corregir_region'] ?? '');
 
             if ($platNombre === null || $platNombre === '') {
@@ -99,17 +100,20 @@ class AdminController {
             $plataforma_id_final = $propuesta->plataforma_id;
 
             if (!empty($platNombre)) {
-                // Buscamos si ya existe por nombre (para evitar duplicados)
+                $platNombre = trim($platNombre);
                 $stBusca = $this->pdo->prepare("SELECT id FROM plataformas WHERE nombre = ?");
-                $stBusca->execute([trim($platNombre)]);
+                $stBusca->execute([$platNombre]);
                 $existe = $stBusca->fetch();
 
                 if ($existe) {
                     $plataforma_id_final = $existe->id;
+                    if ($fechaPlataforma !== '') {
+                        $stUp = $this->pdo->prepare("UPDATE plataformas SET fecha_lanzamiento = ? WHERE id = ?");
+                        $stUp->execute([$fechaPlataforma, $plataforma_id_final]);
+                    }
                 } else {
-                    // SI NO EXISTE, LA CREAMOS AHORA MISMO
-                    $stIns = $this->pdo->prepare("INSERT INTO plataformas (nombre) VALUES (?)");
-                    $stIns->execute([trim($platNombre)]);
+                    $stIns = $this->pdo->prepare("INSERT INTO plataformas (nombre, fecha_lanzamiento) VALUES (?, ?)");
+                    $stIns->execute([$platNombre, $fechaPlataforma !== '' ? $fechaPlataforma : null]);
                     $plataforma_id_final = $this->pdo->lastInsertId();
                 }
             }
@@ -240,15 +244,32 @@ class AdminController {
     public function registrarPlataformaDirecta() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $nombre = htmlspecialchars(trim($_POST['nombre']));
+            $fecha = trim($_POST['fecha_lanzamiento'] ?? '');
             try {
-                $stmt = $this->pdo->prepare("INSERT INTO plataformas (nombre) VALUES (?)");
-                $stmt->execute([$nombre]);
+                $stmt = $this->pdo->prepare("INSERT INTO plataformas (nombre, fecha_lanzamiento) VALUES (?, ?)");
+                $stmt->execute([$nombre, $fecha !== '' ? $fecha : null]);
                 header('Location: ../vistas/admin/registrar_directo.php?status=success');
             } catch (Exception $e) {
                 header('Location: ../vistas/admin/registrar_directo.php?error=exists');
             }
             exit();
         }
+    }
+
+    public function actualizarFechaPlataforma() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            return;
+        }
+        $id = (int)($_POST['plataforma_id'] ?? 0);
+        $fecha = trim($_POST['fecha_lanzamiento'] ?? '');
+        if ($id <= 0) {
+            header('Location: ../vistas/admin/inventario_maestro.php');
+            exit();
+        }
+        $stmt = $this->pdo->prepare("UPDATE plataformas SET fecha_lanzamiento = ? WHERE id = ?");
+        $stmt->execute([$fecha !== '' ? $fecha : null, $id]);
+        header('Location: ../vistas/admin/inventario_maestro.php?status=platform_date_saved');
+        exit();
     }
 
     public function registrarJuegoDirecto() {
@@ -785,6 +806,7 @@ if (isset($_GET['action'])) {
     if ($_GET['action'] == 'eliminar_region') $admin->eliminarPorRegion();  
     
     // Rutas para el Inventario Maestro
+    if ($_GET['action'] == 'actualizar_fecha_plataforma') $admin->actualizarFechaPlataforma();
     if ($_GET['action'] == 'eliminar_plataforma') $admin->eliminarPlataforma();
     if ($_GET['action'] == 'eliminar_edicion') $admin->eliminarEdicion();
     if ($_GET['action'] == 'eliminar_juego') $admin->eliminarJuegoMaestro();

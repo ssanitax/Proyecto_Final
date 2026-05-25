@@ -11,6 +11,12 @@ include '../../includes/header.php';
 ?>
 
 <div class="fade-up visible">
+    <?php if (isset($_GET['status']) && $_GET['status'] === 'enviado'): ?>
+        <div style="background: #d1fae5; color: #065f46; padding: 16px 20px; border-radius: 12px; margin-bottom: 28px; text-align: center; font-weight: 600; border: 1px solid #a7f3d0;">
+            <?php echo $lang['frontend_proposals_sent_success']; ?>
+        </div>
+    <?php endif; ?>
+
     <header style="margin-bottom: 40px; text-align: center;">
         <h2 style="margin-bottom: 10px;"><?php echo $lang['frontend_proposals_title']; ?></h2>
         <p style="color: #666; font-size: 1.1rem;"><?php echo $lang['frontend_proposals_desc']; ?></p>

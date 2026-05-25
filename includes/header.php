@@ -1,4 +1,7 @@
-<?php require_once __DIR__ . '/auth.php'; ?>
+<?php
+require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/portada-display.php';
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -75,7 +78,8 @@
             overflow: hidden;
         }
 
-        .game-image img { width: 100%; height: 100%; object-fit: cover; }
+        .game-image img { width: 100%; height: 100%; object-fit: contain; object-position: center; background: #e8eaed; }
+        <?php echo cssPortadasContenedor(); ?>
 
         .game-info { padding: 15px; }
 

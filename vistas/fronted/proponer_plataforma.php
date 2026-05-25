@@ -10,12 +10,23 @@ include '../../includes/header.php';
         <p style="color: #666;"><?php echo $lang['frontend_propose_platform_desc']; ?></p>
     </header>
 
+    <?php if (isset($_GET['error']) && $_GET['error'] === 'missing_date'): ?>
+        <div style="background: #fee2e2; color: #991b1b; padding: 14px; border-radius: 10px; margin-bottom: 20px; font-weight: 600; text-align: center;">
+            <?php echo $lang['frontend_propose_error_missing_date']; ?>
+        </div>
+    <?php endif; ?>
+
     <div class="about-box" style="padding: 40px; background: white; border-radius: 20px; border: 1px solid #eee;">
         <form action="../../controllers/JuegoController.php?action=sugerir_plataforma_independiente" method="POST">
             <div class="form-group" style="margin-bottom: 25px; text-align: left;">
                 <label style="font-weight: 800; font-size: 0.8rem; display: block; margin-bottom: 10px;"><?php echo $lang['frontend_propose_platform_label_name']; ?></label>
                 
                 <input type="text" name="nombre_plataforma" placeholder="<?php echo $lang['frontend_propose_platform_placeholder']; ?>" required 
+                       style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit;">
+            </div>
+            <div class="form-group" style="margin-bottom: 25px; text-align: left;">
+                <label style="font-weight: 800; font-size: 0.8rem; display: block; margin-bottom: 10px;"><?php echo $lang['frontend_propose_platform_label_release']; ?></label>
+                <input type="date" name="fecha_lanzamiento_plataforma" required
                        style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit;">
             </div>
             

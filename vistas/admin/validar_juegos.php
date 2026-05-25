@@ -5,7 +5,8 @@ $pdo = $GLOBALS['pdo'];
 
 // Consulta corregida para traer el nombre de la plataforma sugerida
 $sql = "SELECT jp.*, u.nombre as nombre_usuario, 
-               ep.region, ep.bloqueo_regional, ep.plataforma_nombre_nueva, ep.idioma_nombre_nueva,
+               ep.region, ep.bloqueo_regional, ep.plataforma_nombre_nueva, ep.fecha_plataforma_sugerida,
+               ep.idioma_nombre_nueva,
                ep.idioma_id, ep.imagen_portada_sugerida, ep.juego_id_real,
                p.nombre as plataforma_oficial,
                i.nombre as idioma_oficial
@@ -71,6 +72,7 @@ include '../../includes/admin_header.php';
                             $esPropuestaRegion = strpos($p->titulo, 'Región:') === 0;
                             $nombreIdiomaPropuesto = $p->idioma_nombre_nueva ?? trim(str_replace('Idioma:', '', $p->titulo));
                             $nombreRegionPropuesta = $p->region ?? trim(str_replace('Región:', '', $p->titulo));
+                            $nombrePlataformaPropuesta = $p->plataforma_nombre_nueva ?? trim(str_replace('Plataforma:', '', $p->titulo));
                         ?>
                         <tr style="border-bottom: 1px solid #f5f5f5;">
                             <form action="../../controllers/AdminController.php?action=aprobar&id=<?php echo $p->id; ?>" method="POST" enctype="multipart/form-data">
@@ -82,6 +84,8 @@ include '../../includes/admin_header.php';
                                     <?php endif; ?>
                                     <?php if ($esPropuestaIdioma): ?>
                                         <div style="margin-top:8px; background:#ede9fe; color:#5b21b6; padding:4px 8px; border-radius:4px; font-size:0.6rem; font-weight:800; display:inline-block;"><?php echo $lang['admin_validate_badge_language']; ?></div>
+                                    <?php elseif ($esPropuestaPlataforma): ?>
+                                        <div style="margin-top:8px; background:#fef3c7; color:#92400e; padding:4px 8px; border-radius:4px; font-size:0.6rem; font-weight:800; display:inline-block;"><?php echo $lang['admin_validate_badge_platform']; ?></div>
                                     <?php elseif ($esPropuestaRegion): ?>
                                         <div style="margin-top:8px; background:#dbeafe; color:#1e40af; padding:4px 8px; border-radius:4px; font-size:0.6rem; font-weight:800; display:inline-block;"><?php echo $lang['admin_validate_badge_region']; ?></div>
                                     <?php endif; ?>
@@ -103,6 +107,18 @@ include '../../includes/admin_header.php';
                                                    style="width: 100%; padding: 8px; border: 1px solid #bfdbfe; border-radius: 5px; background: #eff6ff; font-weight: 700;" required>
                                         </div>
                                         <p style="font-size: 0.75rem; color: #666;"><?php echo $lang['admin_validate_region_notice']; ?></p>
+                                    <?php elseif ($esPropuestaPlataforma): ?>
+                                        <input type="hidden" name="corregir_titulo" value="<?php echo htmlspecialchars($p->titulo); ?>">
+                                        <div style="margin-bottom: 10px;">
+                                            <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_platform']; ?></label>
+                                            <input type="text" name="corregir_plataforma" value="<?php echo htmlspecialchars($nombrePlataformaPropuesta); ?>" required
+                                                   style="width: 100%; padding: 8px; border: 1px solid #fde68a; border-radius: 5px; background: #fffbeb; font-weight: 700;">
+                                        </div>
+                                        <div style="margin-bottom: 10px;">
+                                            <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_platform_release']; ?></label>
+                                            <input type="date" name="corregir_fecha_plataforma" value="<?php echo htmlspecialchars($p->fecha_plataforma_sugerida ?? ''); ?>" required
+                                                   style="width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 5px;">
+                                        </div>
                                     <?php else: ?>
                                     <div style="margin-bottom: 10px;">
                                         <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_platform']; ?> *</label>

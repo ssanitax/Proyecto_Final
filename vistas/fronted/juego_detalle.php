@@ -19,13 +19,15 @@ $juego = $stmt->fetch();
 
 if (!$juego) { die($lang['frontend_game_detail_not_found']); }
 
+$ordenPortada = sqlOrdenPortadaReciente('e', 'p', 'j2');
 $stmtPortada = $pdo->prepare("
     SELECT e.imagen_portada
     FROM ediciones e
     INNER JOIN juegos j2 ON j2.id = e.juego_id
+    INNER JOIN plataformas p ON p.id = e.plataforma_id
     WHERE e.juego_id = ?
       AND e.imagen_portada IS NOT NULL AND e.imagen_portada != ''
-    ORDER BY COALESCE(e.anio, YEAR(j2.fecha_lanzamiento), 0) DESC, e.id DESC
+    ORDER BY {$ordenPortada}
     LIMIT 1
 ");
 $stmtPortada->execute([$id_juego]);
@@ -73,13 +75,7 @@ include '../../includes/header.php';
     <div class="about-box" style="display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;">
         
         <div style="flex: 1; min-width: 280px;">
-            <div style="background: #1c1f26; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center; font-size: 6rem; border-radius: 15px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.15); overflow: hidden;">
-                <?php if (!empty($portadaJuego)): ?>
-                    <img src="../../img/portadas/<?php echo htmlspecialchars($portadaJuego); ?>" alt="<?php echo htmlspecialchars($juego->titulo); ?>" style="width: 100%; height: 100%; object-fit: cover; display: block;">
-                <?php else: ?>
-                    🎮
-                <?php endif; ?>
-            </div>
+            <?php echo htmlPortada($portadaJuego ?: null, 'hero', $juego->titulo); ?>
             <p style="margin-top: 20px; color: #888; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;"><?php echo $lang['frontend_game_detail_database_id']; ?><?php echo $juego->id; ?></p>
         </div>
 
@@ -244,7 +240,8 @@ include '../../includes/header.php';
     .version-thumb img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
+        object-position: center;
         display: block;
     }
     .version-card:hover { border-color: var(--silver); background: #fafafa; }

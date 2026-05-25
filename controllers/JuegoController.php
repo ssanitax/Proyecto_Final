@@ -180,6 +180,12 @@ class JuegoController {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             $nombre = htmlspecialchars(trim($_POST['nombre_plataforma']));
+            $fechaPlataforma = trim($_POST['fecha_lanzamiento_plataforma'] ?? '');
+
+            if ($fechaPlataforma === '') {
+                header('Location: ../vistas/fronted/proponer_plataforma.php?error=missing_date');
+                exit();
+            }
 
             try {
                 $this->pdo->beginTransaction();
@@ -189,9 +195,9 @@ class JuegoController {
                 $stmtJp->execute([$_SESSION['usuario_id'], "Plataforma: " . $nombre]);
                 $jp_id = $this->pdo->lastInsertId();
 
-                $sqlEp = "INSERT INTO ediciones_pendientes (juego_pendiente_id, plataforma_nombre_nueva) VALUES (?, ?)";
+                $sqlEp = "INSERT INTO ediciones_pendientes (juego_pendiente_id, plataforma_nombre_nueva, fecha_plataforma_sugerida) VALUES (?, ?, ?)";
                 $stmtEp = $this->pdo->prepare($sqlEp);
-                $stmtEp->execute([$jp_id, $nombre]);
+                $stmtEp->execute([$jp_id, $nombre, $fechaPlataforma]);
 
                 $this->pdo->commit();
                 header('Location: ../vistas/fronted/mis_propuestas.php?status=enviado');

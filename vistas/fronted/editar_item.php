@@ -100,7 +100,7 @@ include '../../includes/header.php';
     <div class="about-box" style="padding: 18px; background: white; border-radius: 20px; border: 1px solid #eee; margin-bottom: 20px; display: flex; justify-content: center;">
         <div style="width: min(260px, 100%); aspect-ratio: 3/4; border-radius: 14px; overflow: hidden; background: #f3f4f6; display: flex; align-items: center; justify-content: center;">
             <?php if (!empty($item->imagen_portada)): ?>
-                <img src="../../img/portadas/<?php echo htmlspecialchars($item->imagen_portada); ?>" alt="<?php echo htmlspecialchars($item->titulo); ?>" style="width:100%; height:100%; object-fit:cover; display:block;">
+                <img src="../../img/portadas/<?php echo htmlspecialchars($item->imagen_portada); ?>" alt="<?php echo htmlspecialchars($item->titulo); ?>" style="width:100%; height:100%; object-fit:contain; object-position:center; display:block; background:#e8eaed;">
             <?php else: ?>
                 <span style="font-size: 4rem;">🎮</span>
             <?php endif; ?>
