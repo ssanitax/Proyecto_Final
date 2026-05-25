@@ -3,16 +3,15 @@ require_once '../../includes/auth.php';
 redirigirSiNoAdmin();
 $pdo = $GLOBALS['pdo'];
 
-$stmtJuegos = $pdo->query("
-    SELECT j.id, j.titulo,
-        (SELECT e.imagen_portada FROM ediciones e
-         WHERE e.juego_id = j.id AND e.imagen_portada IS NOT NULL AND e.imagen_portada != ''
-         LIMIT 1) AS imagen_portada
-    FROM juegos j
-    WHERE EXISTS (SELECT 1 FROM ediciones e2 WHERE e2.juego_id = j.id)
-    ORDER BY j.titulo ASC
+$stmtEdicionesPortada = $pdo->query("
+    SELECT e.id, e.imagen_portada, e.region, e.edicion_nombre,
+           j.titulo, p.nombre AS plataforma_nombre
+    FROM ediciones e
+    JOIN juegos j ON j.id = e.juego_id
+    JOIN plataformas p ON p.id = e.plataforma_id
+    ORDER BY j.titulo ASC, p.nombre ASC, e.id ASC
 ");
-$juegos = $stmtJuegos->fetchAll();
+$edicionesPortada = $stmtEdicionesPortada->fetchAll();
 
 $portadasDir = __DIR__ . '/../../img/portadas';
 
@@ -33,20 +32,20 @@ try {
     $idiomasCatalogo = [];
 }
 
-$juegosSinPortada = [];
-$juegosConPortada = [];
-foreach ($juegos as $juego) {
-    $archivo = !empty($juego->imagen_portada) ? basename($juego->imagen_portada) : '';
+$edicionesSinPortada = [];
+$edicionesConPortada = [];
+foreach ($edicionesPortada as $edicion) {
+    $archivo = !empty($edicion->imagen_portada) ? basename($edicion->imagen_portada) : '';
     $rutaPortada = $archivo !== '' ? $portadasDir . '/' . $archivo : '';
+    $edicion->etiqueta = $edicion->titulo . ' · ' . $edicion->plataforma_nombre
+        . (!empty($edicion->region) ? ' · ' . $edicion->region : '');
 
-    // Solo cuenta como "con portada" si el archivo existe en img/portadas/
-    // (la BD puede tener nombres del script de ejemplo sin imagen real subida)
     if ($archivo !== '' && is_file($rutaPortada)) {
-        $juego->imagen_portada = $archivo;
-        $juegosConPortada[] = $juego;
+        $edicion->imagen_portada = $archivo;
+        $edicionesConPortada[] = $edicion;
     } else {
-        $juego->imagen_portada = null;
-        $juegosSinPortada[] = $juego;
+        $edicion->imagen_portada = null;
+        $edicionesSinPortada[] = $edicion;
     }
 }
 
@@ -384,7 +383,8 @@ include '../../includes/admin_header.php';
         <div style="background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 30px; font-weight: 600; border: 1px solid #fecaca;">
             <?php
                 $errorMap = [
-                    'invalid_game' => $lang['admin_cover_error_invalid_game'],
+                    'invalid_edition' => $lang['admin_cover_error_invalid_edition'],
+                    'invalid_game' => $lang['admin_cover_error_invalid_edition'],
                     'upload' => $lang['admin_cover_error_upload'],
                     'type' => $lang['admin_cover_error_type'],
                     'filesystem' => $lang['admin_cover_error_filesystem'],
@@ -501,28 +501,28 @@ include '../../includes/admin_header.php';
             <h3 style="margin-bottom: 12px; font-weight: 800;"><?php echo $lang['admin_cover_title']; ?></h3>
             <p style="color: #666; font-size: 0.9rem; margin-bottom: 18px;"><?php echo $lang['admin_cover_desc']; ?></p>
             <form action="../../controllers/AdminController.php?action=subir_portada_juego" method="POST" enctype="multipart/form-data" id="cover-upload-form" novalidate>
-                <input type="hidden" name="juego_id" id="cover-juego-id" value="">
+                <input type="hidden" name="edicion_id" id="cover-edicion-id" value="">
                 <p style="font-size:0.85rem; font-weight:700; margin-bottom:14px; color:#444;">
-                    <?php echo ($idiomaActual ?? 'es') === 'en' ? 'Click a game to select it:' : 'Haz clic en un juego para seleccionarlo:'; ?>
+                    <?php echo $lang['admin_cover_select_edition']; ?>
                 </p>
                 <p id="cover-select-error" style="display:none; color:#991b1b; font-size:0.85rem; font-weight:600; margin-bottom:12px;">
-                    <?php echo $lang['admin_cover_error_invalid_game']; ?>
+                    <?php echo $lang['admin_cover_error_invalid_edition']; ?>
                 </p>
 
                 <div class="cover-picker-section">
                     <p class="cover-picker-heading without">
-                        <?php echo ($idiomaActual ?? 'es') === 'en' ? 'No cover' : 'Sin portada'; ?>
-                        <span class="count"><?php echo count($juegosSinPortada); ?></span>
+                        <?php echo $lang['admin_cover_group_without']; ?>
+                        <span class="count"><?php echo count($edicionesSinPortada); ?></span>
                     </p>
-                    <?php if (empty($juegosSinPortada)): ?>
-                        <p class="cover-picker-empty-msg"><?php echo ($idiomaActual ?? 'es') === 'en' ? 'All games have a cover.' : 'Todos los juegos tienen portada.'; ?></p>
+                    <?php if (empty($edicionesSinPortada)): ?>
+                        <p class="cover-picker-empty-msg"><?php echo $lang['admin_cover_all_have']; ?></p>
                     <?php else: ?>
                         <div class="cover-grid">
-                            <?php foreach ($juegosSinPortada as $juego): ?>
+                            <?php foreach ($edicionesSinPortada as $edicion): ?>
                                 <label class="cover-item no-cover">
-                                    <input type="radio" class="cover-game-radio" value="<?php echo (int)$juego->id; ?>" data-portada="">
-                                    <span class="cover-item-thumb"><?php echo ($idiomaActual ?? 'es') === 'en' ? 'NO PHOTO' : 'SIN FOTO'; ?></span>
-                                    <span class="cover-item-name"><?php echo htmlspecialchars($juego->titulo); ?></span>
+                                    <input type="radio" class="cover-edition-radio" value="<?php echo (int)$edicion->id; ?>" data-portada="">
+                                    <span class="cover-item-thumb"><?php echo $lang['admin_cover_option_no_photo']; ?></span>
+                                    <span class="cover-item-name"><?php echo htmlspecialchars($edicion->etiqueta); ?></span>
                                 </label>
                             <?php endforeach; ?>
                         </div>
@@ -531,20 +531,20 @@ include '../../includes/admin_header.php';
 
                 <div class="cover-picker-section">
                     <p class="cover-picker-heading with">
-                        <?php echo ($idiomaActual ?? 'es') === 'en' ? 'Has cover' : 'Con portada'; ?>
-                        <span class="count"><?php echo count($juegosConPortada); ?></span>
+                        <?php echo $lang['admin_cover_group_with']; ?>
+                        <span class="count"><?php echo count($edicionesConPortada); ?></span>
                     </p>
-                    <?php if (empty($juegosConPortada)): ?>
-                        <p class="cover-picker-empty-msg"><?php echo ($idiomaActual ?? 'es') === 'en' ? 'No games have a cover yet.' : 'Ningún juego tiene portada todavía.'; ?></p>
+                    <?php if (empty($edicionesConPortada)): ?>
+                        <p class="cover-picker-empty-msg"><?php echo $lang['admin_cover_none_yet']; ?></p>
                     <?php else: ?>
                         <div class="cover-grid">
-                            <?php foreach ($juegosConPortada as $juego): ?>
+                            <?php foreach ($edicionesConPortada as $edicion): ?>
                                 <label class="cover-item has-cover">
-                                    <input type="radio" class="cover-game-radio" value="<?php echo (int)$juego->id; ?>" data-portada="<?php echo htmlspecialchars($juego->imagen_portada); ?>">
+                                    <input type="radio" class="cover-edition-radio" value="<?php echo (int)$edicion->id; ?>" data-portada="<?php echo htmlspecialchars($edicion->imagen_portada); ?>">
                                     <span class="cover-item-thumb">
-                                        <img src="../../img/portadas/<?php echo htmlspecialchars($juego->imagen_portada); ?>" alt="">
+                                        <img src="../../img/portadas/<?php echo htmlspecialchars($edicion->imagen_portada); ?>" alt="">
                                     </span>
-                                    <span class="cover-item-name"><?php echo htmlspecialchars($juego->titulo); ?></span>
+                                    <span class="cover-item-name"><?php echo htmlspecialchars($edicion->etiqueta); ?></span>
                                 </label>
                             <?php endforeach; ?>
                         </div>
@@ -610,10 +610,10 @@ include '../../includes/admin_header.php';
     var form = document.getElementById('cover-upload-form');
     if (!form) return;
 
-    var hiddenJuego = document.getElementById('cover-juego-id');
+    var hiddenJuego = document.getElementById('cover-edicion-id');
     var fileInput = document.getElementById('cover-file-input');
     var selectError = document.getElementById('cover-select-error');
-    var radios = form.querySelectorAll('.cover-game-radio');
+    var radios = form.querySelectorAll('.cover-edition-radio');
     var box = document.getElementById('cover-preview-box');
     var img = document.getElementById('cover-preview-img');
     var label = document.getElementById('cover-preview-label');
@@ -624,7 +624,7 @@ include '../../includes/admin_header.php';
     var basePath = '../../img/portadas/';
 
     function updatePreview() {
-        var selected = form.querySelector('.cover-game-radio:checked');
+        var selected = form.querySelector('.cover-edition-radio:checked');
         if (!selected) {
             if (hiddenJuego) hiddenJuego.value = '';
             box.classList.remove('visible');
@@ -653,7 +653,7 @@ include '../../includes/admin_header.php';
 
     function seleccionarJuego(id) {
         if (!id) return;
-        var radio = form.querySelector('.cover-game-radio[value="' + id + '"]');
+        var radio = form.querySelector('.cover-edition-radio[value="' + id + '"]');
         if (radio) {
             radio.checked = true;
             updatePreview();
@@ -677,7 +677,7 @@ include '../../includes/admin_header.php';
         }
     });
 
-    var preselect = <?php echo (int)($_GET['cover_juego_id'] ?? 0); ?>;
+    var preselect = <?php echo (int)($_GET['cover_edicion_id'] ?? 0); ?>;
     if (preselect) {
         seleccionarJuego(String(preselect));
     }

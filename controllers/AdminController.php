@@ -34,7 +34,9 @@ class AdminController {
 
             // 1. Obtener la propuesta completa
             $stmt = $this->pdo->prepare("
-                SELECT jp.*, ep.plataforma_id, ep.region, ep.bloqueo_regional, ep.edicion_nombre, ep.juego_id_real, ep.plataforma_nombre_nueva, ep.idioma_nombre_nueva
+                SELECT jp.*, ep.plataforma_id, ep.region, ep.bloqueo_regional, ep.edicion_nombre,
+                       ep.juego_id_real, ep.plataforma_nombre_nueva, ep.idioma_nombre_nueva,
+                       ep.idioma_id, ep.imagen_portada_sugerida
                 FROM juegos_pendientes jp
                 LEFT JOIN ediciones_pendientes ep ON ep.juego_pendiente_id = jp.id
                 WHERE jp.id = ?
@@ -50,6 +52,8 @@ class AdminController {
             $regionCorregida = trim($_POST['corregir_region'] ?? $propuesta->region ?? '');
             $platNombre      = $_POST['corregir_plataforma'] ?? null;
             $idiomaNombre    = trim($_POST['corregir_idioma'] ?? '');
+            $idiomaIdPost    = isset($_POST['corregir_idioma_id']) ? (int)$_POST['corregir_idioma_id'] : 0;
+            $fechaLanzamiento = trim($_POST['corregir_fecha'] ?? $propuesta->fecha_lanzamiento ?? '');
             $regionCatalogo  = trim($_POST['corregir_region_catalogo'] ?? $_POST['corregir_region'] ?? '');
 
             if ($platNombre === null || $platNombre === '') {
@@ -111,29 +115,99 @@ class AdminController {
             }
 
             // 4. LÓGICA DE JUEGO / EDICIÓN
-            if (strpos($tituloCorregido, 'Plataforma:') === 0 || strpos($tituloCorregido, 'Región:') === 0 || strpos($tituloCorregido, 'Idioma:') === 0) {
-                // Propuesta solo de plataforma, región o idioma
-            } else {
-                $tituloLimpio = trim(str_replace('Juego: ', '', $tituloCorregido));
-                $juego_id_final = $propuesta->juego_id_real;
+            $esMeta = strpos($tituloCorregido, 'Plataforma:') === 0
+                || strpos($tituloCorregido, 'Región:') === 0
+                || strpos($tituloCorregido, 'Idioma:') === 0;
 
-                if (!$juego_id_final) {
-                    // Crear juego nuevo si no existía
-                    $sqlJ = "INSERT INTO juegos (titulo, desarrollador) VALUES (?, ?)";
-                    $stmtJ = $this->pdo->prepare($sqlJ);
-                    $stmtJ->execute([$tituloLimpio, $devCorregido]);
-                    $juego_id_final = $this->pdo->lastInsertId();
+            if (!$esMeta) {
+                if (trim($platNombre ?? '') === '' && empty($plataforma_id_final)) {
+                    throw new Exception(__('admin_validate_platform_required'));
+                }
+                if ($fechaLanzamiento === '') {
+                    throw new Exception(__('admin_validate_date_required'));
                 }
 
-                // Crear la edición oficial vinculada
+                $idiomaIdFinal = $idiomaIdPost > 0 ? $idiomaIdPost : (int)($propuesta->idioma_id ?? 0);
+                if ($idiomaIdFinal <= 0 && $idiomaNombre === '' && empty($propuesta->idioma_nombre_nueva)) {
+                    throw new Exception(__('admin_validate_language_required'));
+                }
+                if ($idiomaIdFinal <= 0 && $idiomaNombre !== '') {
+                    $stBuscaIdioma = $this->pdo->prepare('SELECT id FROM idiomas WHERE nombre = ?');
+                    $stBuscaIdioma->execute([$idiomaNombre]);
+                    $exIdioma = $stBuscaIdioma->fetch();
+                    if ($exIdioma) {
+                        $idiomaIdFinal = (int)$exIdioma->id;
+                    } else {
+                        $stInsIdioma = $this->pdo->prepare('INSERT INTO idiomas (nombre) VALUES (?)');
+                        $stInsIdioma->execute([$idiomaNombre]);
+                        $idiomaIdFinal = (int)$this->pdo->lastInsertId();
+                    }
+                } elseif ($idiomaIdFinal <= 0 && !empty($propuesta->idioma_nombre_nueva)) {
+                    $stBuscaIdioma = $this->pdo->prepare('SELECT id FROM idiomas WHERE nombre = ?');
+                    $stBuscaIdioma->execute([trim($propuesta->idioma_nombre_nueva)]);
+                    $exIdioma = $stBuscaIdioma->fetch();
+                    if ($exIdioma) {
+                        $idiomaIdFinal = (int)$exIdioma->id;
+                    } else {
+                        $stInsIdioma = $this->pdo->prepare('INSERT INTO idiomas (nombre) VALUES (?)');
+                        $stInsIdioma->execute([trim($propuesta->idioma_nombre_nueva)]);
+                        $idiomaIdFinal = (int)$this->pdo->lastInsertId();
+                    }
+                }
+
+                $tituloLimpio = trim(str_replace('Juego: ', '', $tituloCorregido));
+                $juego_id_final = $propuesta->juego_id_real;
+                $anioEdicion = (int)date('Y', strtotime($fechaLanzamiento));
+
+                if (!$juego_id_final) {
+                    $sqlJ = 'INSERT INTO juegos (titulo, desarrollador, fecha_lanzamiento) VALUES (?, ?, ?)';
+                    $stmtJ = $this->pdo->prepare($sqlJ);
+                    $stmtJ->execute([
+                        $tituloLimpio,
+                        $devCorregido !== '' ? $devCorregido : null,
+                        $fechaLanzamiento
+                    ]);
+                    $juego_id_final = (int)$this->pdo->lastInsertId();
+                } else {
+                    $sqlUp = 'UPDATE juegos SET fecha_lanzamiento = ? WHERE id = ?';
+                    $this->pdo->prepare($sqlUp)->execute([$fechaLanzamiento, $juego_id_final]);
+                }
+
+                if ($juego_id_final && $idiomaIdFinal > 0) {
+                    $stJi = $this->pdo->prepare('INSERT IGNORE INTO juego_idiomas (juego_id, idioma_id) VALUES (?, ?)');
+                    $stJi->execute([$juego_id_final, $idiomaIdFinal]);
+                }
+
+                $edicionId = null;
                 if ($juego_id_final && $plataforma_id_final) {
-                    $sqlE = "INSERT INTO ediciones (juego_id, plataforma_id, region, edicion_nombre) VALUES (?, ?, ?, ?)";
-                    $this->pdo->prepare($sqlE)->execute([
+                    $sqlE = 'INSERT INTO ediciones (juego_id, plataforma_id, region, anio, edicion_nombre) VALUES (?, ?, ?, ?, ?)';
+                    $stE = $this->pdo->prepare($sqlE);
+                    $stE->execute([
                         $juego_id_final,
                         $plataforma_id_final,
                         $regionCorregida !== '' ? $regionCorregida : null,
+                        $anioEdicion > 0 ? $anioEdicion : null,
                         $propuesta->edicion_nombre ?? 'Edición Estándar'
                     ]);
+                    $edicionId = (int)$this->pdo->lastInsertId();
+
+                    $platNombreFinal = $platNombre ?? '';
+                    if ($platNombreFinal === '' && $plataforma_id_final) {
+                        $stPn = $this->pdo->prepare('SELECT nombre FROM plataformas WHERE id = ?');
+                        $stPn->execute([$plataforma_id_final]);
+                        $platNombreFinal = (string)$stPn->fetchColumn();
+                    }
+
+                    $archivoAdmin = $_FILES['portada'] ?? [];
+                    asignarPortadaAEdicion(
+                        $this->pdo,
+                        $edicionId,
+                        $tituloLimpio,
+                        $platNombreFinal,
+                        $regionCorregida,
+                        $archivoAdmin,
+                        $propuesta->imagen_portada_sugerida ?? null
+                    );
                 }
             }
 
@@ -304,10 +378,10 @@ class AdminController {
         }
     }
 
-    private function redirigirErrorPortada($codigo, $juegoId = 0) {
+    private function redirigirErrorPortada($codigo, $edicionId = 0) {
         $url = '../vistas/admin/registrar_directo.php?cover_error=' . urlencode($codigo);
-        if ($juegoId > 0) {
-            $url .= '&cover_juego_id=' . (int)$juegoId;
+        if ($edicionId > 0) {
+            $url .= '&cover_edicion_id=' . (int)$edicionId;
         }
         header('Location: ' . $url);
         exit();
@@ -319,29 +393,30 @@ class AdminController {
             exit();
         }
 
-        $juegoId = isset($_POST['juego_id']) ? (int)$_POST['juego_id'] : 0;
+        $edicionId = isset($_POST['edicion_id']) ? (int)$_POST['edicion_id'] : 0;
 
-        if ($juegoId <= 0) {
-            $this->redirigirErrorPortada('invalid_game');
+        if ($edicionId <= 0) {
+            $this->redirigirErrorPortada('invalid_edition');
         }
 
-        $stmtTitulo = $this->pdo->prepare("SELECT titulo FROM juegos WHERE id = ?");
-        $stmtTitulo->execute([$juegoId]);
-        $tituloJuego = $stmtTitulo->fetchColumn();
-        if ($tituloJuego === false) {
-            $this->redirigirErrorPortada('invalid_game');
-        }
-
-        if (!asegurarEdicionParaPortada($this->pdo, $juegoId)) {
-            $this->redirigirErrorPortada('no_edition', $juegoId);
+        $stmtInfo = $this->pdo->prepare(
+            "SELECT e.id, j.titulo, p.nombre AS plataforma, e.region
+             FROM ediciones e
+             JOIN juegos j ON j.id = e.juego_id
+             JOIN plataformas p ON p.id = e.plataforma_id
+             WHERE e.id = ?"
+        );
+        $stmtInfo->execute([$edicionId]);
+        $info = $stmtInfo->fetch(PDO::FETCH_ASSOC);
+        if (!$info) {
+            $this->redirigirErrorPortada('invalid_edition');
         }
 
         if (!isset($_FILES['portada']) || $_FILES['portada']['error'] !== UPLOAD_ERR_OK) {
-            $this->redirigirErrorPortada('upload', $juegoId);
+            $this->redirigirErrorPortada('upload', $edicionId);
         }
 
         $tmpPath = $_FILES['portada']['tmp_name'];
-        $originalName = $_FILES['portada']['name'];
 
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mimeType = $finfo->file($tmpPath);
@@ -353,13 +428,19 @@ class AdminController {
         ];
 
         if (!isset($allowedMimes[$mimeType])) {
-            $this->redirigirErrorPortada('type', $juegoId);
+            $this->redirigirErrorPortada('type', $edicionId);
         }
 
         $ext = $allowedMimes[$mimeType];
-        $fileName = nombreArchivoPortadaDesdeTitulo($tituloJuego, $ext);
+        $fileName = nombreArchivoPortadaEdicion(
+            $info['titulo'],
+            $info['plataforma'],
+            $info['region'] ?? '',
+            $ext,
+            $edicionId
+        );
         if (!asegurarDirectorioPortadas()) {
-            $this->redirigirErrorPortada('filesystem', $juegoId);
+            $this->redirigirErrorPortada('filesystem', $edicionId);
         }
 
         $uploadDir = directorioPortadas();
@@ -377,7 +458,7 @@ class AdminController {
             }
         }
         if (!$guardado) {
-            $fallback = 'juego_' . $juegoId . '.' . $ext;
+            $fallback = 'edicion_' . $edicionId . '.' . $ext;
             $destPath = $uploadDir . DIRECTORY_SEPARATOR . $fallback;
             if (is_file($destPath)) {
                 @unlink($destPath);
@@ -390,17 +471,17 @@ class AdminController {
             }
         }
         if (!$guardado) {
-            $this->redirigirErrorPortada('filesystem', $juegoId);
+            $this->redirigirErrorPortada('filesystem', $edicionId);
         }
 
         $portadasAnteriores = obtenerPortadasPorFiltroEdiciones(
             $this->pdo,
-            'e.juego_id = ?',
-            [$juegoId]
+            'e.id = ?',
+            [$edicionId]
         );
 
-        $stmt = $this->pdo->prepare("UPDATE ediciones SET imagen_portada = ? WHERE juego_id = ?");
-        $stmt->execute([$fileName, $juegoId]);
+        $stmt = $this->pdo->prepare("UPDATE ediciones SET imagen_portada = ? WHERE id = ?");
+        $stmt->execute([$fileName, $edicionId]);
 
         limpiarArchivosPortadaLista($this->pdo, $portadasAnteriores);
 

@@ -2,6 +2,7 @@
 require_once '../../includes/auth.php';
 redirigirSiNoUsuario();
 require_once '../../config/config.php';
+require_once '../../includes/portadas.php';
 
 $usuario_id = (int)$_SESSION['usuario_id'];
 $juego_id = (int)($_GET['juego_id'] ?? 0);
@@ -11,7 +12,8 @@ if ($juego_id <= 0) {
     exit();
 }
 
-$sql = "SELECT cu.*, j.titulo, e.juego_id, e.edicion_nombre, e.region, e.imagen_portada,
+$sql = "SELECT cu.*, j.titulo, e.juego_id, e.id AS edicion_id, e.edicion_nombre, e.region, e.anio,
+               e.imagen_portada, j.fecha_lanzamiento,
                p.nombre AS plataforma_nombre, i.nombre AS idioma_nombre,
                pr.nombre_persona AS prestado_a, pr.fecha_prestamo AS fecha_prestamo_activo
         FROM coleccion_usuario cu
@@ -33,13 +35,7 @@ if (empty($copias)) {
 }
 
 $titulo = $copias[0]->titulo;
-$portada = null;
-foreach ($copias as $c) {
-    if (!empty($c->imagen_portada)) {
-        $portada = $c->imagen_portada;
-        break;
-    }
-}
+$portada = portadaMasRecienteEntreCopias($copias);
 
 include '../../includes/header.php';
 ?>
@@ -62,6 +58,21 @@ include '../../includes/header.php';
     .copy-head {
         padding: 18px 18px 12px;
         border-bottom: 1px solid #f5f5f5;
+    }
+    .copy-cover {
+        width: 100%;
+        aspect-ratio: 3/4;
+        background: #f3f4f6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+    }
+    .copy-cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
     }
     .copy-meta {
         padding: 0 18px 18px;
@@ -150,6 +161,13 @@ include '../../includes/header.php';
         <?php foreach ($copias as $idx => $copia): ?>
             <?php $enPrestamo = !empty($copia->prestado_a); ?>
             <article class="copy-card<?php echo $enPrestamo ? ' on-loan' : ''; ?>">
+                <div class="copy-cover">
+                    <?php if (!empty($copia->imagen_portada)): ?>
+                        <img src="../../img/portadas/<?php echo htmlspecialchars($copia->imagen_portada); ?>" alt="">
+                    <?php else: ?>
+                        🎮
+                    <?php endif; ?>
+                </div>
                 <div class="copy-head">
                     <span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: #9ca3af;">
                         <?php echo sprintf($lang['frontend_collection_copy_number'], $idx + 1); ?>

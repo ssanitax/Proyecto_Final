@@ -5,17 +5,27 @@ $pdo = $GLOBALS['pdo'];
 
 // Consulta corregida para traer el nombre de la plataforma sugerida
 $sql = "SELECT jp.*, u.nombre as nombre_usuario, 
-               ep.region, ep.bloqueo_regional, ep.plataforma_nombre_nueva, ep.idioma_nombre_nueva, ep.juego_id_real,
-               p.nombre as plataforma_oficial 
+               ep.region, ep.bloqueo_regional, ep.plataforma_nombre_nueva, ep.idioma_nombre_nueva,
+               ep.idioma_id, ep.imagen_portada_sugerida, ep.juego_id_real,
+               p.nombre as plataforma_oficial,
+               i.nombre as idioma_oficial
         FROM juegos_pendientes jp
         JOIN usuarios u ON jp.usuario_id = u.id
         LEFT JOIN ediciones_pendientes ep ON ep.juego_pendiente_id = jp.id
         LEFT JOIN plataformas p ON ep.plataforma_id = p.id
+        LEFT JOIN idiomas i ON ep.idioma_id = i.id
         WHERE jp.estado = 'pendiente'
         ORDER BY jp.created_at DESC";
 
 $stmt = $pdo->query($sql);
 $pendientes = $stmt->fetchAll();
+
+$idiomasCatalogo = [];
+try {
+    $idiomasCatalogo = $pdo->query("SELECT id, nombre FROM idiomas ORDER BY nombre ASC")->fetchAll();
+} catch (PDOException $e) {
+    $idiomasCatalogo = [];
+}
 
 include '../../includes/admin_header.php'; 
 ?>
@@ -63,7 +73,7 @@ include '../../includes/admin_header.php';
                             $nombreRegionPropuesta = $p->region ?? trim(str_replace('Región:', '', $p->titulo));
                         ?>
                         <tr style="border-bottom: 1px solid #f5f5f5;">
-                            <form action="../../controllers/AdminController.php?action=aprobar&id=<?php echo $p->id; ?>" method="POST">
+                            <form action="../../controllers/AdminController.php?action=aprobar&id=<?php echo $p->id; ?>" method="POST" enctype="multipart/form-data">
                                 <td style="padding: 20px;">
                                     <strong><?php echo htmlspecialchars($p->nombre_usuario); ?></strong><br>
                                     <small style="color: #999;"><?php echo date('d/m/Y', strtotime($p->created_at)); ?></small>
@@ -95,20 +105,46 @@ include '../../includes/admin_header.php';
                                         <p style="font-size: 0.75rem; color: #666;"><?php echo $lang['admin_validate_region_notice']; ?></p>
                                     <?php else: ?>
                                     <div style="margin-bottom: 10px;">
-                                        <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_platform']; ?></label>
+                                        <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_platform']; ?> *</label>
                                         <input type="text" name="corregir_plataforma" 
                                                value="<?php echo htmlspecialchars($p->plataforma_oficial ?? $p->plataforma_nombre_nueva ?? ''); ?>" 
+                                               required
                                                style="width: 100%; padding: 8px; border: 1px solid <?php echo $p->plataforma_oficial ? '#eee' : '#fde68a'; ?>; border-radius: 5px; background: <?php echo $p->plataforma_oficial ? 'white' : '#fffbeb'; ?>; font-weight: 700;">
                                     </div>
                                     <div style="margin-bottom: 10px;">
-                                        <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_title']; ?></label>
-                                        <input type="text" name="corregir_titulo" value="<?php echo htmlspecialchars($p->titulo); ?>" 
+                                        <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_title']; ?> *</label>
+                                        <input type="text" name="corregir_titulo" value="<?php echo htmlspecialchars($p->titulo); ?>" required
                                                style="width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 5px; font-weight: 700;">
                                     </div>
+                                    <div style="margin-bottom: 10px;">
+                                        <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_release_date']; ?> *</label>
+                                        <input type="date" name="corregir_fecha" value="<?php echo htmlspecialchars($p->fecha_lanzamiento ?? ''); ?>" required
+                                               style="width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 5px;">
+                                    </div>
+                                    <div style="margin-bottom: 10px;">
+                                        <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_language']; ?> *</label>
+                                        <?php if (!empty($p->idioma_nombre_nueva) && empty($p->idioma_id)): ?>
+                                            <input type="text" name="corregir_idioma" value="<?php echo htmlspecialchars($p->idioma_nombre_nueva); ?>" required
+                                                   style="width: 100%; padding: 8px; border: 1px solid #fde68a; border-radius: 5px; background: #fffbeb; font-weight: 700; margin-bottom: 6px;">
+                                        <?php elseif (empty($idiomasCatalogo)): ?>
+                                            <input type="text" name="corregir_idioma" value="<?php echo htmlspecialchars($p->idioma_nombre_nueva ?? ''); ?>" required
+                                                   style="width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 5px;">
+                                        <?php endif; ?>
+                                        <?php if (!empty($idiomasCatalogo)): ?>
+                                        <select name="corregir_idioma_id" <?php echo empty($p->idioma_nombre_nueva) ? 'required' : ''; ?> style="width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 5px;">
+                                            <option value=""><?php echo $lang['admin_validate_select_language']; ?></option>
+                                            <?php foreach ($idiomasCatalogo as $idioma): ?>
+                                                <option value="<?php echo (int)$idioma->id; ?>" <?php echo ((int)$p->idioma_id === (int)$idioma->id) ? 'selected' : ''; ?>>
+                                                    <?php echo htmlspecialchars($idioma->nombre); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <?php endif; ?>
+                                    </div>
                                     <?php if (!$esPropuestaPlataforma && !$esPropuestaRegion): ?>
-                                    <div style="display: flex; gap: 10px;">
+                                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                                         <div style="flex: 1;">
-                                            <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo (($idiomaActual ?? 'es') === 'en') ? 'DEVELOPER' : 'DESARROLLADOR'; ?></label>
+                                            <label style="font-size: 0.6rem; font-weight: 800; color: #aaa;"><?php echo $lang['admin_validate_label_dev']; ?></label>
                                             <input type="text" name="corregir_dev" value="<?php echo htmlspecialchars($p->desarrollador ?? ''); ?>" style="width: 100%; padding: 8px; border: 1px solid #eee; border-radius: 5px;">
                                         </div>
                                         <div style="flex: 1;">
@@ -117,11 +153,22 @@ include '../../includes/admin_header.php';
                                                 <p style="font-size: 0.65rem; color: #b45309; margin: 0 0 6px 0; font-weight: 600;"><?php echo $lang['admin_validate_regional_lock_notice']; ?></p>
                                             <?php endif; ?>
                                             <input type="text" name="corregir_region" value="<?php echo htmlspecialchars($p->region ?? ''); ?>"
-                                                   style="width: 100%; padding: 8px; border: 1px solid <?php echo !empty($p->bloqueo_regional) ? '#fde68a' : '#eee'; ?>; border-radius: 5px; background: <?php echo !empty($p->bloqueo_regional) ? '#fffbeb' : 'white'; ?>;"
-                                                   placeholder="<?php echo !empty($p->bloqueo_regional) ? 'PAL, NTSC-U, NTSC-J...' : ''; ?>">
+                                                   style="width: 100%; padding: 8px; border: 1px solid <?php echo !empty($p->bloqueo_regional) ? '#fde68a' : '#eee'; ?>; border-radius: 5px;">
                                         </div>
                                     </div>
                                     <?php endif; ?>
+                                    <div style="margin-bottom: 10px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e5e7eb;">
+                                        <label style="font-size: 0.6rem; font-weight: 800; color: #aaa; display: block; margin-bottom: 8px;"><?php echo $lang['admin_validate_label_cover']; ?></label>
+                                        <?php if (!empty($p->imagen_portada_sugerida) && is_file(__DIR__ . '/../../img/portadas/' . basename($p->imagen_portada_sugerida))): ?>
+                                            <p style="font-size: 0.75rem; color: #666; margin: 0 0 8px;"><?php echo $lang['admin_validate_cover_user']; ?></p>
+                                            <img src="../../img/portadas/<?php echo htmlspecialchars(basename($p->imagen_portada_sugerida)); ?>"
+                                                 alt="" style="max-width: 120px; border-radius: 8px; display: block; margin-bottom: 10px;">
+                                        <?php else: ?>
+                                            <p style="font-size: 0.75rem; color: #999; margin: 0 0 8px;"><?php echo $lang['admin_validate_cover_none_user']; ?></p>
+                                        <?php endif; ?>
+                                        <input type="file" name="portada" accept="image/jpeg,image/png,image/webp" style="width: 100%; font-size: 0.85rem;">
+                                        <p style="font-size: 0.7rem; color: #888; margin: 8px 0 0;"><?php echo $lang['admin_validate_cover_admin_help']; ?></p>
+                                    </div>
                                     <?php endif; ?>
                                 </td>
                                 <td style="padding: 20px;">

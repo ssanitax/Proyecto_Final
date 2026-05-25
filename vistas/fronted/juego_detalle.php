@@ -2,6 +2,7 @@
 require_once '../../includes/auth.php';
 redirigirSiNoUsuario();
 require_once '../../config/config.php';
+require_once '../../includes/portadas.php';
 require_once '../../models/Valoracion.php';
 
 $id_juego = $_GET['id'] ?? null;
@@ -18,7 +19,15 @@ $juego = $stmt->fetch();
 
 if (!$juego) { die($lang['frontend_game_detail_not_found']); }
 
-$stmtPortada = $pdo->prepare("SELECT imagen_portada FROM ediciones WHERE juego_id = ? AND imagen_portada IS NOT NULL AND imagen_portada != '' ORDER BY id DESC LIMIT 1");
+$stmtPortada = $pdo->prepare("
+    SELECT e.imagen_portada
+    FROM ediciones e
+    INNER JOIN juegos j2 ON j2.id = e.juego_id
+    WHERE e.juego_id = ?
+      AND e.imagen_portada IS NOT NULL AND e.imagen_portada != ''
+    ORDER BY COALESCE(e.anio, YEAR(j2.fecha_lanzamiento), 0) DESC, e.id DESC
+    LIMIT 1
+");
 $stmtPortada->execute([$id_juego]);
 $portadaJuego = $stmtPortada->fetchColumn();
 
@@ -39,23 +48,9 @@ if (empty($ediciones)) {
 
 $idiomas = [];
 try {
-    $stmtIdiomasJuego = $pdo->prepare(
-        "SELECT i.id, i.nombre FROM idiomas i
-         INNER JOIN juego_idiomas ji ON ji.idioma_id = i.id
-         WHERE ji.juego_id = ?
-         ORDER BY i.nombre ASC"
-    );
-    $stmtIdiomasJuego->execute([$id_juego]);
-    $idiomas = $stmtIdiomasJuego->fetchAll();
-    if (empty($idiomas)) {
-        $idiomas = $pdo->query("SELECT id, nombre FROM idiomas ORDER BY nombre ASC")->fetchAll();
-    }
+    $idiomas = $pdo->query("SELECT id, nombre FROM idiomas ORDER BY nombre ASC")->fetchAll();
 } catch (PDOException $e) {
-    try {
-        $idiomas = $pdo->query("SELECT id, nombre FROM idiomas ORDER BY nombre ASC")->fetchAll();
-    } catch (PDOException $e2) {
-        $idiomas = [];
-    }
+    $idiomas = [];
 }
 
 $valoracionModel = new Valoracion($pdo);
@@ -131,12 +126,20 @@ include '../../includes/header.php';
                             <?php foreach($ediciones as $edic): ?>
                                 <label class="version-card">
                                     <input type="radio" name="edicion_id" value="<?php echo $edic->id; ?>" required>
+                                    <?php if (!empty($edic->imagen_portada)): ?>
+                                        <span class="version-thumb">
+                                            <img src="../../img/portadas/<?php echo htmlspecialchars($edic->imagen_portada); ?>" alt="">
+                                        </span>
+                                    <?php endif; ?>
                                     <div class="version-details">
                                         <div class="plat-name"><?php echo htmlspecialchars($edic->plataforma_nombre); ?></div>
                                         <div class="edic-info">
                                             <?php echo htmlspecialchars($edic->edicion_nombre); ?> 
                                             <?php if (!empty($edic->region)): ?>
                                             <span class="region-pill"><?php echo htmlspecialchars($edic->region); ?></span>
+                                            <?php endif; ?>
+                                            <?php if (!empty($edic->anio)): ?>
+                                            <span class="region-pill"><?php echo (int)$edic->anio; ?></span>
                                             <?php endif; ?>
                                         </div>
                                     </div>
@@ -148,6 +151,7 @@ include '../../includes/header.php';
                                     <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #666; display: block; margin-bottom: 8px;">
                                         <?php echo $lang['frontend_game_detail_label_language']; ?>
                                     </label>
+                                    <p style="font-size: 0.8rem; color: #888; margin: 0 0 10px 0;"><?php echo $lang['frontend_game_detail_language_help']; ?></p>
                                     <?php if (count($idiomas) === 1): ?>
                                         <input type="hidden" name="idioma_id" value="<?php echo (int)$idiomas[0]->id; ?>">
                                         <p style="margin: 0; padding: 12px; background: #f4f5f7; border-radius: 10px; font-weight: 700; color: var(--graphite);">
@@ -227,6 +231,21 @@ include '../../includes/header.php';
         border-radius: 12px;
         cursor: pointer;
         transition: 0.2s ease-in-out;
+        gap: 14px;
+    }
+    .version-thumb {
+        width: 52px;
+        height: 68px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #eee;
+        flex-shrink: 0;
+    }
+    .version-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
     }
     .version-card:hover { border-color: var(--silver); background: #fafafa; }
     .version-card input[type="radio"] { margin-right: 20px; accent-color: var(--graphite); transform: scale(1.2); }

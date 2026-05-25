@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/portadas.php';
 require_once __DIR__ . '/../models/Juego.php';
 
 class JuegoController {
@@ -13,32 +14,87 @@ class JuegoController {
         $this->juegoModel = new Juego($pdo);
     }
 
+    private function redirigirErrorPropuesta($ruta, $codigo) {
+        header('Location: ' . $ruta . '?error=' . urlencode($codigo));
+        exit();
+    }
+
     /**
      * ACCIÓN 1: Proponer Juego Nuevo
      */
     public function proponer() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $usuario_id = $_SESSION['usuario_id'];
+            $titulo = trim($_POST['titulo'] ?? '');
+            $desarrollador = trim($_POST['desarrollador'] ?? '');
+            $plataforma_id = (int)($_POST['plataforma_id'] ?? 0);
+            $fecha = trim($_POST['fecha_lanzamiento'] ?? '');
+            $idioma_id = (int)($_POST['idioma_id'] ?? 0);
+            $idiomaNueva = trim($_POST['idioma_nombre_nueva'] ?? '');
+
+            if ($titulo === '') {
+                $this->redirigirErrorPropuesta('../vistas/fronted/registrar_nuevo.php', 'missing_title');
+            }
+            if ($plataforma_id <= 0) {
+                $this->redirigirErrorPropuesta('../vistas/fronted/registrar_nuevo.php', 'missing_platform');
+            }
+            if ($fecha === '') {
+                $this->redirigirErrorPropuesta('../vistas/fronted/registrar_nuevo.php', 'missing_date');
+            }
+            if ($idioma_id <= 0 && $idiomaNueva === '') {
+                $this->redirigirErrorPropuesta('../vistas/fronted/registrar_nuevo.php', 'missing_language');
+            }
+
+            if ($idioma_id > 0) {
+                $st = $this->pdo->prepare('SELECT id FROM idiomas WHERE id = ?');
+                $st->execute([$idioma_id]);
+                if (!$st->fetch()) {
+                    $idioma_id = 0;
+                }
+            } else {
+                $idioma_id = null;
+            }
 
             try {
                 $this->pdo->beginTransaction();
 
-                $sqlJuego = "INSERT INTO juegos_pendientes (usuario_id, titulo, desarrollador, estado) VALUES (?, ?, ?, 'pendiente')";
+                $portadaSugerida = isset($_FILES['portada'])
+                    ? guardarImagenPortadaOpcional($_FILES['portada'])
+                    : null;
+
+                $sqlJuego = "INSERT INTO juegos_pendientes (usuario_id, titulo, desarrollador, fecha_lanzamiento, estado)
+                             VALUES (?, ?, ?, ?, 'pendiente')";
                 $stmtJuego = $this->pdo->prepare($sqlJuego);
-                $stmtJuego->execute([$usuario_id, "Juego: " . $_POST['titulo'], $_POST['desarrollador']]);
+                $stmtJuego->execute([
+                    $usuario_id,
+                    'Juego: ' . $titulo,
+                    $desarrollador !== '' ? $desarrollador : null,
+                    $fecha
+                ]);
                 $juego_pendiente_id = $this->pdo->lastInsertId();
 
                 $bloqueoRegional = isset($_POST['bloqueo_regional']) && $_POST['bloqueo_regional'] === '1' ? 1 : 0;
 
-                $sqlEdicion = "INSERT INTO ediciones_pendientes (juego_pendiente_id, plataforma_id, region, bloqueo_regional, edicion_nombre) VALUES (?, ?, NULL, ?, 'Edición Estándar')";
+                $sqlEdicion = "INSERT INTO ediciones_pendientes
+                    (juego_pendiente_id, plataforma_id, idioma_id, idioma_nombre_nueva, imagen_portada_sugerida, region, bloqueo_regional, edicion_nombre)
+                    VALUES (?, ?, ?, ?, ?, NULL, ?, 'Edición Estándar')";
                 $stmtEdicion = $this->pdo->prepare($sqlEdicion);
-                $stmtEdicion->execute([$juego_pendiente_id, $_POST['plataforma_id'], $bloqueoRegional]);
+                $stmtEdicion->execute([
+                    $juego_pendiente_id,
+                    $plataforma_id,
+                    $idioma_id,
+                    $idiomaNueva !== '' ? $idiomaNueva : null,
+                    $portadaSugerida,
+                    $bloqueoRegional
+                ]);
 
                 $this->pdo->commit();
                 header('Location: ../vistas/fronted/mis_propuestas.php?status=enviado');
                 exit();
             } catch (Exception $e) {
-                if ($this->pdo->inTransaction()) { $this->pdo->rollBack(); }
+                if ($this->pdo->inTransaction()) {
+                    $this->pdo->rollBack();
+                }
                 die(__('error_general') . $e->getMessage());
             }
         }
@@ -49,25 +105,69 @@ class JuegoController {
      */
     public function proponerEdicionExistente() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $plataforma_id = (int)($_POST['plataforma_id'] ?? 0);
+            $fecha = trim($_POST['fecha_lanzamiento'] ?? '');
+            $idioma_id = (int)($_POST['idioma_id'] ?? 0);
+            $idiomaNueva = trim($_POST['idioma_nombre_nueva'] ?? '');
+            $juego_id = (int)($_POST['juego_id'] ?? 0);
+
+            if ($juego_id <= 0 || $plataforma_id <= 0) {
+                $this->redirigirErrorPropuesta('../vistas/fronted/buscar.php', 'missing_platform');
+            }
+            if ($fecha === '') {
+                $this->redirigirErrorPropuesta('../vistas/fronted/proponer_edicion.php?juego_id=' . $juego_id, 'missing_date');
+            }
+            if ($idioma_id <= 0 && $idiomaNueva === '') {
+                $this->redirigirErrorPropuesta('../vistas/fronted/proponer_edicion.php?juego_id=' . $juego_id, 'missing_language');
+            }
+
+            if ($idioma_id > 0) {
+                $st = $this->pdo->prepare('SELECT id FROM idiomas WHERE id = ?');
+                $st->execute([$idioma_id]);
+                if (!$st->fetch()) {
+                    $idioma_id = null;
+                }
+            } else {
+                $idioma_id = null;
+            }
+
             try {
                 $this->pdo->beginTransaction();
 
-                $sqlP = "INSERT INTO juegos_pendientes (usuario_id, titulo, estado) SELECT ?, titulo, 'pendiente' FROM juegos WHERE id = ?";
+                $portadaSugerida = isset($_FILES['portada'])
+                    ? guardarImagenPortadaOpcional($_FILES['portada'])
+                    : null;
+
+                $sqlP = "INSERT INTO juegos_pendientes (usuario_id, titulo, fecha_lanzamiento, estado)
+                         SELECT ?, titulo, ?, 'pendiente' FROM juegos WHERE id = ?";
                 $stmtP = $this->pdo->prepare($sqlP);
-                $stmtP->execute([$_SESSION['usuario_id'], $_POST['juego_id']]);
+                $stmtP->execute([$_SESSION['usuario_id'], $fecha, $juego_id]);
                 $nuevo_id = $this->pdo->lastInsertId();
 
                 $bloqueoRegional = isset($_POST['bloqueo_regional']) && $_POST['bloqueo_regional'] === '1' ? 1 : 0;
 
-                $sql = "INSERT INTO ediciones_pendientes (juego_pendiente_id, juego_id_real, plataforma_id, region, bloqueo_regional, edicion_nombre) VALUES (?, ?, ?, NULL, ?, ?)";
+                $sql = "INSERT INTO ediciones_pendientes
+                    (juego_pendiente_id, juego_id_real, plataforma_id, idioma_id, idioma_nombre_nueva, imagen_portada_sugerida, region, bloqueo_regional, edicion_nombre)
+                    VALUES (?, ?, ?, ?, ?, ?, NULL, ?, ?)";
                 $stmt = $this->pdo->prepare($sql);
-                $stmt->execute([$nuevo_id, $_POST['juego_id'], $_POST['plataforma_id'], $bloqueoRegional, $_POST['edicion_nombre']]);
+                $stmt->execute([
+                    $nuevo_id,
+                    $juego_id,
+                    $plataforma_id,
+                    $idioma_id,
+                    $idiomaNueva !== '' ? $idiomaNueva : null,
+                    $portadaSugerida,
+                    $bloqueoRegional,
+                    trim($_POST['edicion_nombre'] ?? 'Edición Estándar')
+                ]);
 
                 $this->pdo->commit();
                 header('Location: ../vistas/fronted/mis_propuestas.php?status=enviado');
                 exit();
             } catch (Exception $e) {
-                if ($this->pdo->inTransaction()) { $this->pdo->rollBack(); }
+                if ($this->pdo->inTransaction()) {
+                    $this->pdo->rollBack();
+                }
                 die(__('error_general') . $e->getMessage());
             }
         }

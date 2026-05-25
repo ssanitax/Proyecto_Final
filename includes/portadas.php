@@ -41,6 +41,61 @@ function nombreArchivoPortadaDesdeTitulo($titulo, $extension) {
 }
 
 /**
+ * Nombre de archivo por edición: título + plataforma (+ región).
+ */
+function nombreArchivoPortadaEdicion($titulo, $plataforma, $region, $extension, $edicionId = 0) {
+    $partes = array_filter([trim((string)$titulo), trim((string)$plataforma), trim((string)$region)]);
+    $base = implode(' ', $partes);
+    $nombre = nombreArchivoPortadaDesdeTitulo($base, $extension);
+    if ($edicionId > 0) {
+        $ext = pathinfo($nombre, PATHINFO_EXTENSION);
+        $stem = pathinfo($nombre, PATHINFO_FILENAME);
+        $nombre = $stem . '_' . (int)$edicionId . '.' . $ext;
+    }
+    return $nombre;
+}
+
+/**
+ * Subconsulta SQL: portada de la edición con lanzamiento más reciente del juego.
+ */
+function sqlSelectPortadaMasRecientePorJuego($columnaJuegoId = 'j.id') {
+    return "(
+        SELECT e.imagen_portada
+        FROM ediciones e
+        INNER JOIN juegos j2 ON j2.id = e.juego_id
+        WHERE e.juego_id = {$columnaJuegoId}
+          AND e.imagen_portada IS NOT NULL AND e.imagen_portada != ''
+        ORDER BY COALESCE(e.anio, YEAR(j2.fecha_lanzamiento), 0) DESC, e.id DESC
+        LIMIT 1
+    )";
+}
+
+/**
+ * Portada principal entre copias del usuario (edición con lanzamiento más reciente).
+ */
+function portadaMasRecienteEntreCopias(array $copias) {
+    $mejor = null;
+    $mejorClave = -1;
+    foreach ($copias as $copia) {
+        if (empty($copia->imagen_portada)) {
+            continue;
+        }
+        $anio = isset($copia->anio) && $copia->anio !== null && $copia->anio !== ''
+            ? (int)$copia->anio
+            : 0;
+        if ($anio <= 0 && !empty($copia->fecha_lanzamiento)) {
+            $anio = (int)date('Y', strtotime($copia->fecha_lanzamiento));
+        }
+        $clave = $anio * 100000 + (int)($copia->edicion_id ?? $copia->id ?? 0);
+        if ($clave > $mejorClave) {
+            $mejorClave = $clave;
+            $mejor = $copia->imagen_portada;
+        }
+    }
+    return $mejor;
+}
+
+/**
  * Si el juego no tiene ninguna edición, crea una estándar para poder guardar la portada.
  */
 function asegurarEdicionParaPortada($pdo, $juegoId) {
@@ -167,4 +222,83 @@ function limpiarTodasPortadasHuerfanasEnDisco($pdo) {
         }
     }
     return $eliminados;
+}
+
+/**
+ * Guarda una imagen opcional de propuesta (usuario o admin). Devuelve el nombre de archivo o null.
+ */
+function guardarImagenPortadaOpcional(array $archivo, $prefijo = 'propuesta') {
+    if (!isset($archivo['error']) || $archivo['error'] !== UPLOAD_ERR_OK) {
+        return null;
+    }
+    if (!asegurarDirectorioPortadas()) {
+        return null;
+    }
+
+    $tmpPath = $archivo['tmp_name'];
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mimeType = $finfo->file($tmpPath);
+    $allowedMimes = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+    if (!isset($allowedMimes[$mimeType])) {
+        return null;
+    }
+
+    $ext = $allowedMimes[$mimeType];
+    $nombre = nombreArchivoPortadaDesdeTitulo($prefijo . '_' . time(), $ext);
+    $destPath = directorioPortadas() . DIRECTORY_SEPARATOR . $nombre;
+
+    if (move_uploaded_file($tmpPath, $destPath) || @copy($tmpPath, $destPath)) {
+        return $nombre;
+    }
+    return null;
+}
+
+/**
+ * Asigna portada a una edición: prioridad subida admin, luego imagen sugerida por el usuario.
+ */
+function asignarPortadaAEdicion($pdo, $edicionId, $titulo, $plataforma, $region, $archivoAdmin, $portadaSugerida = null) {
+    $edicionId = (int)$edicionId;
+    if ($edicionId <= 0) {
+        return;
+    }
+
+    $portadasAnteriores = obtenerPortadasPorFiltroEdiciones($pdo, 'e.id = ?', [$edicionId]);
+    $fileName = null;
+
+    if (isset($archivoAdmin['error']) && $archivoAdmin['error'] === UPLOAD_ERR_OK) {
+        $fileName = guardarImagenPortadaOpcional($archivoAdmin, 'catalogo');
+        if ($fileName) {
+            $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+            $final = nombreArchivoPortadaEdicion($titulo, $plataforma, $region, $ext, $edicionId);
+            $dir = directorioPortadas();
+            $origen = $dir . DIRECTORY_SEPARATOR . $fileName;
+            $destino = $dir . DIRECTORY_SEPARATOR . $final;
+            if (is_file($origen) && @rename($origen, $destino)) {
+                $fileName = $final;
+            }
+        }
+    }
+
+    if ($fileName === null && $portadaSugerida !== null && $portadaSugerida !== '') {
+        $portadaSugerida = basename($portadaSugerida);
+        $dir = directorioPortadas();
+        $origen = $dir . DIRECTORY_SEPARATOR . $portadaSugerida;
+        if (is_file($origen)) {
+            $ext = pathinfo($portadaSugerida, PATHINFO_EXTENSION) ?: 'jpg';
+            $fileName = nombreArchivoPortadaEdicion($titulo, $plataforma, $region, $ext, $edicionId);
+            if (is_file($dir . DIRECTORY_SEPARATOR . $fileName)) {
+                @unlink($dir . DIRECTORY_SEPARATOR . $fileName);
+            }
+            @copy($origen, $dir . DIRECTORY_SEPARATOR . $fileName);
+        }
+    }
+
+    if ($fileName !== null) {
+        $stmt = $pdo->prepare('UPDATE ediciones SET imagen_portada = ? WHERE id = ?');
+        $stmt->execute([$fileName, $edicionId]);
+        limpiarArchivosPortadaLista($pdo, $portadasAnteriores);
+        if ($portadaSugerida && basename($portadaSugerida) !== $fileName) {
+            eliminarArchivoPortadaSiHuerfano($pdo, $portadaSugerida);
+        }
+    }
 }

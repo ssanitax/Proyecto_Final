@@ -33,9 +33,10 @@ $sql = "SELECT
                 SELECT e2.imagen_portada
                 FROM coleccion_usuario cu2
                 JOIN ediciones e2 ON e2.id = cu2.edicion_id
+                JOIN juegos j2 ON j2.id = e2.juego_id
                 WHERE cu2.usuario_id = cu.usuario_id AND e2.juego_id = e.juego_id
                   AND e2.imagen_portada IS NOT NULL AND e2.imagen_portada != ''
-                ORDER BY cu2.fecha_adicion DESC, cu2.id DESC
+                ORDER BY COALESCE(e2.anio, YEAR(j2.fecha_lanzamiento), 0) DESC, e2.id DESC
                 LIMIT 1
             ) AS imagen_portada,
             rating_user.valoracion_juego_usuario
