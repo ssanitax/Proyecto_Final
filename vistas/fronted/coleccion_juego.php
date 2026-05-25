@@ -41,74 +41,109 @@ include '../../includes/header.php';
 ?>
 
 <style>
-    .copies-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 24px;
+    .copies-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        max-width: 760px;
     }
     .copy-card {
         background: white;
-        border-radius: 16px;
+        border-radius: 14px;
         border: 1px solid #eee;
         overflow: hidden;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
+        align-items: stretch;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
-    .copy-card.on-loan { border-left: 4px solid #f1c40f; }
-    .copy-head {
-        padding: 18px 18px 12px;
-        border-bottom: 1px solid #f5f5f5;
+    .copy-card.on-loan {
+        border-left: 4px solid #f1c40f;
     }
     .copy-cover {
-        width: 100%;
-        aspect-ratio: 3/4;
+        width: 96px;
+        min-width: 96px;
         background: #f3f4f6;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2.5rem;
+        font-size: 1.75rem;
+        flex-shrink: 0;
     }
     .copy-cover img {
         width: 100%;
         height: 100%;
+        min-height: 128px;
         object-fit: cover;
         display: block;
     }
+    .copy-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 14px 16px;
+        min-width: 0;
+    }
+    .copy-head {
+        padding: 0;
+        border: none;
+        margin-bottom: 8px;
+    }
+    .copy-head h3 {
+        margin: 4px 0 0;
+        font-size: 0.95rem;
+        font-weight: 800;
+        line-height: 1.25;
+    }
     .copy-meta {
-        padding: 0 18px 18px;
-        font-size: 0.82rem;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px 16px;
+        font-size: 0.78rem;
         color: #666;
-        line-height: 1.6;
+        line-height: 1.4;
         flex-grow: 1;
+        margin: 0;
     }
     .copy-meta dt {
-        font-size: 0.62rem;
+        font-size: 0.6rem;
         font-weight: 800;
         text-transform: uppercase;
         color: #9ca3af;
-        margin-top: 10px;
+        margin: 0;
     }
-    .copy-meta dd { margin: 2px 0 0 0; font-weight: 600; color: var(--graphite); }
+    .copy-meta dd {
+        margin: 2px 0 0 0;
+        font-weight: 600;
+        color: var(--graphite);
+    }
+    .copy-meta .meta-full {
+        grid-column: 1 / -1;
+    }
     .loan-banner {
-        margin: 0 18px 12px;
-        padding: 10px 12px;
+        margin: 0 0 10px;
+        padding: 8px 10px;
         background: #fff8e1;
         border-radius: 8px;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         color: #92400e;
     }
     .btn-manage {
-        display: block;
-        margin: 0 18px 18px;
-        padding: 12px;
+        display: inline-block;
+        align-self: flex-start;
+        margin-top: 10px;
+        padding: 10px 18px;
         border-radius: 50px;
         background: var(--graphite);
         color: white;
         text-decoration: none;
         font-weight: 700;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         text-transform: uppercase;
         text-align: center;
+    }
+    .btn-manage:hover {
+        background: #333;
     }
     .back-link {
         display: inline-flex;
@@ -157,7 +192,7 @@ include '../../includes/header.php';
         </div>
     </div>
 
-    <div class="copies-grid">
+    <div class="copies-list">
         <?php foreach ($copias as $idx => $copia): ?>
             <?php $enPrestamo = !empty($copia->prestado_a); ?>
             <article class="copy-card<?php echo $enPrestamo ? ' on-loan' : ''; ?>">
@@ -165,53 +200,58 @@ include '../../includes/header.php';
                     <?php if (!empty($copia->imagen_portada)): ?>
                         <img src="../../img/portadas/<?php echo htmlspecialchars($copia->imagen_portada); ?>" alt="">
                     <?php else: ?>
-                        🎮
+                        <span aria-hidden="true">🎮</span>
                     <?php endif; ?>
                 </div>
-                <div class="copy-head">
-                    <span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: #9ca3af;">
-                        <?php echo sprintf($lang['frontend_collection_copy_number'], $idx + 1); ?>
-                    </span>
-                    <h3 style="margin: 6px 0 0; font-size: 1rem; font-weight: 800;">
-                        <?php echo htmlspecialchars($copia->plataforma_nombre); ?>
-                    </h3>
-                    <p style="margin: 4px 0 0; font-size: 0.8rem; color: #888;">
-                        <?php echo htmlspecialchars($copia->edicion_nombre); ?>
-                        <?php if (!empty($copia->region)): ?>
-                            • <?php echo htmlspecialchars($copia->region); ?>
-                        <?php endif; ?>
-                    </p>
-                </div>
-
-                <?php if ($enPrestamo): ?>
-                    <div class="loan-banner">
-                        📤 <?php echo $lang['frontend_collection_on_loan']; ?>
-                        <strong><?php echo htmlspecialchars($copia->prestado_a); ?></strong>
-                        (<?php echo date('d/m/Y', strtotime($copia->fecha_prestamo_activo)); ?>)
+                <div class="copy-body">
+                    <div class="copy-head">
+                        <span style="font-size: 0.62rem; font-weight: 800; text-transform: uppercase; color: #9ca3af;">
+                            <?php echo sprintf($lang['frontend_collection_copy_number'], $idx + 1); ?>
+                        </span>
+                        <h3><?php echo htmlspecialchars($copia->plataforma_nombre); ?></h3>
+                        <p style="margin: 2px 0 0; font-size: 0.78rem; color: #888;">
+                            <?php echo htmlspecialchars($copia->edicion_nombre); ?>
+                            <?php if (!empty($copia->region)): ?>
+                                · <?php echo htmlspecialchars($copia->region); ?>
+                            <?php endif; ?>
+                        </p>
                     </div>
-                <?php endif; ?>
 
-                <dl class="copy-meta">
-                    <dt><?php echo $lang['frontend_edit_item_label_status']; ?></dt>
-                    <dd><?php echo htmlspecialchars($copia->estado); ?></dd>
-
-                    <?php if (!empty($copia->idioma_nombre)): ?>
-                    <dt><?php echo $lang['frontend_collection_language_label']; ?></dt>
-                    <dd><?php echo htmlspecialchars($copia->idioma_nombre); ?></dd>
+                    <?php if ($enPrestamo): ?>
+                        <div class="loan-banner">
+                            📤 <?php echo $lang['frontend_collection_on_loan']; ?>
+                            <strong><?php echo htmlspecialchars($copia->prestado_a); ?></strong>
+                            (<?php echo date('d/m/Y', strtotime($copia->fecha_prestamo_activo)); ?>)
+                        </div>
                     <?php endif; ?>
 
-                    <dt><?php echo $lang['frontend_collection_label_added']; ?></dt>
-                    <dd><?php echo date('d/m/Y', strtotime($copia->fecha_adicion)); ?></dd>
+                    <dl class="copy-meta">
+                        <div>
+                            <dt><?php echo $lang['frontend_edit_item_label_status']; ?></dt>
+                            <dd><?php echo htmlspecialchars($copia->estado); ?></dd>
+                        </div>
+                        <?php if (!empty($copia->idioma_nombre)): ?>
+                        <div>
+                            <dt><?php echo $lang['frontend_collection_language_label']; ?></dt>
+                            <dd><?php echo htmlspecialchars($copia->idioma_nombre); ?></dd>
+                        </div>
+                        <?php endif; ?>
+                        <div>
+                            <dt><?php echo $lang['frontend_collection_label_added']; ?></dt>
+                            <dd><?php echo date('d/m/Y', strtotime($copia->fecha_adicion)); ?></dd>
+                        </div>
+                        <?php if (!empty($copia->notas)): ?>
+                        <div class="meta-full">
+                            <dt><?php echo $lang['frontend_edit_item_label_notes']; ?></dt>
+                            <dd style="font-weight: 500; white-space: pre-wrap;"><?php echo htmlspecialchars($copia->notas); ?></dd>
+                        </div>
+                        <?php endif; ?>
+                    </dl>
 
-                    <?php if (!empty($copia->notas)): ?>
-                    <dt><?php echo $lang['frontend_edit_item_label_notes']; ?></dt>
-                    <dd style="font-weight: 500; white-space: pre-wrap;"><?php echo htmlspecialchars($copia->notas); ?></dd>
-                    <?php endif; ?>
-                </dl>
-
-                <a href="editar_item.php?id=<?php echo (int)$copia->id; ?>" class="btn-manage">
-                    <?php echo $lang['frontend_collection_manage_copy']; ?>
-                </a>
+                    <a href="editar_item.php?id=<?php echo (int)$copia->id; ?>" class="btn-manage">
+                        <?php echo $lang['frontend_collection_manage_copy']; ?>
+                    </a>
+                </div>
             </article>
         <?php endforeach; ?>
     </div>
