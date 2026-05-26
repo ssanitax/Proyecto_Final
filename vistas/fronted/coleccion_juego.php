@@ -49,6 +49,7 @@ include '../../includes/header.php';
         max-width: 760px;
     }
     .copy-card {
+        position: relative;
         background: white;
         border-radius: 14px;
         border: 1px solid #eee;
@@ -59,7 +60,27 @@ include '../../includes/header.php';
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
     .copy-card.on-loan {
-        border-left: 4px solid #f1c40f;
+        background: #fffbeb;
+        border-color: #fde68a;
+        box-shadow: 0 2px 10px rgba(251, 191, 36, 0.15);
+    }
+    .copy-card.on-loan .copy-body {
+        padding-right: 88px;
+    }
+    .loan-corner-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 2;
+        padding: 4px 10px;
+        border-radius: 6px;
+        background: #fbbf24;
+        color: #78350f;
+        font-size: 0.62rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
     }
     .copy-cover {
         width: 96px;
@@ -122,14 +143,6 @@ include '../../includes/header.php';
     .copy-meta .meta-full {
         grid-column: 1 / -1;
     }
-    .loan-banner {
-        margin: 0 0 10px;
-        padding: 8px 10px;
-        background: #fff8e1;
-        border-radius: 8px;
-        font-size: 0.75rem;
-        color: #92400e;
-    }
     .btn-manage {
         display: inline-block;
         align-self: flex-start;
@@ -191,7 +204,16 @@ include '../../includes/header.php';
     <div class="copies-list">
         <?php foreach ($copias as $idx => $copia): ?>
             <?php $enPrestamo = !empty($copia->prestado_a); ?>
+            <?php
+                $regionCopia = trim((string)($copia->region ?? ''));
+                if ($regionCopia === '' && !empty($copia->region_edicion)) {
+                    $regionCopia = trim((string)$copia->region_edicion);
+                }
+            ?>
             <article class="copy-card<?php echo $enPrestamo ? ' on-loan' : ''; ?>">
+                <?php if ($enPrestamo): ?>
+                    <span class="loan-corner-badge"><?php echo $lang['frontend_collection_loan_badge']; ?></span>
+                <?php endif; ?>
                 <div class="copy-cover">
                     <?php if (!empty($copia->imagen_portada)): ?>
                         <img src="../../img/portadas/<?php echo htmlspecialchars($copia->imagen_portada); ?>" alt="">
@@ -207,34 +229,38 @@ include '../../includes/header.php';
                         <h3><?php echo htmlspecialchars($copia->plataforma_nombre); ?></h3>
                         <p style="margin: 2px 0 0; font-size: 0.78rem; color: #888;">
                             <?php echo htmlspecialchars($copia->edicion_nombre); ?>
-                            <?php
-                                $regionCopia = !empty($copia->region) ? $copia->region : ($copia->region_edicion ?? '');
-                                if ($regionCopia !== ''):
-                            ?>
-                                · <?php echo htmlspecialchars($regionCopia); ?>
-                            <?php elseif (!empty($copia->bloqueo_regional)): ?>
-                                · <em><?php echo $lang['frontend_collection_region_pending']; ?></em>
-                            <?php endif; ?>
                         </p>
                     </div>
-
-                    <?php if ($enPrestamo): ?>
-                        <div class="loan-banner">
-                            📤 <?php echo $lang['frontend_collection_on_loan']; ?>
-                            <strong><?php echo htmlspecialchars($copia->prestado_a); ?></strong>
-                            (<?php echo date('d/m/Y', strtotime($copia->fecha_prestamo_activo)); ?>)
-                        </div>
-                    <?php endif; ?>
 
                     <dl class="copy-meta">
                         <div>
                             <dt><?php echo $lang['frontend_edit_item_label_status']; ?></dt>
                             <dd><?php echo htmlspecialchars($copia->estado); ?></dd>
                         </div>
+                        <?php if ($regionCopia !== ''): ?>
+                        <div>
+                            <dt><?php echo $lang['frontend_collection_region_label']; ?></dt>
+                            <dd><?php echo htmlspecialchars($regionCopia); ?></dd>
+                        </div>
+                        <?php elseif (!empty($copia->bloqueo_regional)): ?>
+                        <div>
+                            <dt><?php echo $lang['frontend_collection_region_label']; ?></dt>
+                            <dd style="color: #b45309;"><?php echo $lang['frontend_collection_region_pending']; ?></dd>
+                        </div>
+                        <?php endif; ?>
                         <?php if (!empty($copia->idioma_nombre)): ?>
                         <div>
                             <dt><?php echo $lang['frontend_collection_language_label']; ?></dt>
                             <dd><?php echo htmlspecialchars($copia->idioma_nombre); ?></dd>
+                        </div>
+                        <?php endif; ?>
+                        <?php if ($enPrestamo): ?>
+                        <div>
+                            <dt><?php echo $lang['frontend_collection_on_loan']; ?></dt>
+                            <dd>
+                                <?php echo htmlspecialchars($copia->prestado_a); ?>
+                                <span style="font-weight: 500; color: #888;">(<?php echo date('d/m/Y', strtotime($copia->fecha_prestamo_activo)); ?>)</span>
+                            </dd>
                         </div>
                         <?php endif; ?>
                         <div>

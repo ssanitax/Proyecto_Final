@@ -104,17 +104,18 @@ CREATE TABLE ediciones (
     plataforma_id INT NOT NULL,
 
     region VARCHAR(50),
+    bloqueo_regional TINYINT(1) NOT NULL DEFAULT 0,
     anio INT,
     edicion_nombre VARCHAR(255),
     codigo_barras VARCHAR(100),
     imagen_portada VARCHAR(255),
 
-    FOREIGN KEY (juego_id) 
-        REFERENCES juegos(id) 
+    FOREIGN KEY (juego_id)
+        REFERENCES juegos(id)
         ON DELETE CASCADE,
 
-    FOREIGN KEY (plataforma_id) 
-        REFERENCES plataformas(id) 
+    FOREIGN KEY (plataforma_id)
+        REFERENCES plataformas(id)
         ON DELETE CASCADE
 );
 
