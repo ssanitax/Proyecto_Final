@@ -204,12 +204,7 @@ include '../../includes/header.php';
     <div class="copies-list">
         <?php foreach ($copias as $idx => $copia): ?>
             <?php $enPrestamo = !empty($copia->prestado_a); ?>
-            <?php
-                $regionCopia = trim((string)($copia->region ?? ''));
-                if ($regionCopia === '' && !empty($copia->region_edicion)) {
-                    $regionCopia = trim((string)$copia->region_edicion);
-                }
-            ?>
+            <?php $regionCopia = trim((string)($copia->region ?? '')); ?>
             <article class="copy-card<?php echo $enPrestamo ? ' on-loan' : ''; ?>">
                 <?php if ($enPrestamo): ?>
                     <span class="loan-corner-badge"><?php echo $lang['frontend_collection_loan_badge']; ?></span>
@@ -241,11 +236,6 @@ include '../../includes/header.php';
                         <div>
                             <dt><?php echo $lang['frontend_collection_region_label']; ?></dt>
                             <dd><?php echo htmlspecialchars($regionCopia); ?></dd>
-                        </div>
-                        <?php elseif (!empty($copia->bloqueo_regional)): ?>
-                        <div>
-                            <dt><?php echo $lang['frontend_collection_region_label']; ?></dt>
-                            <dd style="color: #b45309;"><?php echo $lang['frontend_collection_region_pending']; ?></dd>
                         </div>
                         <?php endif; ?>
                         <?php if (!empty($copia->idioma_nombre)): ?>

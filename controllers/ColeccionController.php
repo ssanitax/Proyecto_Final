@@ -26,7 +26,7 @@ class ColeccionController {
                 exit();
             }
 
-            $stmtEd = $this->pdo->prepare("SELECT juego_id, bloqueo_regional FROM ediciones WHERE id = ?");
+            $stmtEd = $this->pdo->prepare("SELECT juego_id FROM ediciones WHERE id = ?");
             $stmtEd->execute([$edicion_id]);
             $edicion = $stmtEd->fetch();
             if (!$edicion) {
@@ -52,11 +52,7 @@ class ColeccionController {
             }
 
             $regionCopia = trim($_POST['region_copia'] ?? '');
-            if (!empty($edicion->bloqueo_regional)) {
-                if ($regionCopia === '') {
-                    header('Location: ../vistas/fronted/juego_detalle.php?id=' . $juego_id_redirect . '&error=no_region');
-                    exit();
-                }
+            if ($regionCopia !== '') {
                 asegurarRegionEnCatalogo($this->pdo, $regionCopia);
             } else {
                 $regionCopia = null;
@@ -107,7 +103,7 @@ class ColeccionController {
                 $this->pdo->beginTransaction();
 
                 // 1) Actualizamos estado y notas solo de la copia editada
-                $stmtCopia = $this->pdo->prepare("SELECT e.juego_id, e.bloqueo_regional FROM coleccion_usuario cu JOIN ediciones e ON e.id = cu.edicion_id WHERE cu.id = ? AND cu.usuario_id = ?");
+                $stmtCopia = $this->pdo->prepare("SELECT e.juego_id FROM coleccion_usuario cu JOIN ediciones e ON e.id = cu.edicion_id WHERE cu.id = ? AND cu.usuario_id = ?");
                 $stmtCopia->execute([$id, $_SESSION['usuario_id']]);
                 $copiaMeta = $stmtCopia->fetch();
 
@@ -125,14 +121,7 @@ class ColeccionController {
                 }
 
                 $region = trim($_POST['region_copia'] ?? '');
-                $stmtEd = $this->pdo->prepare("SELECT e.bloqueo_regional FROM coleccion_usuario cu JOIN ediciones e ON e.id = cu.edicion_id WHERE cu.id = ? AND cu.usuario_id = ?");
-                $stmtEd->execute([$id, $_SESSION['usuario_id']]);
-                $ed = $stmtEd->fetch();
-                if ($ed && !empty($ed->bloqueo_regional)) {
-                    if ($region === '') {
-                        header('Location: ../vistas/fronted/editar_item.php?id=' . (int)$id . '&error=no_region');
-                        exit();
-                    }
+                if ($region !== '') {
                     asegurarRegionEnCatalogo($this->pdo, $region);
                 } else {
                     $region = null;

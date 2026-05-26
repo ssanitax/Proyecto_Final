@@ -7,7 +7,7 @@ require_once '../../includes/catalogo.php';
 $id_coleccion = $_GET['id'] ?? null;
 
 $stmt = $pdo->prepare("
-    SELECT cu.*, j.titulo, e.juego_id, e.edicion_nombre, e.imagen_portada, e.bloqueo_regional, p.nombre as plataforma
+    SELECT cu.*, j.titulo, e.juego_id, e.edicion_nombre, e.imagen_portada, p.nombre as plataforma
     FROM coleccion_usuario cu
     JOIN ediciones e ON cu.edicion_id = e.id
     JOIN juegos j ON e.juego_id = j.id
@@ -128,23 +128,18 @@ include '../../includes/header.php';
             </div>
             <?php endif; ?>
 
-            <?php if (!empty($item->bloqueo_regional)): ?>
+            <?php if (!empty($regiones)): ?>
             <div class="form-group" style="text-align: left; margin-bottom: 20px;">
                 <label style="font-weight: 800; font-size: 0.75rem; color: var(--graphite); display: block; margin-bottom: 10px; text-transform: uppercase;"><?php echo $lang['frontend_game_detail_label_region_copy']; ?></label>
-                <p style="font-size: 0.8rem; color: #888; margin: 0 0 10px;"><?php echo $lang['frontend_game_detail_region_copy_help']; ?></p>
-                <?php if (!empty($regiones)): ?>
-                <select name="region_copia" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #eee; font-family: inherit;">
-                    <option value=""><?php echo $lang['frontend_game_detail_select_region']; ?></option>
+                <p style="font-size: 0.8rem; color: #888; margin: 0 0 10px;"><?php echo $lang['frontend_game_detail_region_help']; ?></p>
+                <select name="region_copia" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #eee; font-family: inherit;">
+                    <option value=""><?php echo $lang['frontend_game_detail_region_none']; ?></option>
                     <?php foreach ($regiones as $reg): ?>
-                        <option value="<?php echo htmlspecialchars($reg->nombre); ?>" <?php echo ($item->region === $reg->nombre) ? 'selected' : ''; ?>>
+                        <option value="<?php echo htmlspecialchars($reg->nombre); ?>" <?php echo (($item->region ?? '') === $reg->nombre) ? 'selected' : ''; ?>>
                             <?php echo htmlspecialchars($reg->nombre); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
-                <?php else: ?>
-                <input type="text" name="region_copia" value="<?php echo htmlspecialchars($item->region ?? ''); ?>" required
-                       style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #eee;">
-                <?php endif; ?>
             </div>
             <?php endif; ?>
 
