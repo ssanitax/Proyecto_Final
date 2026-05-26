@@ -34,12 +34,15 @@ $stmtPortada = $pdo->prepare("
 $stmtPortada->execute([$id_juego]);
 $portadaJuego = $stmtPortada->fetchColumn();
 
-// 2. Obtener las variantes físicas (Consola + Región)
+// 2. Variantes por consola: más reciente arriba (fecha de la plataforma)
+$ordenEdiciones = sqlOrdenPortadaReciente('e', 'p', 'j');
 $stmtEdic = $pdo->prepare("
-    SELECT e.*, p.nombre as plataforma_nombre 
-    FROM ediciones e 
-    JOIN plataformas p ON e.plataforma_id = p.id 
+    SELECT e.*, p.nombre AS plataforma_nombre
+    FROM ediciones e
+    JOIN plataformas p ON e.plataforma_id = p.id
+    JOIN juegos j ON j.id = e.juego_id
     WHERE e.juego_id = ?
+    ORDER BY {$ordenEdiciones}
 ");
 $stmtEdic->execute([$id_juego]);
 $ediciones = $stmtEdic->fetchAll();
