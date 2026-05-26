@@ -49,7 +49,7 @@ if (empty($ediciones)) {
     exit();
 }
 
-$idiomas = idiomasDisponiblesParaJuego($pdo, (int)$juego->id);
+$idiomas = todosLosIdiomas($pdo);
 $regiones = regionesParaSelector($pdo);
 
 $valoracionModel = new Valoracion($pdo);

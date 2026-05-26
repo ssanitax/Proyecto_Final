@@ -17,7 +17,7 @@ $stmt = $pdo->prepare("
 $stmt->execute([$id_coleccion, $_SESSION['usuario_id']]);
 $item = $stmt->fetch();
 
-$idiomas = $item ? idiomasDisponiblesParaJuego($pdo, (int)$item->juego_id) : [];
+$idiomas = todosLosIdiomas($pdo);
 $regiones = regionesParaSelector($pdo);
 
 if (!$item) {

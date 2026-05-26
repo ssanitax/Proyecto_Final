@@ -484,21 +484,6 @@ include '../../includes/admin_header.php';
                 </div>
                 <button type="button" class="btn-row-add" id="btn-add-edicion">+ <?php echo $lang['admin_direct_game_add_edition']; ?></button>
 
-                <?php if (!empty($idiomasCatalogo)): ?>
-                <h4 style="font-size: 0.85rem; font-weight: 800; margin: 16px 0 10px;"><?php echo $lang['admin_direct_game_languages_title']; ?></h4>
-                <p style="font-size: 0.8rem; color: #888; margin: 0 0 12px;"><?php echo $lang['admin_direct_game_languages_help']; ?></p>
-                <div class="idiomas-grid">
-                    <?php foreach ($idiomasCatalogo as $idioma): ?>
-                        <label class="idioma-chip">
-                            <input type="checkbox" name="idiomas[]" value="<?php echo (int)$idioma->id; ?>">
-                            <?php echo htmlspecialchars($idioma->nombre); ?>
-                        </label>
-                    <?php endforeach; ?>
-                </div>
-                <?php else: ?>
-                    <p style="font-size: 0.85rem; color: #999; font-style: italic; margin-bottom: 16px;"><?php echo $lang['admin_direct_game_no_languages_yet']; ?></p>
-                <?php endif; ?>
-
                 <button type="submit" class="btn-dash" style="max-width: 320px;"><?php echo $lang['admin_direct_save_game']; ?></button>
             </form>
         </div>

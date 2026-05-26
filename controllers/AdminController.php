@@ -155,14 +155,6 @@ class AdminController {
                     $this->pdo->prepare($sqlUp)->execute([$fechaLanzamiento, $juego_id_final]);
                 }
 
-                $idiomasAprobados = array_unique(array_filter(array_map('intval', (array)($_POST['corregir_idiomas'] ?? []))));
-                if (empty($idiomasAprobados)) {
-                    $idiomasAprobados = idiomasPropuestaPendiente($this->pdo, (int)$id_pendiente);
-                }
-                if ($juego_id_final) {
-                    sincronizarIdiomasJuego($this->pdo, $juego_id_final, $idiomasAprobados);
-                }
-
                 $bloqueoRegional = (int)($propuesta->bloqueo_regional ?? 0);
                 $edicionId = null;
                 if ($juego_id_final && $plataforma_id_final) {
@@ -269,8 +261,6 @@ class AdminController {
         $descripcion = trim($_POST['descripcion'] ?? '');
         $fecha = trim($_POST['fecha_lanzamiento'] ?? '');
         $ediciones = $_POST['ediciones'] ?? [];
-        $idiomasIds = $_POST['idiomas'] ?? [];
-
         if ($titulo === '') {
             header('Location: ../vistas/admin/registrar_directo.php?game_error=title');
             exit();
@@ -329,22 +319,6 @@ class AdminController {
                     $ed['region'] !== '' ? $ed['region'] : null,
                     $ed['edicion_nombre'],
                 ]);
-            }
-
-            $idiomasIds = array_unique(array_filter(array_map('intval', (array)$idiomasIds)));
-            if (!empty($idiomasIds)) {
-                try {
-                    $stmtJi = $this->pdo->prepare(
-                        "INSERT IGNORE INTO juego_idiomas (juego_id, idioma_id) VALUES (?, ?)"
-                    );
-                    foreach ($idiomasIds as $idiomaId) {
-                        if ($idiomaId > 0) {
-                            $stmtJi->execute([$juegoId, $idiomaId]);
-                        }
-                    }
-                } catch (PDOException $e) {
-                    // Tabla juego_idiomas aún no migrada: el juego y ediciones ya quedan guardados
-                }
             }
 
             $this->pdo->commit();

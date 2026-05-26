@@ -4,13 +4,6 @@ redirigirSiNoUsuario();
 require_once '../../config/config.php';
 
 $plataformas = $pdo->query("SELECT id, nombre FROM plataformas ORDER BY nombre ASC")->fetchAll();
-$idiomas = [];
-try {
-    $idiomas = $pdo->query("SELECT id, nombre FROM idiomas ORDER BY nombre ASC")->fetchAll();
-} catch (PDOException $e) {
-    $idiomas = [];
-}
-
 include '../../includes/header.php';
 ?>
 
@@ -65,24 +58,6 @@ include '../../includes/header.php';
                     <option value="<?php echo (int)$p->id; ?>"><?php echo htmlspecialchars($p->nombre); ?></option>
                 <?php endforeach; ?>
             </select>
-            <?php endif; ?>
-        </div>
-
-        <div class="form-group" style="margin-bottom:15px; text-align:left;">
-            <label style="font-weight:600; font-size:0.8rem;"><?php echo $lang['frontend_register_game_label_languages_available']; ?></label>
-            <p style="font-size:0.8rem;color:#777;margin:0 0 10px;"><?php echo $lang['frontend_register_game_languages_available_help']; ?></p>
-            <?php if (!empty($idiomas)): ?>
-            <div style="display:flex; flex-wrap:wrap; gap:10px;">
-                <?php foreach ($idiomas as $idioma): ?>
-                    <label style="display:flex; align-items:center; gap:6px; padding:8px 12px; background:#f4f5f7; border-radius:8px; font-size:0.85rem; cursor:pointer;">
-                        <input type="checkbox" name="idiomas_disponibles[]" value="<?php echo (int)$idioma->id; ?>" checked>
-                        <?php echo htmlspecialchars($idioma->nombre); ?>
-                    </label>
-                <?php endforeach; ?>
-            </div>
-            <p style="font-size:0.75rem;color:#999;margin:10px 0 0;"><?php echo $lang['frontend_register_game_languages_available_hint']; ?></p>
-            <?php else: ?>
-            <p style="color:#b45309;font-size:0.85rem;"><?php echo $lang['frontend_register_game_no_languages_catalog']; ?></p>
             <?php endif; ?>
         </div>
 

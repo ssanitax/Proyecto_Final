@@ -30,8 +30,6 @@ class JuegoController {
             $desarrollador = trim($_POST['desarrollador'] ?? '');
             $plataforma_id = (int)($_POST['plataforma_id'] ?? 0);
             $fecha = trim($_POST['fecha_lanzamiento'] ?? '');
-            $idiomasDisponibles = array_unique(array_filter(array_map('intval', (array)($_POST['idiomas_disponibles'] ?? []))));
-
             if ($titulo === '') {
                 $this->redirigirErrorPropuesta('../vistas/fronted/registrar_nuevo.php', 'missing_title');
             }
@@ -72,8 +70,6 @@ class JuegoController {
                     $portadaSugerida,
                     $bloqueoRegional
                 ]);
-
-                guardarIdiomasPropuestaPendiente($this->pdo, (int)$juego_pendiente_id, $idiomasDisponibles);
 
                 $this->pdo->commit();
                 header('Location: ../vistas/fronted/mis_propuestas.php?status=enviado');

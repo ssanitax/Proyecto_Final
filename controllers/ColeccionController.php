@@ -36,16 +36,17 @@ class ColeccionController {
             $juego_id_redirect = (int)$edicion->juego_id;
 
             $idioma_id = !empty($_POST['idioma_id']) ? (int)$_POST['idioma_id'] : null;
-            $idiomasJuego = idiomasDisponiblesParaJuego($this->pdo, $juego_id_redirect);
+            $hayIdiomas = !empty(todosLosIdiomas($this->pdo));
 
-            if (!empty($idiomasJuego) && !$idioma_id) {
+            if ($hayIdiomas && !$idioma_id) {
                 header('Location: ../vistas/fronted/juego_detalle.php?id=' . $juego_id_redirect . '&error=no_language');
                 exit();
             }
 
             if ($idioma_id) {
-                $permitidos = array_map(fn($i) => (int)$i->id, $idiomasJuego);
-                if (!in_array($idioma_id, $permitidos, true)) {
+                $stmtVal = $this->pdo->prepare('SELECT id FROM idiomas WHERE id = ?');
+                $stmtVal->execute([$idioma_id]);
+                if (!$stmtVal->fetch()) {
                     $idioma_id = null;
                 }
             }
@@ -111,14 +112,14 @@ class ColeccionController {
                 $copiaMeta = $stmtCopia->fetch();
 
                 $idioma_id = !empty($_POST['idioma_id']) ? (int)$_POST['idioma_id'] : null;
-                $idiomasJuego = $copiaMeta ? idiomasDisponiblesParaJuego($this->pdo, (int)$copiaMeta->juego_id) : [];
-                if (!empty($idiomasJuego) && !$idioma_id) {
+                if (!empty(todosLosIdiomas($this->pdo)) && !$idioma_id) {
                     header('Location: ../vistas/fronted/editar_item.php?id=' . (int)$id . '&error=no_language');
                     exit();
                 }
-                if ($idioma_id && !empty($idiomasJuego)) {
-                    $permitidos = array_map(fn($i) => (int)$i->id, $idiomasJuego);
-                    if (!in_array($idioma_id, $permitidos, true)) {
+                if ($idioma_id) {
+                    $stmtVal = $this->pdo->prepare('SELECT id FROM idiomas WHERE id = ?');
+                    $stmtVal->execute([$idioma_id]);
+                    if (!$stmtVal->fetch()) {
                         $idioma_id = null;
                     }
                 }
