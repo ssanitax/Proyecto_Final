@@ -109,7 +109,7 @@ include '../../includes/admin_header.php';
     <?php endif; ?>
 
     <!-- SECCIÓN 1: PLATAFORMAS -->
-    <div class="admin-section">
+    <div class="admin-section" id="seccion-plataformas">
         <div class="section-header">
             <h3><?php echo $lang['admin_section_platforms']; ?> <span class="badge-count"><?php echo count($plataformas); ?></span></h3>
         </div>
@@ -126,8 +126,11 @@ include '../../includes/admin_header.php';
                     <tr>
                         <td><strong><?php echo htmlspecialchars($plat->nombre); ?></strong></td>
                         <td>
-                            <form action="../../controllers/AdminController.php?action=actualizar_fecha_plataforma" method="POST" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                            <form action="../../controllers/AdminController.php?action=actualizar_fecha_plataforma" method="POST"
+                                  data-scroll-return="inventario_maestro.php"
+                                  style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                                 <input type="hidden" name="plataforma_id" value="<?php echo (int)$plat->id; ?>">
+                                <input type="hidden" name="return_to" value="inventario_maestro.php">
                                 <input type="date" name="fecha_lanzamiento" value="<?php echo htmlspecialchars($plat->fecha_lanzamiento ?? ''); ?>"
                                        style="padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px;">
                                 <button type="submit" style="padding: 6px 12px; border-radius: 6px; border: none; background: var(--graphite, #1c1f26); color: white; font-size: 0.75rem; font-weight: 700; cursor: pointer;">

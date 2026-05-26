@@ -242,13 +242,11 @@ class AdminController {
         $id = (int)($_POST['plataforma_id'] ?? 0);
         $fecha = trim($_POST['fecha_lanzamiento'] ?? '');
         if ($id <= 0) {
-            header('Location: ../vistas/admin/inventario_maestro.php');
-            exit();
+            redirigirAdmin('inventario_maestro.php');
         }
         $stmt = $this->pdo->prepare("UPDATE plataformas SET fecha_lanzamiento = ? WHERE id = ?");
         $stmt->execute([$fecha !== '' ? $fecha : null, $id]);
-        header('Location: ../vistas/admin/inventario_maestro.php?status=platform_date_saved');
-        exit();
+        redirigirAdmin('inventario_maestro.php', 'status=platform_date_saved');
     }
 
     public function registrarJuegoDirecto() {

@@ -121,6 +121,76 @@ function asegurarRegionEnCatalogo($pdo, $nombre) {
     }
 }
 
+/**
+ * Ruta relativa segura dentro de vistas/fronted (para volver tras un POST).
+ */
+function urlRetornoFrontendSegura(?string $url): ?string {
+    $url = trim((string)$url);
+    if ($url === '' || preg_match('#^https?://#i', $url)) {
+        return null;
+    }
+    if (strpos($url, '..') !== false || strpos($url, '//') === 0) {
+        return null;
+    }
+    $url = ltrim($url, '/');
+    if (!preg_match('#^[a-zA-Z0-9_./?=&%-]+$#', $url)) {
+        return null;
+    }
+    return $url;
+}
+
+/**
+ * Ruta relativa segura dentro de vistas/admin.
+ */
+function urlRetornoAdminSegura(?string $url): ?string {
+    $url = trim((string)$url);
+    if ($url === '' || preg_match('#^https?://#i', $url)) {
+        return null;
+    }
+    if (strpos($url, '..') !== false || strpos($url, '//') === 0) {
+        return null;
+    }
+    $url = ltrim($url, '/');
+    if (!preg_match('#^[a-zA-Z0-9_./?=&%-]+$#', $url)) {
+        return null;
+    }
+    return $url;
+}
+
+/** Redirige a return_to (POST/GET) si es válido, si no a la ruta por defecto bajo admin. */
+function redirigirAdmin(string $rutaPorDefecto, string $query = ''): void {
+    $destino = urlRetornoAdminSegura($_POST['return_to'] ?? $_GET['return_to'] ?? '');
+    $base = '../vistas/admin/';
+    if ($destino !== null) {
+        $sep = strpos($destino, '?') !== false ? '&' : '?';
+        $loc = $base . $destino . ($query !== '' ? $sep . ltrim($query, '?&') : '');
+    } else {
+        $loc = $base . ltrim($rutaPorDefecto, '/');
+        if ($query !== '') {
+            $loc .= (strpos($loc, '?') !== false ? '&' : '?') . ltrim($query, '?&');
+        }
+    }
+    header('Location: ' . $loc);
+    exit();
+}
+
+/** Redirige a return_to (POST/GET) si es válido, si no a la ruta por defecto bajo fronted. */
+function redirigirFrontend(string $rutaPorDefecto, string $query = ''): void {
+    $destino = urlRetornoFrontendSegura($_POST['return_to'] ?? $_GET['return_to'] ?? '');
+    $base = '../vistas/fronted/';
+    if ($destino !== null) {
+        $sep = strpos($destino, '?') !== false ? '&' : '?';
+        $loc = $base . $destino . ($query !== '' ? $sep . ltrim($query, '?&') : '');
+    } else {
+        $loc = $base . ltrim($rutaPorDefecto, '/');
+        if ($query !== '') {
+            $loc .= (strpos($loc, '?') !== false ? '&' : '?') . ltrim($query, '?&');
+        }
+    }
+    header('Location: ' . $loc);
+    exit();
+}
+
 // Proteger vistas de usuario (Mi Biblioteca, Buscar, etc.)
 function redirigirSiNoUsuario() {
     if (!estaLogueado()) {

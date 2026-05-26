@@ -24,6 +24,9 @@ if (!$item) {
     die($lang['frontend_edit_item_not_found']);
 }
 
+$returnTo = urlRetornoFrontendSegura($_GET['return_to'] ?? '')
+    ?? ('coleccion_juego.php?juego_id=' . (int)$item->juego_id);
+
 include '../../includes/header.php';
 ?>
 
@@ -110,8 +113,10 @@ include '../../includes/header.php';
     </div>
 
     <div class="about-box" style="padding: 40px; background: white; border-radius: 20px; border: 1px solid #eee; box-shadow: 0 4px 15px rgba(0,0,0,0.02); margin-bottom: 30px;">
-        <form action="../../controllers/ColeccionController.php?action=actualizar" method="POST">
+        <form action="../../controllers/ColeccionController.php?action=actualizar" method="POST"
+              data-scroll-return="<?php echo htmlspecialchars($returnTo, ENT_QUOTES); ?>">
             <input type="hidden" name="id" value="<?php echo $item->id; ?>">
+            <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($returnTo, ENT_QUOTES); ?>">
 
             <?php if (!empty($idiomas)): ?>
             <div class="form-group" style="text-align: left; margin-bottom: 20px;">
@@ -180,7 +185,7 @@ include '../../includes/header.php';
                 >
                     <?php echo $lang['frontend_edit_item_save']; ?>
                 </button>
-                <a href="../../controllers/ColeccionController.php?action=eliminar&id=<?php echo $item->id; ?>" 
+                <a href="../../controllers/ColeccionController.php?action=eliminar&id=<?php echo (int)$item->id; ?>&return_to=<?php echo urlencode($returnTo); ?>" 
                    style="flex: 1; text-align: center; color: #e74c3c; font-weight: 700; text-decoration: none; font-size: 0.85rem;"
                    onclick="return confirm('<?php echo $lang['frontend_edit_item_confirm_delete']; ?>')">
                     <?php echo $lang['frontend_edit_item_delete']; ?>
@@ -193,8 +198,10 @@ include '../../includes/header.php';
         <h3 style="font-size: 1.2rem; margin-bottom: 20px; text-align: left; color: var(--graphite);"><?php echo $lang['frontend_edit_loan_title']; ?></h3>
         <p style="color: #777; font-size: 0.9rem; margin-bottom: 25px; text-align: left;"><?php echo $lang['frontend_edit_loan_desc']; ?></p>
         
-        <form action="../../controllers/PrestamoController.php?action=registrar" method="POST">
+        <form action="../../controllers/PrestamoController.php?action=registrar" method="POST"
+              data-scroll-return="<?php echo htmlspecialchars($returnTo, ENT_QUOTES); ?>">
             <input type="hidden" name="coleccion_id" value="<?php echo $item->id; ?>">
+            <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($returnTo, ENT_QUOTES); ?>">
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
                 <div class="form-group" style="text-align: left;">

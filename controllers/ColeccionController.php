@@ -83,8 +83,7 @@ class ColeccionController {
                     $idioma_id,
                     $regionCopia
                 );
-                header("Location: ../vistas/fronted/mi_coleccion.php?status=success");
-                exit();
+                redirigirFrontend('mi_coleccion.php', 'status=success');
             } catch (PDOException $e) {
                 die(__('error_database') . $e->getMessage());
             }
@@ -160,8 +159,7 @@ class ColeccionController {
                 $exito = false;
             }
 
-            header('Location: ../vistas/fronted/mi_coleccion.php?updated=' . ($exito ? '1' : '0'));
-            exit();
+            redirigirFrontend('mi_coleccion.php', 'updated=' . ($exito ? '1' : '0'));
         }
     }
 
@@ -173,8 +171,7 @@ class ColeccionController {
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([$id, $_SESSION['usuario_id']]);
         }
-        header('Location: ../vistas/fronted/mi_coleccion.php?deleted=1');
-        exit();
+        redirigirFrontend('mi_coleccion.php', 'deleted=1');
     }
 }
 

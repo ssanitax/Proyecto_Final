@@ -265,7 +265,7 @@ include '../../includes/header.php';
                         <?php endif; ?>
                     </dl>
 
-                    <a href="editar_item.php?id=<?php echo (int)$copia->id; ?>" class="btn-manage">
+                    <a href="editar_item.php?id=<?php echo (int)$copia->id; ?>&return_to=<?php echo urlencode('coleccion_juego.php?juego_id=' . $juego_id); ?>" class="btn-manage">
                         <?php echo $lang['frontend_collection_manage_copy']; ?>
                     </a>
                 </div>

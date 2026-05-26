@@ -115,8 +115,10 @@ include '../../includes/header.php';
                     </div>
                 <?php endif; ?>
                 
-                <form action="../../controllers/ColeccionController.php?action=agregar" method="POST">
+                <form action="../../controllers/ColeccionController.php?action=agregar" method="POST"
+                      data-scroll-return="coleccion_juego.php?juego_id=<?php echo (int)$juego->id; ?>">
                     <input type="hidden" name="juego_id" value="<?php echo (int)$juego->id; ?>">
+                    <input type="hidden" name="return_to" value="coleccion_juego.php?juego_id=<?php echo (int)$juego->id; ?>">
                     <div style="display: grid; gap: 12px;">
                         <?php if (empty($ediciones)): ?>
                             <p style="color: #999; font-style: italic; padding: 20px; background: #f9f9f9; border-radius: 10px;"><?php echo $lang['frontend_game_detail_no_consoles']; ?></p>

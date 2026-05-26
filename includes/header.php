@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/portada-display.php';
+require_once __DIR__ . '/scroll-restore.php';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -120,6 +121,7 @@ require_once __DIR__ . '/portada-display.php';
     </style>
 </head>
 <body>
+<?php bengalaScrollRestoreHead(); ?>
 <nav>
     <a href="dashboard.php" class="logo">BENGALA</a>
     <div>

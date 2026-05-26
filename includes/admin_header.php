@@ -1,4 +1,7 @@
-<?php require_once __DIR__ . '/auth.php'; ?>
+<?php
+require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/scroll-restore.php';
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -104,6 +107,7 @@
     </style>
 </head>
 <body>
+<?php bengalaScrollRestoreHead(); ?>
 <nav>
     <a href="dashboard.php" class="logo-admin"><?php echo $lang['logo_admin']; ?></a>
     

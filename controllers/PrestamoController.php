@@ -36,8 +36,7 @@ class PrestamoController {
         $fecha_prestamo = $_POST['fecha_prestamo'] ?? date('Y-m-d');
 
         if ($nombre_persona === '') {
-            header('Location: ../vistas/fronted/editar_item.php?id=' . $coleccion_id . '&error=prestamo');
-            exit();
+            redirigirFrontend('editar_item.php', 'id=' . $coleccion_id . '&error=prestamo');
         }
 
         $sql = "INSERT INTO prestamos (coleccion_id, nombre_persona, fecha_prestamo) VALUES (?, ?, ?)";
@@ -45,11 +44,10 @@ class PrestamoController {
         $exito = $stmt->execute([$coleccion_id, $nombre_persona, $fecha_prestamo]);
 
         if ($exito) {
-            header('Location: ../vistas/fronted/mis_prestamos.php?status=prestado');
+            redirigirFrontend('mis_prestamos.php', 'status=prestado');
         } else {
-            header('Location: ../vistas/fronted/mi_coleccion.php?error=prestamo');
+            redirigirFrontend('mi_coleccion.php', 'error=prestamo');
         }
-        exit();
     }
 
     public function devolver() {

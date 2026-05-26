@@ -135,7 +135,16 @@ include '../../includes/header.php';
     </header>
 
     <section style="background: white; padding: 25px; border-radius: 20px; margin-bottom: 40px; border: 1px solid #eee; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
-        <form method="GET" action="" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+        <?php
+            $scrollReturnMiColeccion = 'mi_coleccion.php';
+            $qs = $_GET;
+            unset($qs['status'], $qs['updated'], $qs['deleted']);
+            if (!empty($qs)) {
+                $scrollReturnMiColeccion .= '?' . http_build_query($qs);
+            }
+        ?>
+        <form method="GET" action="" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;"
+              data-scroll-return="<?php echo htmlspecialchars($scrollReturnMiColeccion, ENT_QUOTES); ?>">
             <div style="flex: 1; min-width: 250px;">
                 <input type="text" name="search" placeholder="<?php echo $lang['frontend_collection_search_placeholder']; ?>" 
                        value="<?php echo htmlspecialchars($busqueda); ?>"
