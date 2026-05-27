@@ -44,7 +44,7 @@ class AuthController {
                 $_SESSION['usuario_rol'] = 'usuario';
 
                 // Redirigimos directamente al dashboard de usuario 
-                header('Location: ' . bengalaUrlConTab('dashboard.php'));
+                header('Location: dashboard.php');
                 exit();
             } else {
                 $error = __('email_already_registered');
@@ -70,9 +70,9 @@ class AuthController {
                 }
 
                 if (rolTieneAccesoAdmin($_SESSION['usuario_rol'])) {
-                    header('Location: ' . bengalaUrlConTab('../admin/dashboard.php'));
+                    header('Location: ../admin/dashboard.php');
                 } else {
-                    header('Location: ' . bengalaUrlConTab('dashboard.php'));
+                    header('Location: dashboard.php');
                 }
                 exit();
             } else {
@@ -86,7 +86,7 @@ class AuthController {
     public function logout() {
         if (!isset($_SESSION)) { session_start(); }
         session_destroy();
-        header('Location: ' . bengalaUrlConTab('login.php'));
+        header('Location: login.php');
         exit();
     }
 }

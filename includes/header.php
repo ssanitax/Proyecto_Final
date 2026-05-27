@@ -122,20 +122,19 @@ require_once __DIR__ . '/scroll-restore.php';
 </head>
 <body>
 <?php bengalaScrollRestoreHead(); ?>
-<?php bengalaRenderTabScript(); ?>
 <nav>
-    <a href="<?php echo htmlspecialchars(bengalaUrlConTab('dashboard.php'), ENT_QUOTES); ?>" class="logo">BENGALA</a>
+    <a href="dashboard.php" class="logo">BENGALA</a>
     <div>
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('mi_coleccion.php'), ENT_QUOTES); ?>"><?php echo __('biblioteca'); ?></a>
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('buscar.php'), ENT_QUOTES); ?>"><?php echo __('buscar'); ?></a>
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('mis_prestamos.php'), ENT_QUOTES); ?>"><?php echo __('prestamos'); ?></a>
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('mis_propuestas.php'), ENT_QUOTES); ?>"><?php echo __('propuestas'); ?></a>
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('perfil.php'), ENT_QUOTES); ?>"><?php echo __('perfil'); ?></a>
+        <a href="mi_coleccion.php"><?php echo __('biblioteca'); ?></a>
+        <a href="buscar.php"><?php echo __('buscar'); ?></a>
+        <a href="mis_prestamos.php"><?php echo __('prestamos'); ?></a>
+        <a href="mis_propuestas.php"><?php echo __('propuestas'); ?></a>
+        <a href="perfil.php"><?php echo __('perfil'); ?></a>
         
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('?lang=es'), ENT_QUOTES); ?>" class="lang-btn <?php echo ($idiomaActual == 'es') ? 'active' : ''; ?>">ES</a>
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('?lang=en'), ENT_QUOTES); ?>" class="lang-btn <?php echo ($idiomaActual == 'en') ? 'active' : ''; ?>">EN</a>
+        <a href="?lang=es" class="lang-btn <?php echo ($idiomaActual == 'es') ? 'active' : ''; ?>">ES</a>
+        <a href="?lang=en" class="lang-btn <?php echo ($idiomaActual == 'en') ? 'active' : ''; ?>">EN</a>
         
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('logout.php'), ENT_QUOTES); ?>" style="color: #991b1b;"><?php echo __('salir'); ?></a>
+        <a href="logout.php" style="color: #991b1b;"><?php echo __('salir'); ?></a>
     </div>
 </nav>
 <div class="container">

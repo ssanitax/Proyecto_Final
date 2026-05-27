@@ -21,7 +21,7 @@ include '../../includes/header.php';
     </header>
 
     <div class="dashboard-grid">
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('mi_coleccion.php'), ENT_QUOTES); ?>" class="dash-card">
+        <a href="mi_coleccion.php" class="dash-card">
             <div class="dash-icon">📚</div>
             <div class="dash-content">
                 <h3><?php echo $lang['frontend_dashboard_library']; ?></h3>
@@ -30,7 +30,7 @@ include '../../includes/header.php';
             </div>
         </a>
 
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('buscar.php'), ENT_QUOTES); ?>" class="dash-card card-highlight">
+        <a href="buscar.php" class="dash-card card-highlight">
             <div class="dash-icon">🔍</div>
             <div class="dash-content">
                 <h3><?php echo $lang['frontend_dashboard_add']; ?></h3>
@@ -39,7 +39,7 @@ include '../../includes/header.php';
             </div>
         </a>
 
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('mis_prestamos.php'), ENT_QUOTES); ?>" class="dash-card">
+        <a href="mis_prestamos.php" class="dash-card">
             <div class="dash-icon">🤝</div>
             <div class="dash-content">
                 <h3><?php echo $lang['frontend_dashboard_loans']; ?></h3>
@@ -48,7 +48,7 @@ include '../../includes/header.php';
             </div>
         </a>
 
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('mis_propuestas.php'), ENT_QUOTES); ?>" class="dash-card">
+        <a href="mis_propuestas.php" class="dash-card">
             <div class="dash-icon">📩</div>
             <div class="dash-content">
                 <h3><?php echo $lang['frontend_dashboard_proposals']; ?></h3>

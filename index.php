@@ -5,9 +5,9 @@ require_once 'config/config.php';
 // 1. Si el usuario ya entró antes, lo mandamos directo a su estantería [cite: 6-8]
 if (estaLogueado()) {
     if (esAdmin()) {
-        header('Location: ' . bengalaUrlConTab('vistas/admin/dashboard.php'));
+        header('Location: vistas/admin/dashboard.php');
     } else {
-        header('Location: ' . bengalaUrlConTab('vistas/fronted/mi_coleccion.php'));
+        header('Location: vistas/fronted/mi_coleccion.php');
     }
     exit();
 }
@@ -163,8 +163,8 @@ try {
         <p><?php echo $lang['homepage_description']; ?></p>
         
         <div class="cta-group">
-            <a href="<?php echo htmlspecialchars(bengalaUrlConTab('vistas/fronted/registro.php'), ENT_QUOTES); ?>" class="btn btn-dark"><?php echo $lang['homepage_btn_start']; ?></a>
-            <a href="<?php echo htmlspecialchars(bengalaUrlConTab('vistas/fronted/login.php'), ENT_QUOTES); ?>" class="btn btn-outline"><?php echo $lang['homepage_btn_login']; ?></a>
+            <a href="vistas/fronted/registro.php" class="btn btn-dark"><?php echo $lang['homepage_btn_start']; ?></a>
+            <a href="vistas/fronted/login.php" class="btn btn-outline"><?php echo $lang['homepage_btn_login']; ?></a>
         </div>
     </section>
 

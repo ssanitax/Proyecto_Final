@@ -108,19 +108,18 @@ require_once __DIR__ . '/scroll-restore.php';
 </head>
 <body>
 <?php bengalaScrollRestoreHead(); ?>
-<?php bengalaRenderTabScript(); ?>
 <nav>
-    <a href="<?php echo htmlspecialchars(bengalaUrlConTab('dashboard.php'), ENT_QUOTES); ?>" class="logo-admin"><?php echo $lang['logo_admin']; ?></a>
+    <a href="dashboard.php" class="logo-admin"><?php echo $lang['logo_admin']; ?></a>
     
     <div class="nav-links">
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('dashboard.php'), ENT_QUOTES); ?>"><?php echo $lang['nav_inicio']; ?></a>
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('validar_juegos.php'), ENT_QUOTES); ?>"><?php echo $lang['nav_validaciones']; ?></a>
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('registrar_directo.php'), ENT_QUOTES); ?>"><?php echo $lang['nav_alta_contenido']; ?></a>
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('gestionar_usuarios.php'), ENT_QUOTES); ?>"><?php echo $lang['nav_usuarios']; ?></a>
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('inventario_maestro.php'), ENT_QUOTES); ?>"><?php echo $lang['nav_inventario']; ?></a>
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('?lang=es'), ENT_QUOTES); ?>" class="lang-btn <?php echo ($idiomaActual == 'es') ? 'active' : ''; ?>">ES</a>
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('?lang=en'), ENT_QUOTES); ?>" class="lang-btn <?php echo ($idiomaActual == 'en') ? 'active' : ''; ?>">EN</a>
-        <a href="<?php echo htmlspecialchars(bengalaUrlConTab('../fronted/logout.php'), ENT_QUOTES); ?>" class="btn-logout"><?php echo $lang['nav_cerrar_sesion']; ?></a>
+        <a href="dashboard.php"><?php echo $lang['nav_inicio']; ?></a>
+        <a href="validar_juegos.php"><?php echo $lang['nav_validaciones']; ?></a>
+        <a href="registrar_directo.php"><?php echo $lang['nav_alta_contenido']; ?></a>
+        <a href="gestionar_usuarios.php"><?php echo $lang['nav_usuarios']; ?></a>
+        <a href="inventario_maestro.php"><?php echo $lang['nav_inventario']; ?></a>
+        <a href="?lang=es" class="lang-btn <?php echo ($idiomaActual == 'es') ? 'active' : ''; ?>">ES</a>
+        <a href="?lang=en" class="lang-btn <?php echo ($idiomaActual == 'en') ? 'active' : ''; ?>">EN</a>
+        <a href="../fronted/logout.php" class="btn-logout"><?php echo $lang['nav_cerrar_sesion']; ?></a>
     </div>
 </nav>
 <div class="container">
