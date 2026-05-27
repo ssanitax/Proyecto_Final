@@ -138,6 +138,9 @@ include '../../includes/header.php';
                                         <div class="plat-name"><?php echo htmlspecialchars($edic->plataforma_nombre); ?></div>
                                         <div class="edic-info">
                                             <?php echo htmlspecialchars($edic->edicion_nombre); ?>
+                                            <?php if (!empty($edic->bloqueo_regional)): ?>
+                                            <span class="region-pill region-pill--lock"><?php echo $lang['frontend_game_detail_regional_lock_badge']; ?></span>
+                                            <?php endif; ?>
                                             <?php if (!empty($edic->anio)): ?>
                                             <span class="region-pill"><?php echo (int)$edic->anio; ?></span>
                                             <?php endif; ?>
