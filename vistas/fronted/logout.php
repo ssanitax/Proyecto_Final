@@ -15,6 +15,7 @@ if (ini_get("session.use_cookies")) {
 
 // Finalmente, destruimos la sesión
 session_destroy();
+session_write_close();
 
 // Redirigimos al index conservando el identificador de pestaña
 header('Location: ' . bengalaUrlConTab('../../index.php'));
