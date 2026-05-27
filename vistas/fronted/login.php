@@ -1,4 +1,27 @@
 <?php
+if (!isset($_GET['tab']) && !isset($_POST['tab'])) {
+    ?>
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><script>
+(function () {
+    try {
+        var tab = sessionStorage.getItem('bengala_tab');
+        if (!tab || !/^[a-zA-Z0-9_-]{3,64}$/.test(tab)) {
+            tab = 'tab_' + Math.random().toString(36).slice(2, 12);
+            sessionStorage.setItem('bengala_tab', tab);
+        }
+        var u = new URL(location.href);
+        u.searchParams.set('tab', tab);
+        location.replace(u.pathname + u.search + u.hash);
+    } catch (e) {
+        location.replace(location.pathname + '?tab=default');
+    }
+})();
+</script></head><body></body></html>
+<?php
+    exit();
+}
+
 require_once '../../includes/auth.php';
 require_once '../../config/config.php'; // Define la variable $pdo
 require_once '../../controllers/AuthController.php';

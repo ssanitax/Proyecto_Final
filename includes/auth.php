@@ -16,9 +16,6 @@ function bengalaResolverTabId(): string {
     if ($tab === '') {
         $tab = bengalaSanitizarTabId($_POST['tab'] ?? '');
     }
-    if ($tab === '') {
-        $tab = bengalaSanitizarTabId($_COOKIE['bengala_tab'] ?? '');
-    }
     return $tab !== '' ? $tab : 'default';
 }
 
@@ -27,15 +24,6 @@ $sessionSuffix = strtoupper(substr(sha1($GLOBALS['bengala_tab_id']), 0, 16));
 session_name('BENGALA_' . $sessionSuffix);
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
-}
-if (!headers_sent()) {
-    setcookie('bengala_tab', $GLOBALS['bengala_tab_id'], [
-        'expires' => time() + (60 * 60 * 24 * 30),
-        'path' => '/',
-        'secure' => false,
-        'httponly' => false,
-        'samesite' => 'Lax',
-    ]);
 }
 
 // --- LÓGICA DE IDIOMA ---
