@@ -166,6 +166,7 @@ $auth->registrar();
     </style>
 </head>
 <body>
+<?php bengalaRenderTabScript(); ?>
 
 <div class="register-card">
     <div class="lang-selector">

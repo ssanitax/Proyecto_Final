@@ -6,9 +6,9 @@ require_once '../../controllers/AuthController.php';
 // 1. Redirección si el usuario ya tiene una sesión activa
 if (estaLogueado()) {
     if (esAdmin()) {
-        header('Location: ../admin/dashboard.php');
+        header('Location: ' . bengalaUrlConTab('../admin/dashboard.php'));
     } else {
-        header('Location: dashboard.php');
+        header('Location: ' . bengalaUrlConTab('dashboard.php'));
     }
     exit();
 }
@@ -166,6 +166,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </style>
 </head>
 <body>
+<?php bengalaRenderTabScript(); ?>
 
 <div class="login-box">
     <div class="lang-selector">
@@ -187,6 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <?php endif; ?>
 
     <form method="POST" action="">
+        <input type="hidden" name="tab" value="<?php echo htmlspecialchars(bengalaTabActual(), ENT_QUOTES); ?>">
         <input type="email" name="email" placeholder="<?php echo $lang['frontend_login_email_placeholder']; ?>" required>
         <input type="password" name="password" placeholder="<?php echo $lang['frontend_login_password_placeholder']; ?>" required>
         <button type="submit" class="btn-login"><?php echo $lang['frontend_login_button']; ?></button>

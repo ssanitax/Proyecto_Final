@@ -1,6 +1,5 @@
 <?php
-// Iniciamos la sesión para poder identificarla y destruirla
-session_start();
+require_once '../../includes/auth.php';
 
 // Limpiamos todas las variables de sesión
 $_SESSION = array();
@@ -17,7 +16,7 @@ if (ini_get("session.use_cookies")) {
 // Finalmente, destruimos la sesión
 session_destroy();
 
-// Redirigimos al login o a la página de inicio
-header("Location: ../../index.php");
+// Redirigimos al login conservando el identificador de pestaña
+header('Location: ' . bengalaUrlConTab('login.php'));
 exit();
 ?>

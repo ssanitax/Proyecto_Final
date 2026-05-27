@@ -1,6 +1,41 @@
 <?php
+
+function bengalaSanitizarTabId(?string $tab): string {
+    $tab = trim((string)$tab);
+    if ($tab === '' || strlen($tab) > 64) {
+        return '';
+    }
+    if (!preg_match('/^[a-zA-Z0-9_-]+$/', $tab)) {
+        return '';
+    }
+    return $tab;
+}
+
+function bengalaResolverTabId(): string {
+    $tab = bengalaSanitizarTabId($_GET['tab'] ?? '');
+    if ($tab === '') {
+        $tab = bengalaSanitizarTabId($_POST['tab'] ?? '');
+    }
+    if ($tab === '') {
+        $tab = bengalaSanitizarTabId($_COOKIE['bengala_tab'] ?? '');
+    }
+    return $tab !== '' ? $tab : 'default';
+}
+
+$GLOBALS['bengala_tab_id'] = bengalaResolverTabId();
+$sessionSuffix = strtoupper(substr(sha1($GLOBALS['bengala_tab_id']), 0, 16));
+session_name('BENGALA_' . $sessionSuffix);
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
+}
+if (!headers_sent()) {
+    setcookie('bengala_tab', $GLOBALS['bengala_tab_id'], [
+        'expires' => time() + (60 * 60 * 24 * 30),
+        'path' => '/',
+        'secure' => false,
+        'httponly' => false,
+        'samesite' => 'Lax',
+    ]);
 }
 
 // --- LÓGICA DE IDIOMA ---
@@ -33,6 +68,93 @@ if (file_exists($path_to_lang)) {
 function __($clave) {
     global $lang;
     return $lang[$clave] ?? $clave;
+}
+
+function bengalaTabActual(): string {
+    return $GLOBALS['bengala_tab_id'] ?? 'default';
+}
+
+function bengalaUrlConTab(string $url): string {
+    $tab = bengalaTabActual();
+    if ($tab === '' || strpos($url, 'tab=') !== false || strpos($url, 'javascript:') === 0) {
+        return $url;
+    }
+    $sep = strpos($url, '?') !== false ? '&' : '?';
+    return $url . $sep . 'tab=' . urlencode($tab);
+}
+
+function bengalaRenderTabScript(): void {
+    $tab = bengalaTabActual();
+    ?>
+<script>
+(function () {
+    var tabId = <?php echo json_encode($tab); ?>;
+    try {
+        var stored = sessionStorage.getItem('bengala_tab');
+        if (stored && /^[a-zA-Z0-9_-]{3,64}$/.test(stored)) {
+            tabId = stored;
+        } else if (!tabId || tabId === 'default') {
+            tabId = 'tab_' + Math.random().toString(36).slice(2, 12);
+            sessionStorage.setItem('bengala_tab', tabId);
+        } else {
+            sessionStorage.setItem('bengala_tab', tabId);
+        }
+    } catch (e) {
+        if (!tabId || tabId === 'default') {
+            tabId = 'tab_' + Math.random().toString(36).slice(2, 12);
+        }
+    }
+
+    function ensureUrlTab() {
+        try {
+            var u = new URL(location.href);
+            if (u.searchParams.get('tab') !== tabId) {
+                u.searchParams.set('tab', tabId);
+                history.replaceState(null, '', u.pathname + u.search + u.hash);
+            }
+        } catch (e) {}
+    }
+
+    function applyTabToLinksAndForms(root) {
+        var links = (root || document).querySelectorAll('a[href]');
+        links.forEach(function (a) {
+            var href = a.getAttribute('href');
+            if (!href || href[0] === '#' || href.indexOf('javascript:') === 0 || href.indexOf('mailto:') === 0) return;
+            try {
+                var u = new URL(href, location.href);
+                if (u.origin !== location.origin) return;
+                if (!u.searchParams.get('tab')) u.searchParams.set('tab', tabId);
+                a.setAttribute('href', u.pathname + u.search + u.hash);
+            } catch (e) {}
+        });
+
+        var forms = (root || document).querySelectorAll('form');
+        forms.forEach(function (f) {
+            var inp = f.querySelector('input[name="tab"]');
+            if (!inp) {
+                inp = document.createElement('input');
+                inp.type = 'hidden';
+                inp.name = 'tab';
+                f.appendChild(inp);
+            }
+            inp.value = tabId;
+
+            if ((f.method || 'get').toLowerCase() === 'get') {
+                var action = f.getAttribute('action') || location.pathname + location.search;
+                try {
+                    var u = new URL(action, location.href);
+                    if (!u.searchParams.get('tab')) u.searchParams.set('tab', tabId);
+                    f.setAttribute('action', u.pathname + u.search);
+                } catch (e) {}
+            }
+        });
+    }
+
+    ensureUrlTab();
+    applyTabToLinksAndForms(document);
+})();
+</script>
+    <?php
 }
 
 // --- FUNCIONES DE AUTENTICACIÓN ---
@@ -170,7 +292,7 @@ function redirigirAdmin(string $rutaPorDefecto, string $query = ''): void {
             $loc .= (strpos($loc, '?') !== false ? '&' : '?') . ltrim($query, '?&');
         }
     }
-    header('Location: ' . $loc);
+    header('Location: ' . bengalaUrlConTab($loc));
     exit();
 }
 
@@ -187,19 +309,19 @@ function redirigirFrontend(string $rutaPorDefecto, string $query = ''): void {
             $loc .= (strpos($loc, '?') !== false ? '&' : '?') . ltrim($query, '?&');
         }
     }
-    header('Location: ' . $loc);
+    header('Location: ' . bengalaUrlConTab($loc));
     exit();
 }
 
 // Proteger vistas de usuario (Mi Biblioteca, Buscar, etc.)
 function redirigirSiNoUsuario() {
     if (!estaLogueado()) {
-        header('Location: login.php');
+        header('Location: ' . bengalaUrlConTab('login.php'));
         exit();
     }
     // Si un admin intenta entrar a la zona de usuario, lo mandamos a su panel
     if (esAdmin() && strpos($_SERVER['PHP_SELF'], 'admin') === false) {
-        header('Location: ../admin/dashboard.php');
+        header('Location: ' . bengalaUrlConTab('../admin/dashboard.php'));
         exit();
     }
 }
@@ -215,12 +337,12 @@ function prepararSesionAdmin() {
 // Proteger vistas de administración
 function redirigirSiNoAdmin() {
     if (!estaLogueado()) {
-        header('Location: ../fronted/login.php');
+        header('Location: ' . bengalaUrlConTab('../fronted/login.php'));
         exit();
     }
     prepararSesionAdmin();
     if (!esAdmin()) {
-        header('Location: ../fronted/login.php');
+        header('Location: ' . bengalaUrlConTab('../fronted/login.php'));
         exit();
     }
 }

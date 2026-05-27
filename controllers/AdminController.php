@@ -273,14 +273,14 @@ class AdminController {
             if ($platId <= 0) {
                 continue;
             }
-            $region = trim($ed['region'] ?? '');
+            $bloqueoRegional = isset($ed['bloqueo_regional']) && (int)$ed['bloqueo_regional'] === 1 ? 1 : 0;
             $nombreEd = trim($ed['edicion_nombre'] ?? '');
             if ($nombreEd === '') {
                 $nombreEd = 'Edición Estándar';
             }
             $edicionesValidas[] = [
                 'plataforma_id' => $platId,
-                'region' => $region,
+                'bloqueo_regional' => $bloqueoRegional,
                 'edicion_nombre' => $nombreEd,
             ];
         }
@@ -305,16 +305,13 @@ class AdminController {
             $juegoId = (int)$this->pdo->lastInsertId();
 
             $stmtEd = $this->pdo->prepare(
-                "INSERT INTO ediciones (juego_id, plataforma_id, region, edicion_nombre) VALUES (?, ?, ?, ?)"
+                "INSERT INTO ediciones (juego_id, plataforma_id, region, bloqueo_regional, edicion_nombre) VALUES (?, ?, NULL, ?, ?)"
             );
             foreach ($edicionesValidas as $ed) {
-                if ($ed['region'] !== '') {
-                    asegurarRegionEnCatalogo($this->pdo, $ed['region']);
-                }
                 $stmtEd->execute([
                     $juegoId,
                     $ed['plataforma_id'],
-                    $ed['region'] !== '' ? $ed['region'] : null,
+                    $ed['bloqueo_regional'],
                     $ed['edicion_nombre'],
                 ]);
             }

@@ -122,6 +122,7 @@ require_once __DIR__ . '/scroll-restore.php';
 </head>
 <body>
 <?php bengalaScrollRestoreHead(); ?>
+<?php bengalaRenderTabScript(); ?>
 <nav>
     <a href="dashboard.php" class="logo">BENGALA</a>
     <div>

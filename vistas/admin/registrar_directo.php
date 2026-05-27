@@ -467,12 +467,10 @@ include '../../includes/admin_header.php';
                             </select>
                         </div>
                         <div>
-                            <label class="form-label"><?php echo $lang['admin_direct_game_label_region']; ?></label>
-                            <select name="ediciones[0][region]">
-                                <option value=""><?php echo $lang['admin_direct_game_no_region']; ?></option>
-                                <?php foreach ($regiones as $r): ?>
-                                    <option value="<?php echo htmlspecialchars($r->nombre); ?>"><?php echo htmlspecialchars($r->nombre); ?></option>
-                                <?php endforeach; ?>
+                            <label class="form-label"><?php echo $lang['admin_direct_game_label_regional_lock']; ?></label>
+                            <select name="ediciones[0][bloqueo_regional]">
+                                <option value="0"><?php echo $lang['admin_direct_game_regional_lock_no']; ?></option>
+                                <option value="1"><?php echo $lang['admin_direct_game_regional_lock_yes']; ?></option>
                             </select>
                         </div>
                         <div>
