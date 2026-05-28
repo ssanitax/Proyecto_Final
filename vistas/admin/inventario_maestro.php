@@ -48,16 +48,21 @@ include '../../includes/admin_header.php';
 ?>
 
 <style>
+    .container {
+        max-width: min(96vw, 1800px);
+        padding: 36px 2.5vw;
+    }
+
     .admin-section { background: white; border-radius: 20px; border: 1px solid #eee; margin-bottom: 40px; overflow-x: auto; }
     .section-header { background: #fafafa; padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
     .section-header h3 { font-size: 1rem; font-weight: 800; text-transform: uppercase; color: var(--graphite); margin: 0; }
     
-    table { width: 100%; min-width: 820px; border-collapse: collapse; text-align: left; }
-    th { padding: 16px 26px; font-size: 0.7rem; text-transform: uppercase; color: #aaa; letter-spacing: 1px; border-bottom: 2px solid #f9f9f9; }
-    td { padding: 16px 26px; font-size: 0.9rem; border-bottom: 1px solid #f9f9f9; vertical-align: middle; }
+    table { width: 100%; min-width: 980px; border-collapse: collapse; text-align: left; }
+    th { padding: 18px 30px; font-size: 0.72rem; text-transform: uppercase; color: #aaa; letter-spacing: 1px; border-bottom: 2px solid #f9f9f9; }
+    td { padding: 18px 30px; font-size: 0.95rem; border-bottom: 1px solid #f9f9f9; vertical-align: middle; }
 
     /* La tabla de plataformas necesita un poco más de aire */
-    #seccion-plataformas table { min-width: 980px; }
+    #seccion-plataformas table { min-width: 1200px; }
     #seccion-plataformas th:nth-child(1),
     #seccion-plataformas td:nth-child(1) { width: 42%; }
     #seccion-plataformas th:nth-child(2),
