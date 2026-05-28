@@ -53,10 +53,15 @@ include '../../includes/admin_header.php';
 ?>
 
 <style>
+    .container {
+        max-width: min(96vw, 1800px);
+        padding: 36px 2.5vw;
+    }
+
     /* Estilo unificado para las tarjetas del admin [cite: 268-270, 899-900] */
     .dash-card {
         background: white;
-        padding: 40px 30px;
+        padding: 44px 36px;
         border-radius: 20px;
         display: flex;
         flex-direction: column;
@@ -293,7 +298,7 @@ include '../../includes/admin_header.php';
 
     textarea {
         width: 100%;
-        padding: 12px;
+        padding: 14px;
         border-radius: 10px;
         border: 1px solid #eee;
         margin-bottom: 15px;
@@ -342,6 +347,14 @@ include '../../includes/admin_header.php';
         font-weight: 700;
         font-size: 0.8rem;
         color: #555;
+    }
+
+    .direct-admin-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+        gap: 34px;
+        width: 100%;
+        margin: 0 auto;
     }
 
 </style>
@@ -400,7 +413,7 @@ include '../../includes/admin_header.php';
         </div>
     <?php endif; ?>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; max-width: 1100px; margin: 0 auto;">
+    <div class="direct-admin-grid">
         
         <div class="dash-card">
             <h3 style="margin-bottom: 20px; font-weight: 800;"><?php echo $lang['admin_direct_new_platform']; ?></h3>
