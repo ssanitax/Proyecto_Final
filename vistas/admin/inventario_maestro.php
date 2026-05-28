@@ -59,7 +59,9 @@ include '../../includes/admin_header.php';
     
     table { width: 100%; min-width: 980px; border-collapse: collapse; text-align: left; }
     th { padding: 18px 30px; font-size: 0.72rem; text-transform: uppercase; color: #aaa; letter-spacing: 1px; border-bottom: 2px solid #f9f9f9; }
-    td { padding: 18px 30px; font-size: 0.95rem; border-bottom: 1px solid #f9f9f9; vertical-align: middle; }
+    td { padding: 18px 30px; font-size: 0.95rem; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+    tbody tr:nth-child(even) { background: #fafafa; }
+    tbody tr:hover { background: #f3f4f6; }
 
     /* La tabla de plataformas necesita un poco más de aire */
     #seccion-plataformas table { min-width: 1200px; }
