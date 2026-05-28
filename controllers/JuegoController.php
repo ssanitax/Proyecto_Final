@@ -114,6 +114,11 @@ class JuegoController {
 
                 $bloqueoRegional = isset($_POST['bloqueo_regional']) && $_POST['bloqueo_regional'] === '1' ? 1 : 0;
 
+                $nombreEdicion = trim($_POST['edicion_nombre'] ?? '');
+                if ($nombreEdicion === '') {
+                    $nombreEdicion = 'Edición Estándar';
+                }
+
                 $sql = "INSERT INTO ediciones_pendientes
                     (juego_pendiente_id, juego_id_real, plataforma_id, imagen_portada_sugerida, region, bloqueo_regional, edicion_nombre)
                     VALUES (?, ?, ?, ?, NULL, ?, ?)";
@@ -124,7 +129,7 @@ class JuegoController {
                     $plataforma_id,
                     $portadaSugerida,
                     $bloqueoRegional,
-                    trim($_POST['edicion_nombre'] ?? 'Edición Estándar')
+                    $nombreEdicion
                 ]);
 
                 $this->pdo->commit();

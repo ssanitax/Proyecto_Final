@@ -64,7 +64,7 @@ include '../../includes/header.php';
 
             <div class="form-group" style="margin-bottom: 20px; text-align: left;">
                 <label style="font-weight: 800; font-size: 0.8rem; display: block; margin-bottom: 10px;"><?php echo $lang['frontend_propose_edition_label_edition_name']; ?></label>
-                <input type="text" name="edicion_nombre" placeholder="<?php echo $lang['frontend_propose_edition_placeholder_edition']; ?>" required
+                <input type="text" name="edicion_nombre" placeholder="<?php echo $lang['frontend_propose_edition_placeholder_edition']; ?>"
                        style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd;">
             </div>
 
