@@ -128,7 +128,7 @@ include '../../includes/header.php';
                         <?php else: ?>
                             <?php foreach($ediciones as $edic): ?>
                                 <label class="version-card">
-                                    <input type="radio" name="edicion_id" value="<?php echo $edic->id; ?>" required>
+                                    <input type="radio" name="edicion_id" value="<?php echo $edic->id; ?>" required data-bloqueo="<?php echo !empty($edic->bloqueo_regional) ? '1' : '0'; ?>">
                                     <?php if (!empty($edic->imagen_portada)): ?>
                                         <span class="version-thumb">
                                             <img src="../../img/portadas/<?php echo htmlspecialchars($edic->imagen_portada); ?>" alt="">
@@ -176,12 +176,12 @@ include '../../includes/header.php';
                             <?php endif; ?>
 
                             <?php if (!empty($regiones)): ?>
-                                <div style="margin-top: 8px; text-align: left;">
+                                <div id="region-copia-block" style="display:none; margin-top: 8px; text-align: left;">
                                     <label style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #666; display: block; margin-bottom: 8px;">
                                         <?php echo $lang['frontend_game_detail_label_region_copy']; ?>
                                     </label>
                                     <p style="font-size: 0.8rem; color: #888; margin: 0 0 10px 0;"><?php echo $lang['frontend_game_detail_region_help']; ?></p>
-                                    <select name="region_copia" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit;">
+                                    <select id="region-copia-select" name="region_copia" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit;">
                                         <option value=""><?php echo $lang['frontend_game_detail_region_none']; ?></option>
                                         <?php foreach ($regiones as $reg): ?>
                                             <option value="<?php echo htmlspecialchars($reg->nombre); ?>"><?php echo htmlspecialchars($reg->nombre); ?></option>
@@ -298,5 +298,27 @@ include '../../includes/header.php';
         }
     }
 </style>
+
+<script>
+(function () {
+    var radios = document.querySelectorAll('input[name="edicion_id"]');
+    var regionBlock = document.getElementById('region-copia-block');
+    var regionSelect = document.getElementById('region-copia-select');
+    if (!radios.length || !regionBlock || !regionSelect) return;
+
+    function syncRegionVisibility() {
+        var checked = document.querySelector('input[name="edicion_id"]:checked');
+        var needsRegion = checked && checked.getAttribute('data-bloqueo') === '1';
+        regionBlock.style.display = needsRegion ? 'block' : 'none';
+        regionSelect.required = !!needsRegion;
+        if (!needsRegion) {
+            regionSelect.value = '';
+        }
+    }
+
+    radios.forEach(function (r) { r.addEventListener('change', syncRegionVisibility); });
+    syncRegionVisibility();
+})();
+</script>
 
 <?php include '../../includes/footer.php'; ?>
